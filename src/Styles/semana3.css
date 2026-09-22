@@ -1,0 +1,91 @@
+/* =====================================================================
+   FINFLUENT · WEEK 3 (importa semana1.css y semana2.css ANTES).
+   Solo estilos NUEVOS del corazón: fórmulas, calculadora, solucionador
+   por pasos, juego hoy/mañana, emparejar tasas y gráfico de crecimiento.
+   ===================================================================== */
+
+/* Hero con tinte propio (más "matemático") */
+.s3-hero::after { background: radial-gradient(440px 250px at 88% -18%, rgba(143, 240, 194, .28), transparent 60%); }
+
+/* ---- Notas / fórmulas ---- */
+.s3-note, .s3-formula { background: linear-gradient(160deg, #f4faf6, #eef7f1); border: 1px solid #c9e6d6; border-radius: 18px; padding: 20px 22px; margin-bottom: 14px; }
+.s3-note h3, .s3-formula h3 { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; margin: 0 0 10px; color: var(--ink); }
+.s3-note h3 svg, .s3-formula h3 svg { color: var(--gold); }
+.s3-note p, .s3-formula-note, .s3-formula-ex { margin: 0 0 8px; color: var(--ink-soft); font-weight: 500; line-height: 1.55; font-size: .95rem; }
+.formula { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--green-deep); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 0 0 10px !important; text-align: center; letter-spacing: .01em; }
+.formula sub, .formula sup { font-size: .7em; }
+.s3-formula-ex { background: rgba(245, 178, 62, .12); border-radius: 12px; padding: 12px 14px; color: #6b4600; }
+
+/* ---- Calculadora financiera ---- */
+.fincalc-row { margin-bottom: 14px; }
+.fincalc { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm); }
+.fincalc-head { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: .95rem; color: var(--ink); margin-bottom: 12px; }
+.fincalc-head svg { color: var(--forest); }
+.fincalc-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+.fincalc-inputs label { display: flex; flex-direction: column; gap: 5px; font-weight: 700; font-size: .74rem; color: var(--ink-soft); }
+.fincalc-inputs input { font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.fincalc-inputs input:focus { outline: none; border-color: var(--green); background: #fff; }
+.fincalc-out { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fincalc-out > div { display: flex; flex-direction: column; gap: 2px; background: var(--bg); border-radius: 10px; padding: 9px 11px; }
+.fincalc-out > div.hi { background: rgba(22, 176, 116, .1); border: 1px solid #c4e3d2; }
+.fincalc-out span { font-weight: 700; font-size: .72rem; color: var(--muted); }
+.fincalc-out b { font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--green-deep); font-variant-numeric: tabular-nums; }
+.fincalc-tip { margin: 10px 0 0; font-size: .78rem; color: var(--muted); font-weight: 600; }
+@media (max-width: 560px) { .fincalc-inputs { grid-template-columns: 1fr; } .fincalc-out { grid-template-columns: 1fr; } }
+
+/* ---- Solucionador por pasos ---- */
+.step-card { margin-top: 4px; }
+.step-scenario { display: flex; align-items: flex-start; gap: 8px; background: rgba(245, 178, 62, .12); border-radius: 12px; padding: 13px 15px; margin-bottom: 16px; font-weight: 600; color: #6b4600; line-height: 1.5; font-size: .95rem; }
+.step-scenario svg { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+.num-step { margin-top: 4px; }
+.num-hint { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border-left: 3px solid var(--gold); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-weight: 700; font-size: .9rem; color: var(--ink-soft); }
+.num-hint svg { color: var(--gold); flex-shrink: 0; }
+.num-entry { display: flex; gap: 10px; align-items: stretch; }
+.num-entry .start-input { flex: 1; margin: 0; font-variant-numeric: tabular-nums; }
+.num-entry .start-input.err { border-color: var(--coral); }
+.num-entry .start-input.ok { border-color: var(--green); background: rgba(22, 176, 116, .06); }
+.num-msg.err { color: var(--coral); font-weight: 700; font-size: .86rem; margin: 8px 0 0; }
+
+/* ---- Juego hoy vs mañana ---- */
+.tt-scenario { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; line-height: 1.35; margin: 0 0 20px; color: var(--ink); }
+.tt-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.tt-card { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; background: var(--bg); border: 2px solid var(--line); border-radius: 16px; padding: 26px 16px; font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--ink); transition: border-color .14s ease, transform .14s ease, background .14s ease; }
+.tt-card:hover:not(:disabled) { border-color: var(--green); transform: translateY(-2px); }
+.tt-card svg { color: var(--forest); }
+.tt-card:disabled { cursor: default; }
+.tt-card.right { background: rgba(22, 176, 116, .12); border-color: var(--green); }
+.tt-card.right svg { color: var(--green-deep); }
+.tt-card.wrong { background: rgba(255, 107, 87, .1); border-color: var(--coral); }
+.tt-card.wrong svg { color: var(--coral); }
+.tt-card.reveal { border-color: var(--green); box-shadow: 0 6px 18px rgba(22, 176, 116, .18); }
+@media (max-width: 480px) { .tt-cards { grid-template-columns: 1fr; } }
+
+/* ---- Emparejar tasas ---- */
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 6px; }
+.match-col { display: flex; flex-direction: column; gap: 10px; }
+.match-item { display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: .96rem; color: var(--ink); background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 15px 12px; transition: border-color .14s ease, background .14s ease, transform .1s ease; }
+.match-item.right { font-family: var(--font-display); font-weight: 800; color: var(--green-deep); }
+.match-item:hover:not(:disabled) { border-color: var(--green); }
+.match-item.sel { border-color: var(--gold); background: rgba(245, 178, 62, .14); }
+.match-item.done { background: rgba(22, 176, 116, .12); border-color: var(--green); color: var(--green-deep); cursor: default; }
+.match-item.shake { border-color: var(--coral); background: rgba(255, 107, 87, .1); animation: mshake .3s; }
+@keyframes mshake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* ---- Gráfico de crecimiento ---- */
+.growth-chart { width: 100%; height: auto; display: block; margin: 4px 0 10px; }
+.gc-axis { stroke: var(--line); stroke-width: 1.5; }
+.gc-plain { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 5 5; }
+.gc-invested { fill: none; stroke: var(--green); stroke-width: 3; }
+.gc-dot { fill: var(--gold); stroke: #fff; stroke-width: 1.5; }
+.gc-lbl { fill: var(--muted); font-family: var(--font-body); font-weight: 700; font-size: 11px; }
+.growth-legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 6px 0 12px; font-weight: 700; font-size: .85rem; color: var(--ink-soft); }
+.growth-legend .dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
+.growth-legend .dot.plain { background: var(--muted); }
+.growth-legend .dot.inv { background: var(--green); }
+
+/* ---- Bloque "teach" antes de cada problema ---- */
+.s3-teach { background: linear-gradient(160deg, #fffdf6, #fff7e8); border: 1px solid #f0dfae; border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; }
+.s3-teach h3 { display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; margin: 0 0 8px; color: var(--ink); }
+.s3-teach h3 svg { color: var(--gold); }
+.s3-teach p { margin: 0 0 8px; color: var(--ink-soft); font-weight: 500; line-height: 1.6; font-size: .94rem; }
+.s3-teach-ex { background: var(--surface); border-left: 3px solid var(--green); border-radius: 10px; padding: 12px 14px; color: var(--ink) !important; }

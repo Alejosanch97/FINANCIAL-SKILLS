@@ -1,0 +1,70 @@
+/* =====================================================================
+   FINFLUENT · WEEK 4 (importa semana1.css, semana2.css y semana3.css ANTES).
+   Solo estilos NUEVOS: hero, calculadora de crédito, tabla de amortización.
+   ===================================================================== */
+
+/* Hero con tinte propio (alerta/deuda: un toque coral) */
+.s4-hero::after { background: radial-gradient(440px 250px at 88% -18%, rgba(255, 107, 87, .26), transparent 60%); }
+
+/* ---- Calculadora de crédito (4 inputs + selector de base) ---- */
+.ccalc-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+.ccalc-inputs label { display: flex; flex-direction: column; gap: 5px; font-weight: 700; font-size: .74rem; color: var(--ink-soft); }
+.ccalc-inputs input, .ccalc-inputs select { font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.ccalc-inputs input:focus, .ccalc-inputs select:focus { outline: none; border-color: var(--green); background: #fff; }
+.ccalc-warn { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: .78rem; color: #8a5a00; background: rgba(245, 178, 62, .16); border-radius: 8px; padding: 7px 10px; margin-bottom: 12px; }
+.ccalc-warn svg { color: #8a5a00; flex-shrink: 0; }
+@media (max-width: 620px) { .ccalc-inputs { grid-template-columns: 1fr 1fr; } }
+
+/* ---- Datos del préstamo (tira superior de la tabla) ---- */
+.amort-loan { display: flex; flex-wrap: wrap; gap: 10px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin-bottom: 14px; font-size: .88rem; color: var(--ink-soft); font-weight: 500; }
+.amort-loan b { color: var(--ink); font-family: var(--font-display); }
+
+/* ---- Tabla de amortización interactiva ---- */
+.amort-table { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; overflow-x: auto; }
+.amort-row { display: grid; grid-template-columns: 54px 1.3fr 1fr 1fr 1.3fr; gap: 8px; align-items: center; min-width: 520px; }
+.amort-row.head { font-family: var(--font-display); font-weight: 800; font-size: .74rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 0 10px; }
+.amort-row.filled { background: rgba(22, 176, 116, .07); border: 1px solid #c4e3d2; border-radius: 12px; padding: 12px 10px; font-weight: 600; font-size: .9rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.amort-row.filled span:first-child { font-family: var(--font-display); font-weight: 800; color: var(--green-deep); }
+.amort-row.input { background: var(--surface); border: 2px solid var(--gold); border-radius: 12px; padding: 10px; }
+.amort-row.input > span:first-child { font-family: var(--font-display); font-weight: 800; color: #8a5a00; text-align: center; }
+.amort-fixed { font-weight: 700; font-size: .88rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.amort-row.input input { font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 9px; padding: 9px 8px; width: 100%; font-variant-numeric: tabular-nums; }
+.amort-row.input input:focus { outline: none; border-color: var(--green); background: #fff; }
+.amort-hint { text-align: center; color: var(--muted); font-weight: 700; font-size: .82rem; margin-bottom: 12px; }
+
+
+/* ---- Selector de modo de la calculadora (buscar PMT / buscar tasa) ---- */
+.ccalc-mode { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.ccalc-mode button { flex: 1; min-width: 160px; cursor: pointer; border: 2px solid var(--line); background: var(--bg); font-family: var(--font-body); font-weight: 700; font-size: .82rem; color: var(--ink-soft); padding: 10px 12px; border-radius: 11px; }
+.ccalc-mode button.on { background: var(--forest); border-color: var(--forest); color: #fff; }
+.ccalc-inputs .ccalc-wide { grid-column: span 2; }
+@media (max-width: 620px) { .ccalc-inputs .ccalc-wide { grid-column: span 1; } }
+
+
+
+/* ---- Calculadora básica (teclado) ---- */
+.bcalc-screen { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; background: var(--bg); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; min-height: 54px; }
+.bcalc-expr { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); word-break: break-all; }
+.bcalc-out { font-weight: 800; font-size: .95rem; color: var(--green-deep); font-variant-numeric: tabular-nums; }
+.bcalc-pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.bcalc-k { cursor: pointer; border: 2px solid var(--line); background: var(--surface); font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--ink); padding: 15px 0; border-radius: 11px; transition: transform .1s ease, background .12s ease, border-color .12s ease; }
+.bcalc-k:hover { transform: translateY(-1px); border-color: var(--green); }
+.bcalc-k.util { font-size: 1rem; color: var(--ink-soft); background: var(--bg); }
+.bcalc-k.op { color: var(--green-deep); background: rgba(22, 176, 116, .08); }
+.bcalc-k.zero { grid-column: span 1; }
+.bcalc-k.eq { background: var(--forest); color: #fff; border-color: var(--forest); }
+.bcalc-k.eq:hover { background: var(--green-deep); }
+
+
+/* ---- Abono a capital: elección + tabla ---- */
+.extra-choice { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+.extra-table { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 10px; overflow-x: auto; }
+.extra-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 8px; align-items: center; min-width: 460px; }
+.extra-row.head { font-family: var(--font-display); font-weight: 800; font-size: .74rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 0 10px; }
+.extra-row.filled { background: rgba(255, 107, 87, .07); border: 1px solid #f5ccc3; border-radius: 12px; padding: 12px 10px; font-weight: 600; font-size: .9rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.extra-row.filled.good { background: rgba(22, 176, 116, .08); border-color: #c4e3d2; }
+.extra-row.filled span:first-child { font-family: var(--font-display); font-weight: 800; }
+.extra-row.input { background: var(--surface); border: 2px solid var(--gold); border-radius: 12px; padding: 10px; }
+.extra-row.input > span:first-child { font-family: var(--font-display); font-weight: 800; color: #8a5a00; }
+.extra-row.input input { font-family: var(--font-body); font-size: .9rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 9px; padding: 9px 8px; width: 100%; font-variant-numeric: tabular-nums; }
+.extra-row.input input:focus { outline: none; border-color: var(--green); background: #fff; }

@@ -8,6 +8,10 @@ import {
 } from "lucide-react";
 import "../Styles/dashboard.css";
 import { Semana1 } from "./Semana1";
+import { Semana2 } from "./Semana2";
+import { Semana3 } from "./Semana3";
+import { Semana4 } from "./Semana4";
+import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
 const API_URL = 'https://script.google.com/macros/s/AKfycbxVvo-GCJRlEFophVZzt4epwpZqFcx-Wn4qQQYJzx3HreajStxjhDpjcUTApphE24Sg/exec';
@@ -17,14 +21,18 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxVvo-GCJRlEFophVZzt4ep
    ===================================================================== */
 
 // --- Las 6 semanas del curso ---
+// unlocked ya NO es fijo: se calcula por progreso (ver unlockedWeeks abajo).
 const WEEKS = [
-  { n: 1, title: "Money Mindset",   blurb: "Understand how you think about money and where you stand today.", Icon: Compass,    unlocked: true },
-  { n: 2, title: "Smart Saving",    blurb: "Compare savings accounts, pockets and CDTs.",                     Icon: Landmark,   unlocked: false },
-  { n: 3, title: "Money Over Time", blurb: "See how interest makes money grow, or shrink, over time.",        Icon: Hourglass,  unlocked: false },
-  { n: 4, title: "Credit & Debt",   blurb: "Find out what credit really costs you.",                          Icon: CreditCard, unlocked: false },
-  { n: 5, title: "Investing 101",   blurb: "Evaluate investment options and choose with confidence.",         Icon: TrendingUp, unlocked: false },
-  { n: 6, title: "Go Live",         blurb: "Handle dollars and crypto, then build your own plan.",            Icon: Flag,       unlocked: false },
+  { n: 1, title: "Money Mindset",   blurb: "Understand how you think about money and where you stand today.", Icon: Compass    },
+  { n: 2, title: "Smart Saving",    blurb: "Compare savings accounts, pockets and CDTs.",                     Icon: Landmark   },
+  { n: 3, title: "Money Over Time", blurb: "See how interest makes money grow, or shrink, over time.",        Icon: Hourglass  },
+  { n: 4, title: "Credit & Debt",   blurb: "Find out what credit really costs you.",                          Icon: CreditCard },
+  { n: 5, title: "Investing 101",   blurb: "Evaluate investment options and choose with confidence.",         Icon: TrendingUp },
+  { n: 6, title: "Go Live",         blurb: "Handle dollars and crypto, then build your own plan.",            Icon: Flag       },
 ];
+
+// 🔧 MODO PRUEBA: pon true para ver y abrir TODAS las semanas sin condiciones.
+const TEST_MODE_ALL_WEEKS = true;
 
 // --- Calendario real del curso (ajusta las fechas si cambian) ---
 // La semana del 4 al 10 de octubre es de vacaciones: no arranca semana nueva esa semana,
@@ -382,7 +390,7 @@ function Ledger({ stats }) {
 /* =====================================================================
    STATUS TICKET (boarding pass de la semana)
    ===================================================================== */
-function StatusTicket({ schedule, getWeekRow, onOpenWeek }) {
+function StatusTicket({ schedule, getWeekRow, onOpenWeek, isWeekUnlocked }) {
   let m;
 
   if (schedule.phase === "done") {
@@ -403,7 +411,7 @@ function StatusTicket({ schedule, getWeekRow, onOpenWeek }) {
         : { Icon: Plane, title: `Week ${w.n} opens ${fmtDate(w.start)}`, text: `${meta.title}: ${meta.blurb}` };
       m.dates = range;
       m.stub = { num: schedule.daysUntil, label: schedule.daysUntil === 1 ? "day to go" : "days to go" };
-      if (meta.unlocked) m.cta = { label: `Play week ${w.n} now`, week: w.n };
+      if (isWeekUnlocked(w.n)) m.cta = { label: `Play week ${w.n} now`, week: w.n };
     } else {
       const row = getWeekRow(w.n);
       if (isCompleted(row)) {
@@ -485,10 +493,10 @@ function TipNote({ index, onPrev, onNext, onPause }) {
    DASHBOARD
    ===================================================================== */
 export const Dashboard = ({ onLogout }) => {
+  const { store, dispatch } = useGlobalReducer();
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");   // overview | week1..week6
   const [isLoading, setIsLoading] = useState(true);
-  const [progreso, setProgreso] = useState([]);             // filas de Progreso_Semanas
   const [navOpen, setNavOpen] = useState(false);
   const [tipIndex, setTipIndex] = useState(() => new Date().getDate() % FINANCIAL_TIPS.length);
   const [tipPaused, setTipPaused] = useState(false);
@@ -500,20 +508,25 @@ export const Dashboard = ({ onLogout }) => {
   useEffect(() => {
     const saved = localStorage.getItem("userFIN");
     if (!saved) { navigate("/"); return; }
-    const data = JSON.parse(saved);
-    setUserData(data);
-    loadProgreso(data.Student_Key);
+    let data;
+    try { data = JSON.parse(saved); } catch { localStorage.removeItem("userFIN"); navigate("/"); return; }
+    setUserData(data);                 // pinta el dashboard YA
+    loadProgreso(data.Student_Key);    // los progresos llegan por detrás (no bloquea)
   }, [navigate]);
 
   const loadProgreso = async (key) => {
+    if (!key) { setIsLoading(false); return; } // sin key no pedimos nada (evita el error del GET)
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}?sheet=Progreso_Semanas&user_key=${key}`);
+      const url = `${API_URL}?sheet=Progreso_Semanas&user_key=${encodeURIComponent(key)}`;
+      const res = await fetch(url);
       const data = await res.json();
-      setProgreso(Array.isArray(data) ? data : []);
+      const rows = Array.isArray(data) ? data : []; // si vino {status:'error'}, lo ignoramos
+      const bySemana = {};
+      rows.forEach((row) => { if (row && row.Semana != null) bySemana[row.Semana] = row; });
+      dispatch({ type: "set_semanas", payload: bySemana });
     } catch (e) {
       console.error("Error cargando progreso:", e);
-      setProgreso([]);
     } finally {
       setIsLoading(false);
     }
@@ -521,11 +534,18 @@ export const Dashboard = ({ onLogout }) => {
 
   /* ---------- métricas derivadas ---------- */
   const stats = useMemo(() => {
-    const xpRaw = progreso.reduce((s, r) => s + parseFloat(r.Puntos_Total || 0), 0);
+    const rows = Object.values(store.semanas || {});
+    // Sumamos los 3 componentes en vez de depender de "Puntos_Total": ese campo
+    // no existe en la fila optimista que arma Semana1, así que si lo usamos aquí
+    // el XP "cae a 0" un instante hasta el próximo refetch real.
+    const xpRaw = rows.reduce(
+      (s, r) => s + parseFloat(r.Puntos_Comportamiento || 0) + parseFloat(r.Puntos_Quizzes || 0) + parseFloat(r.Puntos_Aprendi || 0),
+      0
+    );
     const xp = Math.round(xpRaw) || 0;
-    const done = progreso.filter(isCompleted).length;
+    const done = rows.filter(isCompleted).length;
     // % global = promedio del % de las 6 semanas (se recalcula al terminar una actividad)
-    const raw = progreso.reduce((s, r) => s + parseFloat(r.Porcentaje || 0), 0) / WEEKS.length;
+    const raw = rows.reduce((s, r) => s + parseFloat(r.Porcentaje || 0), 0) / WEEKS.length;
     const overallRaw = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 0));
     const level = Math.floor(xp / 100) + 1;
     const streak = parseInt(userData?.Racha_Dias || 0) || 0;
@@ -536,9 +556,15 @@ export const Dashboard = ({ onLogout }) => {
       levelPct: xp % 100,
       xpToNext: 100 - (xp % 100),
     };
-  }, [progreso, userData]);
+  }, [store.semanas, userData]);
 
-  const getWeekRow = (n) => progreso.find((r) => String(r.Semana) === String(n));
+  const getWeekRow = (n) => store.semanas?.[n];
+
+  // Semana N desbloqueada si: es la 1, o la N-1 está completada, o modo prueba.
+  const isWeekUnlocked = (n) => {
+    if (TEST_MODE_ALL_WEEKS || n === 1) return true;
+    return isCompleted(getWeekRow(n - 1));
+  };
 
   /* ---------- celebración al completar una semana ---------- */
   useEffect(() => {
@@ -567,7 +593,7 @@ export const Dashboard = ({ onLogout }) => {
     navigate("/");
   };
   const goWeek = (w) => {
-    if (!w.unlocked) return;
+    if (!isWeekUnlocked(w.n)) return;
     setActiveTab(`week${w.n}`);
     setNavOpen(false);
   };
@@ -587,8 +613,12 @@ export const Dashboard = ({ onLogout }) => {
     );
   }
 
-  const schedule = getScheduleStatus(WEEK_SCHEDULE);
-  const weekStates = WEEKS.map((w) => ({ n: w.n, done: isCompleted(getWeekRow(w.n)) }));
+  // 🔧 MODO PRUEBA: ignoramos las fechas reales y tratamos la semana en curso como "activa".
+  // Para volver al calendario real, borra este bloque y deja solo la línea de abajo.
+  const schedule = TEST_MODE_ALL_WEEKS
+    ? { phase: "active", week: WEEK_SCHEDULE[0], index: 0, daysLeft: 5 }
+    : getScheduleStatus(WEEK_SCHEDULE);
+  const weekStates = WEEKS.map((w) => ({ n: w.n, done: isCompleted(getWeekRow(w.n)), unlocked: isWeekUnlocked(w.n) }));
   const firstName = userData.Nombre_Completo?.split(" ")[0] || "there";
   const role = capitalize(String(userData.Rol || "Student"));
 
@@ -638,7 +668,7 @@ export const Dashboard = ({ onLogout }) => {
           {WEEKS.map((w) => {
             const st = weekStates[w.n - 1];
             const active = activeTab === `week${w.n}`;
-            const locked = !w.unlocked;
+            const locked = !st.unlocked;
             return (
               <button
                 key={w.n}
@@ -694,7 +724,7 @@ export const Dashboard = ({ onLogout }) => {
               <Ledger stats={stats} />
 
               <div className="insight-grid">
-                <StatusTicket schedule={schedule} getWeekRow={getWeekRow} onOpenWeek={openWeekNumber} />
+                <StatusTicket schedule={schedule} getWeekRow={getWeekRow} onOpenWeek={openWeekNumber} isWeekUnlocked={isWeekUnlocked} />
                 <TipNote index={tipIndex} onPrev={prevTip} onNext={nextTip} onPause={setTipPaused} />
               </div>
             </div>
@@ -706,14 +736,43 @@ export const Dashboard = ({ onLogout }) => {
           <Semana1
             userData={userData}
             API_URL={API_URL}
-            existingRow={getWeekRow(1)}
+            existingRow={store.semanas?.[1]}
             onBack={() => setActiveTab("overview")}
-            onSaved={() => loadProgreso(userData.Student_Key)}
           />
         )}
 
-        {/* ===== SEMANAS 2–6 (próximamente) ===== */}
-        {["week2", "week3", "week4", "week5", "week6"].includes(activeTab) && (
+        {/* ===== SEMANA 2 ===== */}
+        {activeTab === "week2" && (
+          <Semana2
+            userData={userData}
+            API_URL={API_URL}
+            existingRow={store.semanas?.[2]}
+            onBack={() => setActiveTab("overview")}
+          />
+        )}
+
+        {/* ===== SEMANA 3 ===== */}
+        {activeTab === "week3" && (
+          <Semana3
+            userData={userData}
+            API_URL={API_URL}
+            existingRow={store.semanas?.[3]}
+            onBack={() => setActiveTab("overview")}
+          />
+        )}
+
+        {/* ===== SEMANA 4 ===== */}
+        {activeTab === "week4" && (
+          <Semana4
+            userData={userData}
+            API_URL={API_URL}
+            existingRow={store.semanas?.[4]}
+            onBack={() => setActiveTab("overview")}
+          />
+        )}
+
+        {/* ===== SEMANAS 5–6 (próximamente) ===== */}
+        {["week5", "week6"].includes(activeTab) && (
           <div className="soon-panel">
             <div className="soon-inner">
               <div className="soon-lock"><Lock size={28} strokeWidth={2.2} /></div>
