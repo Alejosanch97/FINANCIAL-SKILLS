@@ -4,13 +4,15 @@ import {
   Compass, Landmark, Hourglass, CreditCard, TrendingUp, Flag,
   Rocket, Lock, Check, Flame, Coins, CalendarCheck, Zap, LogOut,
   Menu, X, RefreshCw, Lightbulb, ChevronLeft, ChevronRight,
-  LayoutDashboard, Sun, Plane, CalendarDays, Trophy,
+  LayoutDashboard, Sun, Plane, CalendarDays, Trophy, Award, Download,
 } from "lucide-react";
 import "../Styles/dashboard.css";
 import { Semana1 } from "./Semana1";
 import { Semana2 } from "./Semana2";
 import { Semana3 } from "./Semana3";
 import { Semana4 } from "./Semana4";
+import { Semana5 } from "./Semana5";
+import { Semana6 } from "./Semana6";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -23,12 +25,12 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxVvo-GCJRlEFophVZzt4ep
 // --- Las 6 semanas del curso ---
 // unlocked ya NO es fijo: se calcula por progreso (ver unlockedWeeks abajo).
 const WEEKS = [
-  { n: 1, title: "Money Mindset",   blurb: "Understand how you think about money and where you stand today.", Icon: Compass    },
-  { n: 2, title: "Smart Saving",    blurb: "Compare savings accounts, pockets and CDTs.",                     Icon: Landmark   },
-  { n: 3, title: "Money Over Time", blurb: "See how interest makes money grow, or shrink, over time.",        Icon: Hourglass  },
-  { n: 4, title: "Credit & Debt",   blurb: "Find out what credit really costs you.",                          Icon: CreditCard },
-  { n: 5, title: "Investing 101",   blurb: "Evaluate investment options and choose with confidence.",         Icon: TrendingUp },
-  { n: 6, title: "Go Live",         blurb: "Handle dollars and crypto, then build your own plan.",            Icon: Flag       },
+  { n: 1, title: "Money Mindset", blurb: "Understand how you think about money and where you stand today.", Icon: Compass },
+  { n: 2, title: "Smart Saving", blurb: "Compare savings accounts, pockets and CDTs.", Icon: Landmark },
+  { n: 3, title: "Money Over Time", blurb: "See how interest makes money grow, or shrink, over time.", Icon: Hourglass },
+  { n: 4, title: "Credit & Debt", blurb: "Find out what credit really costs you.", Icon: CreditCard },
+  { n: 5, title: "Investing 101", blurb: "Evaluate investment options and choose with confidence.", Icon: TrendingUp },
+  { n: 6, title: "Go Live", blurb: "Handle dollars and crypto, then build your own plan.", Icon: Flag },
 ];
 
 // 🔧 MODO PRUEBA: pon true para ver y abrir TODAS las semanas sin condiciones.
@@ -139,8 +141,8 @@ function useTween(target, ms = 1500) {
 /* ---------- geometría de la ruta de vuelo ---------- */
 // Dos composiciones: ancha (desktop) y compacta (móvil). Ambas escalan de forma uniforme.
 const CHART = {
-  wide:    { w: 1000, h: 340, pts: [[26, 296], [160, 270], [290, 286], [420, 212], [560, 226], [690, 140], [790, 124], [930, 46]] },
-  compact: { w: 600,  h: 480, pts: [[30, 436], [120, 392], [200, 410], [290, 318], [380, 332], [450, 214], [510, 196], [562, 70]] },
+  wide: { w: 1000, h: 340, pts: [[26, 296], [160, 270], [290, 286], [420, 212], [560, 226], [690, 140], [790, 124], [930, 46]] },
+  compact: { w: 600, h: 480, pts: [[30, 436], [120, 392], [200, 410], [290, 318], [380, 332], [450, 214], [510, 196], [562, 70]] },
 };
 
 // Catmull-Rom → Bézier: curva suave que pasa por todos los puntos
@@ -407,7 +409,7 @@ function StatusTicket({ schedule, getWeekRow, onOpenWeek, isWeekUnlocked }) {
 
     if (schedule.phase === "upcoming") {
       m = w.vacationBefore
-        ? { Icon: Sun,   title: "Enjoy your break",              text: `Classes are paused. Week ${w.n}, ${meta.title}, opens on ${fmtDate(w.start)}.` }
+        ? { Icon: Sun, title: "Enjoy your break", text: `Classes are paused. Week ${w.n}, ${meta.title}, opens on ${fmtDate(w.start)}.` }
         : { Icon: Plane, title: `Week ${w.n} opens ${fmtDate(w.start)}`, text: `${meta.title}: ${meta.blurb}` };
       m.dates = range;
       m.stub = { num: schedule.daysUntil, label: schedule.daysUntil === 1 ? "day to go" : "days to go" };
@@ -489,6 +491,50 @@ function TipNote({ index, onPrev, onNext, onPause }) {
   );
 }
 
+
+/* =====================================================================
+   CERTIFICADO · aparece al completar las 6 semanas, descargable
+   ===================================================================== */
+const CREST_URL = "https://i.pinimg.com/736x/db/1e/03/db1e03964f0c50df7b69c3aa10bba738.jpg";
+
+function Certificate({ name, onDownload, downloading }) {
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  return (
+    <section className="cert-wrap">
+      <div className="cert-hd">
+        <h2><Award size={20} strokeWidth={2.2} /> You completed the whole course!</h2>
+        <button className="btn-cert-dl" onClick={onDownload} disabled={downloading}>
+          <Download size={16} strokeWidth={2.4} /> {downloading ? "Preparing…" : "Download certificate"}
+        </button>
+      </div>
+
+      {/* Este nodo es EXACTAMENTE lo que se exporta a imagen */}
+      <div className="cert" id="fin-certificate">
+        <div className="cert-inner">
+          <img className="cert-crest" src={CREST_URL} alt="" crossOrigin="anonymous" />
+          <p className="cert-eyebrow">FinFluent · Financial English for Teens</p>
+          <h1 className="cert-title">Certificate of Completion</h1>
+          <p className="cert-pre">This certifies that</p>
+          <p className="cert-name">{name}</p>
+          <p className="cert-body">
+            has successfully completed the six-week <b>FinFluent</b> program and is now able to build a
+            budget, open and use a savings account, apply financial mathematics (interest, present and
+            future value), understand credit and amortization, evaluate investments with NPV and IRR,
+            and design a personal, diversified investment portfolio.
+          </p>
+          <div className="cert-foot">
+            <div className="cert-sig">
+              <span className="cert-sig-line" />
+              <span>Instituto · FinFluent</span>
+            </div>
+            <div className="cert-date"><span className="cert-date-val">{today}</span><span>Date</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* =====================================================================
    DASHBOARD
    ===================================================================== */
@@ -501,8 +547,35 @@ export const Dashboard = ({ onLogout }) => {
   const [tipIndex, setTipIndex] = useState(() => new Date().getDate() % FINANCIAL_TIPS.length);
   const [tipPaused, setTipPaused] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const prevDoneRef = useRef(null);
   const navigate = useNavigate();
+
+  // Descarga el certificado como PNG (carga html2canvas desde CDN la primera vez)
+  const downloadCertificate = async () => {
+    setDownloading(true);
+    try {
+      if (!window.html2canvas) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          s.onload = resolve; s.onerror = reject;
+          document.body.appendChild(s);
+        });
+      }
+      const node = document.getElementById("fin-certificate");
+      const canvas = await window.html2canvas(node, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+      const link = document.createElement("a");
+      link.download = `FinFluent-Certificate-${(userData?.Nombre_Completo || "student").replace(/\s+/g, "_")}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (e) {
+      console.error("No se pudo generar el certificado:", e);
+      alert("Couldn't generate the certificate. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   /* ---------- carga inicial ---------- */
   useEffect(() => {
@@ -515,21 +588,39 @@ export const Dashboard = ({ onLogout }) => {
   }, [navigate]);
 
   const loadProgreso = async (key) => {
-    if (!key) { setIsLoading(false); return; } // sin key no pedimos nada (evita el error del GET)
+    if (!key) { setIsLoading(false); return; }
     setIsLoading(true);
     try {
-      const url = `${API_URL}?sheet=Progreso_Semanas&user_key=${encodeURIComponent(key)}`;
+      const url = `${API_URL}?action=progreso&user_key=${encodeURIComponent(key)}&light=1&t=${Date.now()}`;
       const res = await fetch(url);
       const data = await res.json();
-      const rows = Array.isArray(data) ? data : []; // si vino {status:'error'}, lo ignoramos
+      const rows = Array.isArray(data) ? data : [];
       const bySemana = {};
-      rows.forEach((row) => { if (row && row.Semana != null) bySemana[row.Semana] = row; });
+      rows.forEach((row) => {
+        const sem = row && (row.Semana ?? row.semana);
+        if (sem != null && sem !== "") bySemana[sem] = row;
+      });
       dispatch({ type: "set_semanas", payload: bySemana });
+      console.log("Progreso cargado:", Object.keys(bySemana).length, "semanas");
     } catch (e) {
       console.error("Error cargando progreso:", e);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Trae la fila COMPLETA (con los JSON de respuestas) de una sola semana, bajo demanda
+  const loadSemanaFull = async (n) => {
+    try {
+      const key = userData?.Student_Key;
+      if (!key) return;
+      const url = `${API_URL}?action=progreso&user_key=${encodeURIComponent(key)}&semana=${n}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const rows = Array.isArray(data) ? data : [];
+      const row = rows.find((r) => r && String(r.Semana) === String(n));
+      if (row) dispatch({ type: "save_progreso", payload: row });
+    } catch (e) { console.error("Error cargando semana completa:", e); }
   };
 
   /* ---------- métricas derivadas ---------- */
@@ -596,6 +687,7 @@ export const Dashboard = ({ onLogout }) => {
     if (!isWeekUnlocked(w.n)) return;
     setActiveTab(`week${w.n}`);
     setNavOpen(false);
+    loadSemanaFull(w.n); // trae la fila COMPLETA (con JSON) de esa semana
   };
   const openWeekNumber = (n) => {
     const w = WEEKS.find((x) => x.n === n);
@@ -712,6 +804,10 @@ export const Dashboard = ({ onLogout }) => {
             </header>
 
             <div className="overview-stack">
+              {stats.done >= WEEKS.length && (
+                <Certificate name={userData.Nombre_Completo} onDownload={downloadCertificate} downloading={downloading} />
+              )}
+
               <GrowthTrack
                 fraction={stats.overallRaw / 100}
                 pct={stats.overall}
@@ -771,16 +867,18 @@ export const Dashboard = ({ onLogout }) => {
           />
         )}
 
-        {/* ===== SEMANAS 5–6 (próximamente) ===== */}
-        {["week5", "week6"].includes(activeTab) && (
-          <div className="soon-panel">
-            <div className="soon-inner">
-              <div className="soon-lock"><Lock size={28} strokeWidth={2.2} /></div>
-              <h2>Coming soon</h2>
-              <p>This week unlocks once you complete the previous one. Keep building your streak in Week 1.</p>
-              <button className="btn-back" onClick={() => setActiveTab("week1")}>Go to Week 1</button>
-            </div>
-          </div>
+        {activeTab === "week5" && (
+          <Semana5 userData={userData} API_URL={API_URL} existingRow={store.semanas?.[5]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== SEMANA 6 ===== */}
+        {activeTab === "week6" && (
+          <Semana6
+            userData={userData}
+            API_URL={API_URL}
+            existingRow={store.semanas?.[6]}
+            onBack={() => setActiveTab("overview")}
+          />
         )}
       </main>
     </div>

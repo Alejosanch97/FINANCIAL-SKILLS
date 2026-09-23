@@ -11,6 +11,26 @@ import {
 // 👇 PEGA AQUÍ LA URL DE TU IMPLEMENTACIÓN DE APPS SCRIPT (deploy /exec)
 const API_URL = 'https://script.google.com/macros/s/AKfycbxVvo-GCJRlEFophVZzt4epwpZqFcx-Wn4qQQYJzx3HreajStxjhDpjcUTApphE24Sg/exec';
 
+// Fetch con reintentos + timeout: absorbe el "arranque frío" de Apps Script
+// (la primera llamada tras un rato inactivo suele tardar o fallar).
+async function fetchConReintento(url, options, { intentos = 2, timeoutMs = 8000 } = {}) {
+  let ultimoError;
+  for (let i = 0; i < intentos; i++) {
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...options, signal: ctrl.signal });
+      clearTimeout(id);
+      return await res.json();
+    } catch (e) {
+      clearTimeout(id);
+      ultimoError = e;
+      if (i < intentos - 1) await new Promise((r) => setTimeout(r, 1200 * (i + 1))); // 1.2s, 2.4s…
+    }
+  }
+  throw ultimoError;
+}
+
 /* ---------- Marca ---------- */
 const Logo = ({ dark }) => (
   <div className={`ff-logo ${dark ? "on-dark" : ""}`}>
@@ -120,7 +140,7 @@ export const Home = ({ onLoginSuccess }) => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(API_URL, {
+      const result = await fetchConReintento(API_URL, {
         method: 'POST',
         body: JSON.stringify({
           action: 'login',
@@ -129,7 +149,6 @@ export const Home = ({ onLoginSuccess }) => {
           sheet: "User"
         })
       });
-      const result = await response.json();
       if (result.status === 'success') {
         localStorage.setItem("userFIN", JSON.stringify(result));
         if (onLoginSuccess) onLoginSuccess(result);

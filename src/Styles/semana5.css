@@ -1,0 +1,57 @@
+/* =====================================================================
+   FINFLUENT · WEEK 5 (import semana1.css, semana2.css, semana3.css FIRST).
+   Only NEW styles: hero, cash-flow calculator, risk/return classifier.
+   ===================================================================== */
+
+/* Hero tint: investing / growth (teal-gold) */
+.s5-hero::after { background: radial-gradient(440px 250px at 88% -18%, rgba(22, 176, 116, .30), transparent 60%); }
+
+/* ---- Cash-flow calculator ---- */
+.cf-top { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.cf-top label { display: flex; flex-direction: column; gap: 5px; font-weight: 700; font-size: .76rem; color: var(--ink-soft); }
+.cf-top input { font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.cf-top input:focus { outline: none; border-color: var(--green); background: #fff; }
+@media (max-width: 560px) { .cf-top { grid-template-columns: 1fr; } }
+
+.cf-flows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.cf-flow { display: flex; align-items: center; gap: 10px; }
+.cf-flow > span { font-weight: 800; font-size: .78rem; color: var(--green-deep); min-width: 56px; font-family: var(--font-display); }
+.cf-flow input { flex: 1; font-family: var(--font-body); font-size: .95rem; font-weight: 600; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 9px 10px; }
+.cf-flow input:focus { outline: none; border-color: var(--green); background: #fff; }
+.cf-add { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 2px dashed var(--line); background: transparent; color: var(--ink-soft); font-family: var(--font-body); font-weight: 700; font-size: .82rem; padding: 8px 14px; border-radius: 10px; }
+.cf-add:hover { border-color: var(--green); color: var(--green-deep); }
+
+.cf-out { grid-template-columns: repeat(3, 1fr) !important; }
+.cf-out > div.lo { background: rgba(255, 107, 87, .1); border: 1px solid #f5ccc3; }
+.cf-out b.ok { color: var(--green-deep); }
+.cf-out b.bad { color: var(--coral); }
+@media (max-width: 620px) { .cf-out { grid-template-columns: 1fr 1fr !important; } }
+
+/* ---- Risk vs return classifier ---- */
+.risk-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+.risk-card { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 14px 16px; transition: border-color .15s ease, background .15s ease; }
+.risk-card.ok { border-color: var(--green); background: rgba(22, 176, 116, .07); }
+.risk-card.no { border-color: var(--coral); background: rgba(255, 107, 87, .06); }
+.risk-label { flex: 1; min-width: 180px; font-weight: 600; color: var(--ink); font-size: .95rem; }
+.risk-tags { display: flex; gap: 14px; flex-wrap: wrap; }
+.risk-group { display: flex; gap: 6px; }
+.risk-btn { cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: .8rem; border: 1.5px solid var(--line); background: var(--bg); color: var(--ink-soft); padding: 8px 12px; border-radius: 999px; }
+.risk-btn:disabled { cursor: default; opacity: .55; }
+.risk-btn.on { background: var(--forest); border-color: var(--forest); color: #fff; opacity: 1; }
+.risk-btn.low.on { background: var(--green); border-color: var(--green); }
+.risk-btn.high.on { background: var(--coral); border-color: var(--coral); }
+.risk-mark { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex-shrink: 0; }
+.risk-mark.ok { background: var(--green); }
+.risk-mark.no { background: var(--coral); }
+
+/* ---- "Show me the steps" de la calculadora ---- */
+.cf-work-toggle { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; cursor: pointer; border: 2px solid var(--line); background: var(--bg); color: var(--green-deep); font-family: var(--font-body); font-weight: 800; font-size: .84rem; padding: 9px 14px; border-radius: 10px; }
+.cf-work-toggle:hover { border-color: var(--green); }
+.cf-work-toggle svg:last-child { transition: transform .18s ease; }
+.cf-work-toggle svg.rot { transform: rotate(90deg); }
+.cf-work { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+.cf-work-block { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.cf-work-block h4 { font-family: var(--font-display); font-weight: 800; font-size: .88rem; color: var(--ink); margin: 0 0 8px; }
+.cf-line { margin: 0 0 5px; font-weight: 500; font-size: .9rem; color: var(--ink-soft); line-height: 1.5; font-variant-numeric: tabular-nums; }
+.cf-line b { color: var(--green-deep); }
+.cf-line.total { border-top: 1px dashed var(--rule); padding-top: 6px; margin-top: 6px; font-weight: 800; color: var(--ink); }

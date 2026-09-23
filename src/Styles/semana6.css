@@ -1,0 +1,58 @@
+/* =====================================================================
+   FINFLUENT · WEEK 6 (import semana1.css, semana2.css, semana3.css FIRST;
+   also relies on match-grid from semana3.css and bcalc from semana4.css).
+   Only NEW styles: hero, portfolio builder (donut), growth compare, feedback.
+   ===================================================================== */
+
+/* Hero tint: finale / global (gold-teal glow) */
+.s6-hero::after { background: radial-gradient(460px 260px at 88% -18%, rgba(245, 178, 62, .32), transparent 60%); }
+
+/* ---- Basic calculator (in case semana4.css isn't imported) ---- */
+.bcalc-screen { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; background: var(--bg); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; min-height: 54px; }
+.bcalc-expr { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); word-break: break-all; }
+.bcalc-out { font-weight: 800; font-size: .95rem; color: var(--green-deep); font-variant-numeric: tabular-nums; }
+.bcalc-pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.bcalc-k { cursor: pointer; border: 2px solid var(--line); background: var(--surface); font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--ink); padding: 15px 0; border-radius: 11px; transition: transform .1s ease, background .12s ease, border-color .12s ease; }
+.bcalc-k:hover { transform: translateY(-1px); border-color: var(--green); }
+.bcalc-k.util { font-size: 1rem; color: var(--ink-soft); background: var(--bg); }
+.bcalc-k.op { color: var(--green-deep); background: rgba(22, 176, 116, .08); }
+.bcalc-k.eq { background: var(--forest); color: #fff; border-color: var(--forest); }
+.bcalc-k.eq:hover { background: var(--green-deep); }
+
+/* ---- Portfolio builder ---- */
+.pf-horizon { display: flex; gap: 8px; flex-wrap: wrap; }
+.pf-horizon button { flex: 1; min-width: 120px; cursor: pointer; border: 2px solid var(--line); background: var(--bg); font-family: var(--font-body); font-weight: 700; font-size: .84rem; color: var(--ink-soft); padding: 11px 10px; border-radius: 11px; }
+.pf-horizon button.on { background: var(--forest); border-color: var(--forest); color: #fff; }
+
+.pf-grid { display: grid; grid-template-columns: 1fr 220px; gap: 20px; align-items: center; }
+.pf-rows { display: flex; flex-direction: column; gap: 10px; }
+.pf-row { display: grid; grid-template-columns: 16px 1fr 92px 1fr; gap: 10px; align-items: center; }
+.pf-dot { width: 14px; height: 14px; border-radius: 4px; }
+.pf-row-label { display: flex; flex-direction: column; }
+.pf-row-label b { font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: var(--ink); }
+.pf-row-label span { font-size: .76rem; color: var(--muted); font-weight: 600; }
+.pf-pct { display: flex; align-items: center; gap: 4px; }
+.pf-pct input { width: 62px; font-family: var(--font-body); font-size: .95rem; font-weight: 700; color: var(--ink); background: var(--bg); border: 2px solid var(--line); border-radius: 9px; padding: 8px; text-align: right; font-variant-numeric: tabular-nums; }
+.pf-pct input:focus { outline: none; border-color: var(--green); background: #fff; }
+.pf-pct span { font-weight: 800; color: var(--ink-soft); }
+.pf-amt { font-weight: 700; font-size: .84rem; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
+
+.pf-donut-wrap { display: grid; place-items: center; }
+.pf-donut { width: 180px; height: 180px; border-radius: 50%; display: grid; place-items: center; transition: background .3s ease; }
+.pf-donut-hole { width: 116px; height: 116px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line); }
+.pf-donut-hole b { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; line-height: 1; }
+.pf-donut-hole b.ok { color: var(--green-deep); }
+.pf-donut-hole b.bad { color: var(--coral); }
+.pf-donut-hole span { font-size: .74rem; font-weight: 700; color: var(--muted); }
+@media (max-width: 620px) { .pf-grid { grid-template-columns: 1fr; } .pf-donut-wrap { order: -1; } .pf-row { grid-template-columns: 16px 1fr 84px 90px; } }
+
+/* ---- Growth compare (radar before/after) ---- */
+.radar-before { fill: rgba(245, 178, 62, .16); stroke: var(--gold); stroke-width: 2; stroke-dasharray: 4 3; }
+.grow-badge { background: linear-gradient(150deg, var(--forest-2), var(--forest)); color: #fff; border-radius: 14px; padding: 16px 18px; margin: 10px 0 18px; font-weight: 500; line-height: 1.5; }
+.grow-badge b { color: var(--gold); font-family: var(--font-display); }
+
+/* ---- Feedback stars ---- */
+.fb-stars { display: flex; gap: 6px; }
+.fb-stars button { cursor: pointer; border: none; background: none; padding: 2px; color: var(--line); transition: transform .1s ease, color .12s ease; }
+.fb-stars button:hover { transform: scale(1.12); }
+.fb-stars button.on { color: var(--gold); }
