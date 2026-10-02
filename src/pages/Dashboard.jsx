@@ -4,7 +4,7 @@ import {
   Compass, Landmark, Hourglass, CreditCard, TrendingUp, Flag,
   Rocket, Lock, Check, Flame, Coins, CalendarCheck, Zap, LogOut,
   Menu, X, RefreshCw, Lightbulb, ChevronLeft, ChevronRight,
-  LayoutDashboard, Sun, Plane, CalendarDays, Trophy, Award, Download,
+  LayoutDashboard, Sun, Plane, CalendarDays, Trophy, Award, Download, ShieldCheck,
 } from "lucide-react";
 import "../Styles/dashboard.css";
 import { Semana1 } from "./Semana1";
@@ -13,6 +13,7 @@ import { Semana3 } from "./Semana3";
 import { Semana4 } from "./Semana4";
 import { Semana5 } from "./Semana5";
 import { Semana6 } from "./Semana6";
+import { AdminPanel } from "./AdminPanel";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -713,6 +714,7 @@ export const Dashboard = ({ onLogout }) => {
   const weekStates = WEEKS.map((w) => ({ n: w.n, done: isCompleted(getWeekRow(w.n)), unlocked: isWeekUnlocked(w.n) }));
   const firstName = userData.Nombre_Completo?.split(" ")[0] || "there";
   const role = capitalize(String(userData.Rol || "Student"));
+  const isAdmin = String(userData.Rol || "").toUpperCase() === "ADMIN";
 
   return (
     <div className={`fin-dash ${navOpen ? "nav-open" : ""}`}>
@@ -754,6 +756,16 @@ export const Dashboard = ({ onLogout }) => {
           <span className="nav-ico"><LayoutDashboard size={18} strokeWidth={2.2} /></span>
           Overview
         </button>
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "admin" ? "active" : ""}`}
+            onClick={() => { setActiveTab("admin"); setNavOpen(false); }}
+            aria-current={activeTab === "admin" ? "page" : undefined}
+          >
+            <span className="nav-ico"><ShieldCheck size={18} strokeWidth={2.2} /></span>
+            Admin
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -879,6 +891,10 @@ export const Dashboard = ({ onLogout }) => {
             existingRow={store.semanas?.[6]}
             onBack={() => setActiveTab("overview")}
           />
+        )}
+        {/* ===== ADMIN ===== */}
+        {activeTab === "admin" && isAdmin && (
+          <AdminPanel userData={userData} API_URL={API_URL} />
         )}
       </main>
     </div>
