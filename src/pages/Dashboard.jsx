@@ -14,6 +14,7 @@ import { Semana4 } from "./Semana4";
 import { Semana5 } from "./Semana5";
 import { Semana6 } from "./Semana6";
 import { AdminPanel } from "./AdminPanel";
+import { Periodo1 } from "./Periodo1";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -626,7 +627,7 @@ export const Dashboard = ({ onLogout }) => {
 
   /* ---------- métricas derivadas ---------- */
   const stats = useMemo(() => {
-    const rows = Object.values(store.semanas || {});
+    const rows = Object.values(store.semanas || {}).filter((r) => WEEKS.some((w) => String(w.n) === String(r.Semana)));
     // Sumamos los 3 componentes en vez de depender de "Puntos_Total": ese campo
     // no existe en la fila optimista que arma Semana1, así que si lo usamos aquí
     // el XP "cae a 0" un instante hasta el próximo refetch real.
@@ -766,6 +767,16 @@ export const Dashboard = ({ onLogout }) => {
             Admin
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "period1" ? "active" : ""}`}
+            onClick={() => { setActiveTab("period1"); setNavOpen(false); loadSemanaFull("P1"); }}
+            aria-current={activeTab === "period1" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Flag size={18} strokeWidth={2.2} /></span>
+            Periodo 1 · Grado 6
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -895,6 +906,16 @@ export const Dashboard = ({ onLogout }) => {
         {/* ===== ADMIN ===== */}
         {activeTab === "admin" && isAdmin && (
           <AdminPanel userData={userData} API_URL={API_URL} />
+        )}
+
+        {/* ===== PERIODO 1 · GRADO 6 (solo admin, vista de prueba) ===== */}
+        {activeTab === "period1" && isAdmin && (
+          <Periodo1
+            userData={userData}
+            API_URL={API_URL}
+            existingRow={store.semanas?.["P1"]}
+            onBack={() => setActiveTab("overview")}
+          />
         )}
       </main>
     </div>
