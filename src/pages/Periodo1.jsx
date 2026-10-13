@@ -26,11 +26,11 @@ const VIDEO_MONEY = "https://res.cloudinary.com/y9r84vgz/video/upload/v179190597
 const VIDEO_WORLD = "https://res.cloudinary.com/y9r84vgz/video/upload/v1791908442/videoplayback_5.mp4";
 
 const IMG_RIVERTOWN = [
-  "https://i.pinimg.com/736x/a7/9e/be/a79ebe8e6c84f408b8f1eeab72cc6b1f.jpg",
   "https://i.pinimg.com/736x/d8/78/65/d878658d8b65897c5cf6bd30d228dcce.jpg",
+  "https://i.pinimg.com/736x/a7/9e/be/a79ebe8e6c84f408b8f1eeab72cc6b1f.jpg",
   "https://i.pinimg.com/736x/c7/c8/a6/c7c8a64de3d3c15057330dcbaa27b17c.jpg",
-  "https://i.pinimg.com/736x/aa/1f/4e/aa1f4e881a24c5b6bcbf245f493fec50.jpg",
   "https://i.pinimg.com/736x/39/6d/e7/396de7476c682178c4238346ba2cda18.jpg",
+  "https://i.pinimg.com/736x/aa/1f/4e/aa1f4e881a24c5b6bcbf245f493fec50.jpg",
   "https://i.pinimg.com/736x/37/20/14/3720148c0196a1237722f364b54c90e7.jpg",
 ];
 const IMG_COLOMBIA = [
