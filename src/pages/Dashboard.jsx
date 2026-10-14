@@ -15,6 +15,9 @@ import { Semana5 } from "./Semana5";
 import { Semana6 } from "./Semana6";
 import { AdminPanel } from "./AdminPanel";
 import { Periodo1 } from "./Periodo1";
+import { Periodo2 } from "./Periodo2";
+import { Periodo3 } from "./Periodo3";
+import { Periodo4 } from "./Periodo4";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -777,6 +780,36 @@ export const Dashboard = ({ onLogout }) => {
             Periodo 1 · Grado 6
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "period2" ? "active" : ""}`}
+            onClick={() => { setActiveTab("period2"); setNavOpen(false); loadSemanaFull("P2"); }}
+            aria-current={activeTab === "period2" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Flag size={18} strokeWidth={2.2} /></span>
+            Periodo 2 · Grado 6
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "period3" ? "active" : ""}`}
+            onClick={() => { setActiveTab("period3"); setNavOpen(false); loadSemanaFull("P3"); }}
+            aria-current={activeTab === "period3" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Flag size={18} strokeWidth={2.2} /></span>
+            Periodo 3 · Grado 6
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "period4" ? "active" : ""}`}
+            onClick={() => { setActiveTab("period4"); setNavOpen(false); loadSemanaFull("P4"); loadSemanaFull("P3"); loadSemanaFull("P1"); }}
+            aria-current={activeTab === "period4" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Flag size={18} strokeWidth={2.2} /></span>
+            Periodo 4 · Grado 6
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -906,6 +939,21 @@ export const Dashboard = ({ onLogout }) => {
         {/* ===== ADMIN ===== */}
         {activeTab === "admin" && isAdmin && (
           <AdminPanel userData={userData} API_URL={API_URL} />
+        )}
+
+        {/* ===== PERIODO 4 · GRADO 6 (solo admin, vista de prueba) ===== */}
+        {activeTab === "period4" && isAdmin && (
+          <Periodo4 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["P4"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 3 · GRADO 6 (solo admin, vista de prueba) ===== */}
+        {activeTab === "period3" && isAdmin && (
+          <Periodo3 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["P3"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 2 · GRADO 6 (solo admin, vista de prueba) ===== */}
+        {activeTab === "period2" && isAdmin && (
+          <Periodo2 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["P2"]} onBack={() => setActiveTab("overview")} />
         )}
 
         {/* ===== PERIODO 1 · GRADO 6 (solo admin, vista de prueba) ===== */}
