@@ -18,6 +18,8 @@ import { Periodo1 } from "./Periodo1";
 import { Periodo2 } from "./Periodo2";
 import { Periodo3 } from "./Periodo3";
 import { Periodo4 } from "./Periodo4";
+import { Periodo1G7 } from "./Periodo1G7";
+import { Periodo2G7 } from "./Periodo2G7";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -810,6 +812,26 @@ export const Dashboard = ({ onLogout }) => {
             Periodo 4 · Grado 6
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g7p1" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g7p1"); setNavOpen(false); loadSemanaFull("7P1"); }}
+            aria-current={activeTab === "g7p1" ? "page" : undefined}
+          >
+            <span className="nav-ico"><TrendingUp size={18} strokeWidth={2.2} /></span>
+            Periodo 1 · Grado 7
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g7p2" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g7p2"); setNavOpen(false); loadSemanaFull("7P2"); }}
+            aria-current={activeTab === "g7p2" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Trophy size={18} strokeWidth={2.2} /></span>
+            Periodo 2 · Grado 7
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -939,6 +961,16 @@ export const Dashboard = ({ onLogout }) => {
         {/* ===== ADMIN ===== */}
         {activeTab === "admin" && isAdmin && (
           <AdminPanel userData={userData} API_URL={API_URL} />
+        )}
+
+        {/* ===== PERIODO 2 · GRADO 7 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g7p2" && isAdmin && (
+          <Periodo2G7 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["7P2"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 1 · GRADO 7 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g7p1" && isAdmin && (
+          <Periodo1G7 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["7P1"]} onBack={() => setActiveTab("overview")} />
         )}
 
         {/* ===== PERIODO 4 · GRADO 6 (solo admin, vista de prueba) ===== */}
