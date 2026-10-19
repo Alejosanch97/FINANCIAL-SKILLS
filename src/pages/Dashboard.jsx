@@ -722,7 +722,9 @@ export const Dashboard = ({ onLogout }) => {
   const weekStates = WEEKS.map((w) => ({ n: w.n, done: isCompleted(getWeekRow(w.n)), unlocked: isWeekUnlocked(w.n) }));
   const firstName = userData.Nombre_Completo?.split(" ")[0] || "there";
   const role = capitalize(String(userData.Rol || "Student"));
-  const isAdmin = String(userData.Rol || "").toUpperCase() === "ADMIN";
+  const rolUpper = String(userData.Rol || "").trim().toUpperCase();
+  const isAdmin2 = rolUpper === "ADMIN2";                    // solo ADMIN2 ve el panel Admin
+  const isAdmin = rolUpper === "ADMIN" || isAdmin2;          // ADMIN y ADMIN2 ven los periodos
 
   return (
     <div className={`fin-dash ${navOpen ? "nav-open" : ""}`}>
@@ -764,7 +766,7 @@ export const Dashboard = ({ onLogout }) => {
           <span className="nav-ico"><LayoutDashboard size={18} strokeWidth={2.2} /></span>
           Overview
         </button>
-        {isAdmin && (
+        {isAdmin2 && (
           <button
             className={`fin-nav-btn ${activeTab === "admin" ? "active" : ""}`}
             onClick={() => { setActiveTab("admin"); setNavOpen(false); }}
@@ -981,7 +983,7 @@ export const Dashboard = ({ onLogout }) => {
           />
         )}
         {/* ===== ADMIN ===== */}
-        {activeTab === "admin" && isAdmin && (
+        {activeTab === "admin" && isAdmin2 && (
           <AdminPanel userData={userData} API_URL={API_URL} />
         )}
 

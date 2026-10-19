@@ -1441,7 +1441,7 @@ function LifeRoadmap({ resp, existing, onSave, onExit }) {
   const [stage, setStage] = useState(0);
   const [tab, setTab] = useState(18);
   const [goals, setGoals] = useState(existing?.goals || {});
-  const [plan, setPlan] = useState(existing?.plan || { inc1: 150000, s1: 20, inc2: Math.round(career.s25 * 0.45 / 50000) * 50000, s2: 15, inc3: career.s25, s3: 20, rate: 8 });
+  const [plan, setPlan] = useState(existing?.plan || { inc1: 0, s1: 0, inc2: 0, s2: 0, inc3: 0, s3: 0, rate: 8 });
   const [why, setWhy] = useState(existing?.why || { 18: "", 25: "", 30: "" });
   const [st, finish] = useFinish(onSave);
   const setG = (age, m) => setGoals({ ...goals, [age]: { id: m[0], e: m[1], l: m[2], amount: m[3] } });
@@ -1477,9 +1477,9 @@ function LifeRoadmap({ resp, existing, onSave, onExit }) {
       )}
       {stage === 1 && (
         <>
-          <HowTo>Move the sliders: your <i>income</i> and the <i>% you save</i> in each stage of life. At 18, 25 and 30 you <b>use</b> the money for your goal. Mission: <b>all 3 stations green ✅</b>. Tip: saving a little EARLY helps a lot.</HowTo>
+          <HowTo>Everything starts at <b>$0</b>. Move the sliders: a <i>realistic income</i> for each stage of life and the <i>% you save</i>. At 18, 25 and 30 you <b>use</b> the money for your goal. Mission: <b>all 3 stations green ✅</b>. Tip: saving a little EARLY helps a lot.</HowTo>
           <div className="g74-stages">
-            {[["🎒 13 → 18", "Allowance + small jobs", "inc1", "s1", 50000, 600000, 25000], ["🎓 18 → 25", "Study + part-time job", "inc2", "s2", 400000, 3000000, 50000], [`${career.e} 25 → 30`, `${career.n}`, "inc3", "s3", 1000000, 8000000, 100000]].map(([t, d, ki, ks, mn, mx, stp], k) => (
+            {[["🎒 13 → 18", "Allowance + small jobs · realistic: $100,000–$300,000", "inc1", "s1", 0, 400000, 25000], ["🎓 18 → 25", "Study + part-time job · realistic: $800,000–$1,800,000", "inc2", "s2", 0, 2500000, 50000], [`${career.e} 25 → 30`, `${career.n} · your DOFA salary: ${cop(career.s25)}`, "inc3", "s3", 0, 8000000, 100000]].map(([t, d, ki, ks, mn, mx, stp], k) => (
               <div key={ki} className="g74-stage">
                 <header><b>{t}</b><small>{d}</small><span>Saves {cop(monthly[k])}/month</span></header>
                 {Ctl({ l: "💰 Income / month", v: plan[ki], set: P(ki), mn, mx, stp, fmt: cop })}
@@ -1493,7 +1493,7 @@ function LifeRoadmap({ resp, existing, onSave, onExit }) {
               <div key={a} className={r?.ok ? "ok" : "no"}><em>{goals[a].e}</em><b>Age {a} · {goals[a].l}</b><small>Goal {cop(goals[a].amount)} · I'll have {cop(r?.before || 0)}</small><span>{r?.ok ? "✅ Reached!" : `❌ Short by ${cop(r?.short || 0)}`}</span></div>
             ); })}
           </div>
-          <LineChart labels={ages.filter((a) => a % 2 === 1 || AGES_RT.includes(a)).map(String)} series={[{ name: "My savings", values: ages.filter((a) => a % 2 === 1 || AGES_RT.includes(a)).map((a) => sim.byAge[a] ?? null), color: "#16b074" }]} />
+          <LineChart labels={ages.filter((a) => a % 2 === 1 || AGES_RT.includes(a)).map(String)} series={[{ name: "My savings", values: ages.filter((a) => a % 2 === 1 || AGES_RT.includes(a)).map((a) => sim.byAge[a] ?? null), color: "#16b074" }]} yMin={0} yMax={Math.max(0, ...Object.values(sim.byAge)) > 0 ? undefined : 10000000} />
           <p className="start-tip p1-center">📉 The line drops at 18, 25 and 30 because you <b>use</b> the money for your goals. Money left at 30: <b>{cop(sim.final)}</b>.</p>
           <div className="start-foot"><button className="s1-btn ghost" onClick={() => setStage(0)}>Change goals</button><button className="s1-btn primary big" disabled={!allOk} onClick={() => setStage(2)}>{allOk ? "Write my SMART route" : "Make all 3 stations ✅"} <ChevronRight size={18} /></button></div>
         </>
@@ -1876,7 +1876,7 @@ function GraphWriter({ resp, existing, onSave, onExit }) {
       { tag: "READ THE GRAPH 2", q: "Which strategy ended with the LEAST money?", options: names, correct: lo, explain: `${names[lo]}: ${cop(fin[lo])}.` },
       { tag: "READ THE GRAPH 3", q: "In which year did 🎰 All-in Nico drop most sharply?", options: ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"], correct: worstY, explain: `Year ${worstY + 1}: ${fmtPct(ch[worstY], 0)}.` },
       { tag: "READ THE GRAPH 4", q: "Which line remained the most steady?", options: names, correct: names.findIndex((x) => x.includes("Safe Sam")), explain: "The CDT line rises gradually with no drops." },
-      { tag: "READ THE GRAPH 5", q: "By how many % did YOUR portfolio change in 5 years? (round to a whole number)", answer: Math.round(pctChange(you[0], you[5])), tol: 1, unit: "%", hint: "(final − 10,000,000) ÷ 10,000,000 × 100", explain: `From ${cop(you[0])} to ${cop(you[5])}.` },
+      { tag: "READ THE GRAPH 5", q: "By how many % did YOUR portfolio change in 5 years? (round to a whole number)", visual: <MiniTable head={["😎 My portfolio", "Value"]} rows={[["Start", cop(you[0])], ["Year 5", cop(you[5])], ["Change in $", cop(you[5] - you[0])]]} />, answer: Math.round(pctChange(you[0], you[5])), tol: 1, unit: "%", hint: "(final − 10,000,000) ÷ 10,000,000 × 100", explain: `From ${cop(you[0])} to ${cop(you[5])}.` },
     ];
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const hits = GRAPH_WORDS.filter(([, re]) => re.test(text)).map(([w]) => w);
@@ -2526,12 +2526,12 @@ function GlobalPledge({ resp, existing, onSave, onExit }) {
    BLOQUE 6 · CLASES 39–40 · GROWING A SUSTAINABLE BUSINESS & LEADERSHIP
    ===================================================================== */
 const GROW_MOVES = [
-  { id: "machine", e: "🛠️", n: "A new machine", d: "+40% production capacity, −5% cost per unit.", cost: (b) => b.fixed * 2.5, crowd: false, apply: (g) => ({ ...g, cap: g.cap * 1.4, vc: g.vc * 0.95 }) },
-  { id: "ads", e: "📣", n: "Marketing campaign", d: "+20% customers.", cost: (b) => b.fixed * 0.8, crowd: true, apply: (g) => ({ ...g, demand: g.demand * 1.2 }) },
-  { id: "hire", e: "👩‍🍳", n: "Hire 2 people", d: "+50% capacity, fixed costs +35%, team ❤️ +10.", cost: () => 0, crowd: false, apply: (g, b) => ({ ...g, cap: g.cap * 1.5, fixed: g.fixed + b.fixed * 0.35, morale: Math.min(100, g.morale + 10) }) },
-  { id: "store2", e: "🏪", n: "Second location", d: "+60% customers and capacity, fixed costs +60%.", cost: (b) => b.fixed * 4, crowd: false, once: true, apply: (g, b) => ({ ...g, cap: g.cap * 1.6, demand: g.demand * 1.6, fixed: g.fixed + b.fixed * 0.6 }) },
-  { id: "online", e: "🌐", n: "Online store", d: "+25% customers from all the city.", cost: (b) => b.fixed * 1.2, crowd: true, once: true, apply: (g) => ({ ...g, demand: g.demand * 1.25 }) },
-  { id: "eco", e: "🌱", n: "Eco packaging", d: "Cost per unit +4%, planet 🌍 +25, +6% customers.", cost: (b) => b.fixed * 0.5, crowd: true, once: true, apply: (g) => ({ ...g, vc: g.vc * 1.04, eco: Math.min(100, g.eco + 25), demand: g.demand * 1.06 }) },
+  { id: "machine", kind: "cap", e: "🛠️", n: "A new machine", d: "+40% production capacity, −5% cost per unit.", cost: (b) => b.fixed * 2.5, crowd: false, apply: (g) => ({ ...g, cap: g.cap * 1.4, vc: g.vc * 0.95 }) },
+  { id: "ads", kind: "dem", e: "📣", n: "Marketing campaign", d: "+20% customers.", cost: (b) => b.fixed * 0.8, crowd: true, apply: (g) => ({ ...g, demand: g.demand * 1.2 }) },
+  { id: "hire", kind: "cap", e: "👩‍🍳", n: "Hire 2 people", d: "+50% capacity, fixed costs +35%, team ❤️ +10.", cost: () => 0, crowd: false, apply: (g, b) => ({ ...g, cap: g.cap * 1.5, fixed: g.fixed + b.fixed * 0.35, morale: Math.min(100, g.morale + 10) }) },
+  { id: "store2", kind: "both", e: "🏪", n: "Second location", d: "+60% customers and capacity, fixed costs +60%.", cost: (b) => b.fixed * 4, crowd: false, once: true, apply: (g, b) => ({ ...g, cap: g.cap * 1.6, demand: g.demand * 1.6, fixed: g.fixed + b.fixed * 0.6 }) },
+  { id: "online", kind: "dem", e: "🌐", n: "Online store", d: "+25% customers from all the city.", cost: (b) => b.fixed * 1.2, crowd: true, once: true, apply: (g) => ({ ...g, demand: g.demand * 1.25 }) },
+  { id: "eco", kind: "dem", e: "🌱", n: "Eco packaging", d: "Cost per unit +4%, planet 🌍 +25, +6% customers.", cost: (b) => b.fixed * 0.5, crowd: true, once: true, apply: (g) => ({ ...g, vc: g.vc * 1.04, eco: Math.min(100, g.eco + 25), demand: g.demand * 1.06 }) },
 ];
 const FUNDS4 = [
   { id: "cash", e: "💵", n: "My cash", d: "Free, but your cushion gets smaller." },
@@ -2557,6 +2557,7 @@ function scaleStart(b, p3) {
 }
 function run2(g0) {
   let g = { ...g0, debts: g0.debts.map((d) => ({ ...d })) }; let prof2 = 0;
+  const rep = { sold: 0, rev: 0, vcost: 0, fixed: 0, inst: 0, late: 0, inPrev: g0.pendingIn || 0, cashBefore: g0.cash, dem: 0, cap: g0.cap };
   for (let k = 0; k < 2; k++) {
     const dem = g.demand * (g.boost || 1);
     const sold = Math.min(dem, g.cap) * (g.morale < 40 ? 0.88 : 1);
@@ -2565,6 +2566,7 @@ function run2(g0) {
     const late = extra * g.price * (1 - (g.advance || 0));
     const inst = g.debts.reduce((a, d) => a + d.inst, 0);
     const profit = sold * (g.price - g.vc) - g.fixed;
+    rep.sold += sold; rep.rev += revNow; rep.vcost += sold * g.vc; rep.fixed += g.fixed; rep.inst += inst; rep.late += late; rep.dem += dem;
     g.cash = g.cash + revNow - sold * g.vc - g.fixed - inst + (k === 0 ? g.pendingIn : 0);
     g.pendingIn = k === 0 ? 0 : g.pendingIn;
     g.pendingIn += late;
@@ -2573,7 +2575,7 @@ function run2(g0) {
     g.hist = [...g.hist, { m: g.m, cash: Math.round(g.cash), profit: Math.round(profit) }];
     if (g.cash < 0 && !g.broke) g.broke = { m: g.m, why: inst > profit ? "Your debt installments were bigger than your profit." : late > 0 ? "Customers paid late and you ran out of cash." : "Your costs were bigger than your cash." };
   }
-  return { ...g, boost: 1, advance: 0, lastProfit: prof2 };
+  return { ...g, boost: 1, advance: 0, lastProfit: prof2, report: { ...rep, cashAfter: g.cash } };
 }
 
 function ScaleUp({ resp, existing, onSave, onExit }) {
@@ -2582,7 +2584,6 @@ function ScaleUp({ resp, existing, onSave, onExit }) {
   const [g, setG] = useState(() => scaleStart(b, p3));
   const [phase, setPhase] = useState("intro"); // intro · event · move · result · final
   const [evs] = useState(() => { const pool = shuffleArr(SCALE_EVENTS.filter((e) => e.id !== "tax" && e.id !== "award")); return [pool[0], pool[1], SCALE_EVENTS.find((e) => e.id === "award"), pool[2], SCALE_EVENTS.find((e) => e.id === "tax"), pool[3]]; });
-  const [offer, setOffer] = useState([]);
   const [move, setMove] = useState(null);
   const [fund, setFund] = useState(null);
   const [note, setNote] = useState("");
@@ -2607,7 +2608,9 @@ function ScaleUp({ resp, existing, onSave, onExit }) {
     return true;
   };
   const fundWhy = (f) => (f === "cash" ? "Not enough cash." : f === "bank" ? "🏦 The bank says NO: installments would be more than 40% of your profit." : f === "investor" ? "You would lose control (less than 51%)." : f === "crowd" ? "Fans only pre-pay for products they can see (ads, online, eco)." : "");
-  const newTurn = (gg) => { setOffer(shuffleArr(GROW_MOVES.filter((x) => !(x.once && gg.used[x.id]))).slice(0, 3).map((x) => x.id)); setMove(null); setFund(null); };
+  const newTurn = () => { setMove(null); setFund(null); };
+  const usedAt = (id) => g.moves.find((x) => x.id === id);
+  const wantNow = Math.round(g.demand), canNow = Math.round(g.cap);
   const chooseEvent = (fn) => { const gg = fn(g, b); setNote(gg.note || ""); const rest = { ...gg }; delete rest.note; setG(rest); newTurn(rest); setPhase("move"); };
   const runTurn = () => {
     let gg = { ...g, used: { ...g.used } };
@@ -2618,7 +2621,7 @@ function ScaleUp({ resp, existing, onSave, onExit }) {
       if (fund === "card") gg.debts = [...gg.debts, { n: `💳 ${mv.n}`, inst: cardInst, left: 6 }];
       if (fund === "investor") gg.own -= eq;
       if (fund === "crowd") gg.debts = [...gg.debts, { n: `🌐 Rewards · ${mv.n}`, inst: (cost * 0.4) / 2, left: 2 }];
-      gg.moves = [...gg.moves, { m: g.m, move: mv.n, e: mv.e, fund: FUNDS4.find((f) => f.id === fund)?.n || "—", cost }];
+      gg.moves = [...gg.moves, { m: g.m, id: mv.id, move: mv.n, e: mv.e, fund: FUNDS4.find((f) => f.id === fund)?.n || "—", cost }];
     } else gg.moves = [...gg.moves, { m: g.m, move: "Kept the cash", e: "💤", fund: "—", cost: 0 }];
     const out = run2(gg);
     setG(out); setPhase(out.broke ? "broke" : "result");
@@ -2644,7 +2647,15 @@ function ScaleUp({ resp, existing, onSave, onExit }) {
       {phase === "intro" && (
         <>
           <div className="g73-startcard"><em>{b.e}</em><div><b>{b.name}</b><small>Price {cop(b.price)} · cost {cop(b.varCost)} per {b.unit} · fixed {cop(b.fixed)}/month · ≈{b.units} {b.unit}s a month</small></div></div>
-          <HowTo>You play <b>6 turns of 2 months</b>. Each turn: 1) something happens, 2) you choose a growth move and how to <i>finance</i> it (cash, bank, card, investor, crowdfunding). Your customers grow 3% a month — but your <b>capacity</b> is limited! Mission: reach month 12 with <b>cash above $0</b>. The bigger your company and your % of it, the better.</HowTo>
+          <HowTo>You play <b>6 turns of 2 months</b>. Each turn: 1) a piece of news happens and you react, 2) you choose <b>one growth move</b> (each move can be used <i>only once</i>) and how to <i>finance</i> it. Mission: reach month 12 with <b>cash above $0</b> and a bigger company.</HowTo>
+          <div className="g74-words">
+            <div><b>👥 Demand</b><span>How many {b.unit}s customers WANT each month. It grows 3% a month by itself.</span></div>
+            <div><b>🏭 Capacity</b><span>How many {b.unit}s you CAN make each month. You can't sell more than this!</span></div>
+            <div><b>💵 Cash</b><span>The real money in your account. If it goes below $0, you go broke.</span></div>
+            <div><b>💳 Installment</b><span>What you pay every month for a loan or card. It leaves your cash even in bad months.</span></div>
+            <div><b>🍰 Equity</b><span>The % of the company you own. Investors take a part of it.</span></div>
+            <div><b>📈 Profit</b><span>Sales − cost of each {b.unit} − fixed costs (rent, salaries).</span></div>
+          </div>
           {g.debts.length > 0 && <div className="g74-remind"><b>📒 From Period 3:</b><span>Your bank loan installment {cop(g.debts[0].inst)}/month continues.</span>{g.own < 100 && <span>You own {g.own}% (investors).</span>}</div>}
           {dash}
           <div className="start-foot"><button className="s1-btn primary big" onClick={() => setPhase("event")}>Start month 1 <ChevronRight size={18} /></button></div>
@@ -2661,11 +2672,21 @@ function ScaleUp({ resp, existing, onSave, onExit }) {
         <>
           {dash}
           {note && <div className="p1-hint">{note}</div>}
+          <div className="g74-situ">
+            <b>🔍 My situation this month</b>
+            <div className="g74-situ-bars">
+              <span>👥 Customers want <b>{wantNow} {b.unit}s</b></span><i><s style={{ width: `${Math.min(100, (wantNow / Math.max(wantNow, canNow)) * 100)}%` }} /></i>
+              <span>🏭 I can make <b>{canNow} {b.unit}s</b></span><i><s className="cap" style={{ width: `${Math.min(100, (canNow / Math.max(wantNow, canNow)) * 100)}%` }} /></i>
+            </div>
+            <p>{wantNow > canNow ? `⚠️ You are LOSING ${wantNow - canNow} sales a month: customers want more than you can make. A 🏭 capacity move (machine, hire, second location) helps most.` : `✅ You can make more than you sell (${canNow - wantNow} ${b.unit}s free). A 👥 customer move (ads, online store, eco packaging) helps most.`}</p>
+          </div>
           <div className="start-block">
-            <h3><span className="step-n">1</span> Choose a growth move</h3>
+            <h3><span className="step-n">1</span> Choose a growth move <small className="g74-was">· each move only once</small></h3>
             <div className="g74-moves">
-              {offer.map((id) => { const x = GROW_MOVES.find((y) => y.id === id); const c = Math.round(x.cost(b)); return (
-                <button key={id} type="button" className={`g74-move ${move === id ? "on" : ""}`} onClick={() => { setMove(id); setFund(c === 0 ? "cash" : null); }}><em>{x.e}</em><b>{x.n}</b><small>{x.d}</small><span>{c ? cop(c) : "No upfront cost"}</span></button>
+              {GROW_MOVES.map((x) => { const c = Math.round(x.cost(b)); const u = usedAt(x.id); return (
+                <button key={x.id} type="button" disabled={!!u} className={`g74-move ${move === x.id ? "on" : ""} ${u ? "used" : ""}`} onClick={() => { setMove(x.id); setFund(c === 0 ? "cash" : null); }}>
+                  <i className={`g74-kind ${x.kind}`}>{x.kind === "cap" ? "🏭 More capacity" : x.kind === "dem" ? "👥 More customers" : "🏭 + 👥 Both"}</i>
+                  <em>{x.e}</em><b>{x.n}</b><small>{x.d}</small><span>{u ? `✅ Done in months ${u.m + 1}–${u.m + 2}` : c ? cop(c) : "No upfront cost (but fixed costs go up)"}</span></button>
               ); })}
               <button type="button" className={`g74-move ${move === null && fund === "none" ? "on" : ""}`} onClick={() => { setMove(null); setFund("none"); }}><em>💤</em><b>Keep my cash</b><small>No growth this turn. Safer, but slower.</small><span>$0</span></button>
             </div>
@@ -2690,6 +2711,19 @@ function ScaleUp({ resp, existing, onSave, onExit }) {
       {phase === "result" && (
         <>
           {dash}
+          {g.report && (
+            <div className="g74-receipt">
+              <b>🧾 What happened in months {g.m - 1}–{g.m}</b><small className="g74-rnote">Totals of the 2 months together</small>
+              <div><span>👥 Customers wanted</span><i>{Math.round(g.report.dem)} {b.unit}s</i></div>
+              <div><span>🏭 You sold (max = capacity)</span><i>{Math.round(g.report.sold)} {b.unit}s{g.report.dem > g.report.sold + 1 ? ` · lost ${Math.round(g.report.dem - g.report.sold)}` : ""}</i></div>
+              <div className="pos"><span>💰 Money from sales</span><i>+{cop(g.report.rev)}</i></div>
+              {g.report.inPrev > 0 && <div className="pos"><span>⏳ Late payment received</span><i>+{cop(g.report.inPrev)}</i></div>}
+              <div className="neg"><span>🧁 Cost of each {b.unit}</span><i>−{cop(g.report.vcost)}</i></div>
+              <div className="neg"><span>🏠 Fixed costs</span><i>−{cop(g.report.fixed)}</i></div>
+              {g.report.inst > 0 && <div className="neg"><span>💳 Loan / card installments</span><i>−{cop(g.report.inst)}</i></div>}
+              <div className="tot"><span>💵 Cash: {cop(g.report.cashBefore)} → </span><i>{cop(g.report.cashAfter)}</i></div>
+            </div>
+          )}
           {chart}
           <ChartLegend series={[{ name: "Cash", color: "#16b074" }, { name: "Monthly profit", color: "#f5b23e" }]} />
           {g.pendingIn > 0 && <p className="start-tip p1-center">⏳ The supermarket still owes you {cop(g.pendingIn)} (it arrives next month).</p>}
