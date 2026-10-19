@@ -919,6 +919,7 @@ const CLIENTS = [
     money: "$40,000 allowance + about $60,000 from her bracelets every month",
     goal: "New headphones · $240,000 in 6 months",
     problem: "She keeps all her money in a piggy bank under her bed.",
+    detail: "She spends money too easily when she sees it. She saves only small amounts and wants to see her progress.",
     short: "Headphones $240,000",
   },
   {
@@ -926,6 +927,7 @@ const CLIENTS = [
     money: "$4,200,000 family income every month",
     goal: "An emergency fund + money to repair the roof",
     problem: "They pay almost everything in cash. Grandma has never had a bank account.",
+    detail: "Only about $300,000 is free each month. The roof leaks and the rainy season starts in 2 months. Grandma lives 40 minutes from a bank branch.",
     short: "Emergency fund + roof",
   },
   {
@@ -933,6 +935,7 @@ const CLIENTS = [
     money: "She sells desserts on Instagram and gets paid with a digital wallet",
     goal: "An industrial oven · $3,000,000",
     problem: "She mixes her business money with her personal money.",
+    detail: "She has more orders than she can bake. She pays suppliers about 20 times a month, and some customers send fake payment screenshots.",
     short: "Industrial oven $3,000,000",
   },
 ];
@@ -1007,6 +1010,7 @@ function ClientCard({ c, small }) {
           <li><span>💰</span>{c.money}</li>
           <li><span>🎯</span>{c.goal}</li>
           <li><span>⚠️</span>{c.problem}</li>
+          <li className="g72-detail"><span>📌</span>{c.detail}</li>
         </ul>
       )}
     </div>
@@ -1017,6 +1021,13 @@ function ClientCard({ c, small }) {
    spec = { n, label, question, clients?, options:[{id,e,l,fit:{sofia,rodriguez,camila}|number,note,warn}],
             multi?, extra?: { q, options:[{id,l}] }, frame } */
 const fitOf = (o, cid) => (typeof o.fit === "number" ? o.fit : o.fit?.[cid] ?? 1);
+// 1 opción: su fit. Varias: 0 si alguna es peligrosa; 2 si casi todas son específicas para ese cliente; si no, 1.
+const groupFit = (opts, cid, need) => {
+  const f = opts.map((o) => fitOf(o, cid));
+  if (need === 1) return f[0];
+  if (f.includes(0)) return 0;
+  return f.filter((x) => x === 2).length >= need - 1 ? 2 : 1;
+};
 function AdvisorNote({ spec, coins = 15, existing, onSave, onExit }) {
   const ids = spec.clients || CLIENTS.map((c) => c.id);
   const [notes, setNotes] = useState(() => Object.fromEntries(Object.entries(existing?.notes || {}).map(([k, x]) => [k, { picks: x.ids || [], why: x.why || "", extra: x.extraId || "" }])));
@@ -1025,8 +1036,9 @@ function AdvisorNote({ spec, coins = 15, existing, onSave, onExit }) {
   const c = clientById(cur);
   const n = notes[cur] || { picks: [], why: "", extra: "" };
   const need = spec.multi || 1;
+  const opts = useMemo(() => shuffleArr(spec.options), [spec]);
   const picksObj = n.picks.map((id) => spec.options.find((o) => o.id === id)).filter(Boolean);
-  const fit = picksObj.length === need ? Math.min(...picksObj.map((o) => fitOf(o, cur))) : null;
+  const fit = picksObj.length === need ? groupFit(picksObj, cur, need) : null;
   const clientOk = (cid) => { const x = notes[cid]; return x && x.picks.length === need && countWords(x.why) >= 4 && (!spec.extra || x.extra); };
   const allOk = ids.every(clientOk);
   const set = (patch) => setNotes({ ...notes, [cur]: { ...n, ...patch } });
@@ -1041,7 +1053,7 @@ function AdvisorNote({ spec, coins = 15, existing, onSave, onExit }) {
     ids.forEach((cid) => {
       const x = notes[cid];
       const po = x.picks.map((id) => spec.options.find((o) => o.id === id));
-      out[cid] = { picks: po.map((o) => o.l), ids: x.picks, extraId: x.extra || "", why: x.why, extra: x.extra ? spec.extra.options.find((o) => o.id === x.extra)?.l : "", fit: Math.min(...po.map((o) => fitOf(o, cid))) };
+      out[cid] = { picks: po.map((o) => o.l), ids: x.picks, extraId: x.extra || "", why: x.why, extra: x.extra ? spec.extra.options.find((o) => o.id === x.extra)?.l : "", fit: groupFit(po, cid, need) };
     });
     const trust = ids.reduce((a, cid) => a + out[cid].fit, 0);
     finish(coins + trust, { notes: out });
@@ -1065,7 +1077,7 @@ function AdvisorNote({ spec, coins = 15, existing, onSave, onExit }) {
         <h3><span className="step-n">1</span> {typeof spec.question === "function" ? spec.question(c) : spec.question}</h3>
         {need > 1 && <p className="start-tip">Choose exactly {need}. ({n.picks.length}/{need})</p>}
         <div className="g72-opts">
-          {spec.options.map((o) => (
+          {opts.map((o) => (
             <button key={o.id} type="button" className={`g72-opt ${n.picks.includes(o.id) ? "on" : ""}`} onClick={() => toggle(o.id)}>
               <em>{o.e}</em><span>{o.l}</span>
             </button>
@@ -1074,8 +1086,9 @@ function AdvisorNote({ spec, coins = 15, existing, onSave, onExit }) {
         {fit != null && (
           <div className={`g72-conseq f${fit}`}>
             <b>{fit === 2 ? "✅ Great fit for " + c.name.split(" ")[0] + "!" : fit === 1 ? "🙂 It could work…" : "⚠️ Consequence card"}</b>
-            <span>{picksObj.map((o) => (fit === 0 && fitOf(o, cur) === 0 ? o.warn : o.note)).filter(Boolean).join(" ")}</span>
+            <span>{(fit === 0 ? picksObj.filter((o) => fitOf(o, cur) === 0).map((o) => o.warnFor?.[cur] || o.warn) : picksObj.map((o) => o.noteFor?.[cur] || o.note)).filter(Boolean).join(" ")}</span>
             {fit === 0 && <small>You can change your recommendation. A good advisor reviews the decision.</small>}
+            {fit === 1 && <small>💡 Read the 📌 detail of {c.name.startsWith("The") ? "the family" : c.name} again. Is there a more specific option?</small>}
           </div>
         )}
       </div>
@@ -1091,7 +1104,7 @@ function AdvisorNote({ spec, coins = 15, existing, onSave, onExit }) {
         <h3><span className="step-n">{spec.extra ? 3 : 2}</span> Explain it to {c.name.split(" ")[0] === "The" ? "the family" : c.name}</h3>
         <div className="p3-sentence edit">
           <span>{spec.frame || "I recommend"} <b>{pickLabel || "…"}</b> because</span>
-          <input className="start-input" value={n.why} onChange={(e) => set({ why: e.target.value })} placeholder={spec.ph || "it fits the goal and it is safe."} />
+          <input className="start-input" value={n.why} onChange={(e) => set({ why: e.target.value })} placeholder="Write your reason here…" />
         </div>
         <p className={`word-count ${countWords(n.why) >= 4 ? "ok" : ""}`}>{countWords(n.why) >= 4 ? "✓ Clear reason" : "Write at least 4 words."}</p>
       </div>
@@ -1355,8 +1368,8 @@ function MeetClients({ studentName, existing, onSave, onExit }) {
             return (
               <div key={c.id} className="start-block">
                 <ClientCard c={c} small />
-                <div className="p3-sentence edit"><span>{pr} problem is</span><input className="start-input" value={d.p} onChange={(e) => upd("p", e.target.value)} placeholder={c.id === "sofia" ? "..." : c.id === "rodriguez" ? "......" : "..."} /></div>
-                <div className="p3-sentence edit"><span>{pr} goal is</span><input className="start-input" value={d.g} onChange={(e) => upd("g", e.target.value)} placeholder={c.id === "sofia" ? "..." : c.id === "rodriguez" ? "....." : "...."} /></div>
+                <div className="p3-sentence edit"><span>{pr} problem is</span><input className="start-input" value={d.p} onChange={(e) => upd("p", e.target.value)} placeholder="Write the problem with your own words…" /></div>
+                <div className="p3-sentence edit"><span>{pr} goal is</span><input className="start-input" value={d.g} onChange={(e) => upd("g", e.target.value)} placeholder="Write the goal with your own words…" /></div>
               </div>
             );
           })}
@@ -1373,9 +1386,10 @@ function MeetClients({ studentName, existing, onSave, onExit }) {
 const READ_C12 = [
   { sub: "Three people, three different needs" },
   { p: "The Rodríguez family has an important goal. They want to repair the roof of their house and save money for emergencies. Their income is $4,200,000 COP per month, but they must pay for food, transport, housing, education, and other needs." },
-  { p: "The family usually pays in cash. Their grandmother has never had a bank account. She is interested in learning, but she wants a service that is easy to understand and use." },
-  { p: "Camila has a different problem. She sells desserts online and receives payments through a digital wallet. She needs to keep business money separate from personal money. She also needs to know how much she earns and how much she spends." },
-  { p: "Sofía wants to save for her headphones. She needs to put money aside and check her progress. Can one account solve all three problems? Not always." },
+  { p: "The family usually pays in cash. Their grandmother has never had a bank account. She is interested in learning, but she wants a service that is easy to understand and use. The family has only about $300,000 COP free each month. The roof leaks, and the rainy season starts in two months, so they want to keep the roof money separate from the emergency money. Grandma would also like a card to pay at the store near her home without carrying cash." },
+  { p: "Camila has a different problem. She sells desserts online and receives payments through a digital wallet. She needs to keep business money separate from personal money. She also needs to know how much she earns and how much she spends. She pays her suppliers about 20 times a month. Many accounts with no fee include only 3 free transfers; after that, each transfer can cost about $3,000 COP." },
+  { p: "Sofía wants to save for her headphones. She needs to put money aside and check her progress. She saves about $40,000 COP a month. She knows she spends too easily when the money is in her hand, so she prefers not to have a card yet. A goal tracker in an app could help her stay motivated." },
+  { box: "Can one account solve all three problems? Not always. Read each client's needs carefully — you will design a different account for each one." },
   { h: "🐷 Savings account" },
   { p: "A savings account lets a customer keep money and usually make deposits and withdrawals. Depending on the product, it may pay interest. Customers should check the fees, withdrawal conditions, and minimum balance rules." },
   { h: "🧾 Checking account" },
@@ -1513,53 +1527,65 @@ function FeeDetective({ onSave, onExit }) {
 
 /* Build your account: diseñar una cuenta para cada cliente */
 const FEATURES = [
-  { k: "access", l: "Access to money", o: [{ v: "any", l: "🔓 Anytime" }, { v: "locked", l: "🔒 Only after 6 months" }] },
-  { k: "fee", l: "Monthly fee", o: [{ v: 0, l: "$0" }, { v: 12000, l: "$12,000" }] },
+  { k: "type", l: "Account type", o: [{ v: "savings", l: "🐷 Savings" }, { v: "checking", l: "🧾 Checking" }, { v: "cdt", l: "🔒 CDT" }, { v: "business", l: "💼 Business" }] },
+  { k: "plan", l: "Fee plan", o: [{ v: "free", l: "$0 · 3 free transfers a month" }, { v: "pro", l: "$12,000 · unlimited transfers + QR" }] },
   { k: "card", l: "Debit card", o: [{ v: true, l: "💳 Yes" }, { v: false, l: "🚫 No card" }] },
-  { k: "rate", l: "Interest", o: [{ v: 1, l: "1% per year" }, { v: 4, l: "4% (only if locked)" }] },
+  { k: "pockets", l: "Savings pockets", o: [{ v: 1, l: "1 pocket" }, { v: 2, l: "2 pockets" }] },
+  { k: "tracker", l: "Goal tracker in the app", o: [{ v: true, l: "🎯 On" }, { v: false, l: "Off" }] },
 ];
+const TYPE_INFO = { savings: { rate: "1% per year", access: "🔓 Anytime" }, checking: { rate: "0%", access: "🔓 Anytime" }, cdt: { rate: "4% per year", access: "🔒 Locked 6 months" }, business: { rate: "0.5% per year", access: "🔓 Anytime" } };
 const NEEDS = {
   sofia: [
-    { t: "No monthly fee (she saves small amounts)", ok: (d) => d.fee === 0 },
-    { t: "She can check and add money often", ok: (d) => d.access === "any" },
+    { t: "A savings account (she is saving for a goal)", ok: (d) => d.type === "savings", why: "Sofía doesn't pay bills or run a business. She needs to SAVE and still add money every month (a CDT locks it)." },
+    { t: "No monthly fee", ok: (d) => d.plan === "free", why: "She saves $40,000 a month. A $12,000 fee would eat 30% of her savings!" },
+    { t: "No card (less impulse spending)", ok: (d) => d.card === false, why: "Read her 📌 detail: she spends too easily when the money is in her hand." },
+    { t: "Goal tracker on", ok: (d) => d.tracker === true, why: "She wants to SEE her progress to $240,000." },
   ],
   rodriguez: [
-    { t: "Easy access in an emergency", ok: (d) => d.access === "any" },
-    { t: "No monthly fee", ok: (d) => d.fee === 0 },
-    { t: "A card for Grandma's payments", ok: (d) => d.card === true },
+    { t: "Money available any day (emergencies)", ok: (d) => d.type === "savings" || d.type === "checking", why: "An emergency fund can't be locked in a CDT, and the family has no business." },
+    { t: "No monthly fee", ok: (d) => d.plan === "free", why: "Only $300,000 is free each month. Every peso counts." },
+    { t: "2 pockets: emergency + roof", ok: (d) => d.pockets === 2, why: "If everything is together, the roof money can disappear in an emergency — or the opposite." },
+    { t: "A card for Grandma", ok: (d) => d.card === true, why: "Grandma can pay at the correspondent near home without carrying cash." },
   ],
   camila: [
-    { t: "Money available to buy ingredients", ok: (d) => d.access === "any" },
-    { t: "A card to pay suppliers", ok: (d) => d.card === true },
+    { t: "A business account (separate from personal)", ok: (d) => d.type === "business", why: "Her main problem is mixing business money with personal money." },
+    { t: "Unlimited transfers", ok: (d) => d.plan === "pro", why: "20 supplier payments a month × $3,000 per extra transfer = $51,000. The $12,000 plan is cheaper!" },
+    { t: "A card to pay suppliers", ok: (d) => d.card === true, why: "She buys flour and chocolate every week." },
   ],
 };
 function BuildAccount({ onSave, onExit }) {
-  const blank = { access: null, fee: null, card: null, rate: null, name: "" };
+  const blank = { type: null, plan: null, card: null, pockets: null, tracker: null, name: "" };
   const [designs, setDesigns] = useState({ sofia: { ...blank }, rodriguez: { ...blank }, camila: { ...blank } });
   const [cur, setCur] = useState("sofia");
   const [tested, setTested] = useState({});
+  const [tries, setTries] = useState({});
   const [st, finish] = useFinish(onSave);
   const d = designs[cur];
   const complete = (x) => FEATURES.every((f) => x[f.k] !== null) && x.name.trim().length >= 2;
   const passes = (cid) => NEEDS[cid].every((n) => n.ok(designs[cid]));
-  const setF = (k, v) => {
-    let nd = { ...d, [k]: v };
-    if (k === "access" && v === "any" && nd.rate === 4) nd.rate = 1;
-    if (k === "rate" && v === 4) nd.access = "locked";
-    setDesigns({ ...designs, [cur]: nd }); setTested({ ...tested, [cur]: false });
-  };
+  const setF = (k, v) => { setDesigns({ ...designs, [cur]: { ...d, [k]: v } }); setTested({ ...tested, [cur]: false }); };
+  const sameAs = CLIENTS.filter((c) => c.id !== cur && tested[c.id] && passes(c.id) && FEATURES.every((f) => designs[c.id][f.k] === d[f.k]));
   const allPass = CLIENTS.every((c) => tested[c.id] && passes(c.id));
-  if (st.done) return <Reward title="Account designer! 🛠️" subtitle="Each client got an account that really fits." coins={st.coins} saving={st.saving} onExit={onExit} />;
+  if (st.done) return <Reward title="Account designer! 🛠️" subtitle="Three clients, three different accounts." coins={st.coins} saving={st.saving} onExit={onExit} />;
   const c = clientById(cur);
+  const info = d.type ? TYPE_INFO[d.type] : null;
   return (
-    <ActShell icon={<Puzzle size={22} strokeWidth={2.1} />} title="Build Your Account 🛠️" subtitle="Design a fictional account for each client. Then test it!" onExit={onExit}>
+    <ActShell icon={<Puzzle size={22} strokeWidth={2.1} />} title="Build Your Account 🛠️" subtitle="Each client has different needs. Design a fictional account for each one, then test it!" onExit={onExit}>
+      <div className="g72-howto">
+        <b>How it works</b>
+        <span>1️⃣ Read the client's 📌 detail (from the reading).</span>
+        <span>2️⃣ Choose the 5 features of the account.</span>
+        <span>3️⃣ Tap <i>Test the account</i>. If a need fails, read why and change it.</span>
+        <span>⚠️ One account can't fit everyone — the 3 designs will be different!</span>
+      </div>
       <div className="g72-note-tabs">
         {CLIENTS.map((cc) => <button key={cc.id} type="button" style={{ "--cc": cc.color }} className={`g72-note-tab ${cur === cc.id ? "on" : ""} ${tested[cc.id] && passes(cc.id) ? "ok" : ""}`} onClick={() => setCur(cc.id)}><em>{cc.e}</em><span>{cc.name}</span>{tested[cc.id] && passes(cc.id) && <Check size={15} strokeWidth={3} />}</button>)}
       </div>
+      <ClientCard c={c} />
       <div className="g72-build">
         <div className="start-block">
           <h3><span className="step-n">1</span> Design the account for {c.name}</h3>
-          <input className="start-input p3-gap" value={d.name} onChange={(e) => setF("name", e.target.value)} placeholder="Account name (e.g. Goal Saver)" />
+          <input className="start-input p3-gap" value={d.name} onChange={(e) => setF("name", e.target.value)} placeholder="Give your account a name" />
           {FEATURES.map((f) => (
             <div key={f.k} className="g72-feat"><span>{f.l}</span><div className="p1-starters">{f.o.map((o) => <button key={String(o.v)} type="button" className={`p1-chip ${d[f.k] === o.v ? "on" : ""}`} onClick={() => setF(f.k, o.v)}>{o.l}</button>)}</div></div>
           ))}
@@ -1567,36 +1593,39 @@ function BuildAccount({ onSave, onExit }) {
         <div className="g72-bankcard" style={{ "--cc": c.color }}>
           <small>CREAR BANK</small>
           <b>{d.name || "My account"}</b>
-          <div>{d.access === "locked" ? "🔒 Locked 6 months" : d.access === "any" ? "🔓 Anytime" : "—"}</div>
-          <div>{d.fee === null ? "Fee: —" : `Fee: ${cop(d.fee)}/month`}</div>
-          <div>{d.rate === null ? "Interest: —" : `Interest: ${d.rate}%`}{d.card ? " · 💳" : ""}</div>
+          <div>{d.type ? FEATURES[0].o.find((o) => o.v === d.type).l : "Type: —"} {info && `· ${info.access}`}</div>
+          <div>{d.plan === null ? "Fee: —" : d.plan === "free" ? "Fee: $0 · 3 transfers" : "Fee: $12,000 · unlimited"}</div>
+          <div>{info ? `Interest: ${info.rate}` : "Interest: —"}{d.card ? " · 💳" : ""}{d.pockets ? ` · ${d.pockets} pocket${d.pockets > 1 ? "s" : ""}` : ""}{d.tracker ? " · 🎯" : ""}</div>
           <span>{c.e} for {c.name}</span>
         </div>
       </div>
       <div className="start-block">
         <h3><span className="step-n">2</span> Test it with {c.name}'s needs</h3>
         <ul className="g72-needs">
-          {NEEDS[cur].map((n) => <li key={n.t} className={tested[cur] ? (n.ok(d) ? "ok" : "no") : ""}>{tested[cur] ? (n.ok(d) ? "✅" : "❌") : "⬜"} {n.t}</li>)}
+          {NEEDS[cur].map((n) => {
+            const ok = n.ok(d);
+            return <li key={n.t} className={tested[cur] ? (ok ? "ok" : "no") : ""}>{tested[cur] ? (ok ? "✅" : "❌") : "⬜"} {n.t}{tested[cur] && !ok && <small><br />💡 {n.why}</small>}</li>;
+          })}
         </ul>
-        {tested[cur] && !passes(cur) && <div className="p1-hint">💡 Change the features that don't fit and test again.</div>}
-        {tested[cur] && passes(cur) && <div className="p1-banner good">🎉 This account works for {c.name}! {d.rate === 4 ? "" : "Interest is small, but the account fits the needs."}</div>}
-        <div className="start-foot"><button className="s1-btn ghost" disabled={!complete(d)} onClick={() => setTested({ ...tested, [cur]: true })}><Zap size={16} /> Test the account</button></div>
+        {tested[cur] && passes(cur) && <div className="p1-banner good">🎉 This account works for {c.name}!{sameAs.length === 0 && Object.keys(tested).length > 1 ? " And it's different from the others — that's real advice." : ""}</div>}
+        <div className="start-foot"><button className="s1-btn ghost" disabled={!complete(d)} onClick={() => { setTested({ ...tested, [cur]: true }); setTries({ ...tries, [cur]: (tries[cur] || 0) + 1 }); }}><Zap size={16} /> Test the account</button></div>
       </div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!allPass} onClick={() => finish(20, { designs })}>{allPass ? "Save my 3 accounts" : `${CLIENTS.filter((x) => tested[x.id] && passes(x.id)).length}/3 accounts pass`} <span className="coin-tag"><Coins size={15} /> +20</span></button></div>
+      {tested[cur] && passes(cur) && !allPass && <div className="start-foot"><button className="s1-btn ghost" onClick={() => setCur(CLIENTS.find((x) => !(tested[x.id] && passes(x.id))).id)}>Next client <ChevronRight size={17} /></button></div>}
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!allPass} onClick={() => { const first = CLIENTS.filter((x) => tries[x.id] === 1).length; finish(14 + first * 2, { designs, firstTry: first }); }}>{allPass ? "Save my 3 accounts" : `${CLIENTS.filter((x) => tested[x.id] && passes(x.id)).length}/3 accounts pass`} <span className="coin-tag"><Coins size={15} /> +20</span></button></div>
     </ActShell>
   );
 }
 
 const NOTE_C12 = {
-  n: 1, label: "Recommended account", question: (c) => `Which account do you recommend for ${c.name}?`,
+  n: 1, label: "Recommended account", question: (c) => `Which account do you recommend for ${c.name}? Read the 📌 detail!`,
   options: [
-    { id: "savings", e: "🐷", l: "A savings account with no monthly fee", fit: { sofia: 2, rodriguez: 2, camila: 1 }, note: "Easy to deposit money and check progress.", warn: "" },
-    { id: "cdt", e: "🔒", l: "A CDT (money locked for months)", fit: { sofia: 0, rodriguez: 1, camila: 0 }, note: "Only for money they won't need soon — not all the emergency money.", warn: "The money is locked: in an emergency or a slow month, it can't be used freely." },
-    { id: "checking", e: "🧾", l: "A checking account for many payments", fit: { sofia: 0, rodriguez: 1, camila: 1 }, note: "Useful for frequent payments — check the fees.", warn: "Too many features and fees for someone saving small amounts." },
-    { id: "business", e: "💼", l: "A separate account for business money", fit: { sofia: 0, rodriguez: 0, camila: 2 }, note: "Business money and personal money stay separate!", warn: "This client doesn't have a business — it adds costs they don't need." },
-    { id: "cash", e: "💵", l: "Keep using cash at home", fit: 0, note: "", warn: "Cash at home can be lost, stolen or spent too easily. No interest, no records." },
+    { id: "goal", e: "🐷", l: "A savings account with no fee, no card and a goal tracker", fit: { sofia: 2, rodriguez: 1, camila: 0 }, note: "", noteFor: { sofia: "No card = less impulse spending. The tracker shows her progress to $240,000.", rodriguez: "It works for saving, but the family needs two separate pockets and a card for Grandma." }, warn: "Camila needs a card and many transfers for her suppliers." },
+    { id: "pockets", e: "🏠", l: "A savings account with 2 pockets (emergency + roof) and a debit card", fit: { sofia: 1, rodriguez: 2, camila: 0 }, note: "", noteFor: { rodriguez: "The emergency money and the roof money stay separate, and Grandma can pay without carrying cash.", sofia: "It could work, but a card makes it easy for Sofía to spend her savings." }, warn: "Camila's problem is mixing business and personal money — pockets for a family don't solve it." },
+    { id: "business", e: "💼", l: "A business account with unlimited transfers and QR payments", fit: { sofia: 0, rodriguez: 0, camila: 2 }, note: "", noteFor: { camila: "Business money stays separate, and 20 supplier payments a month cost less with unlimited transfers." }, warn: "This client doesn't have a business — the $12,000 monthly fee would be a waste." },
+    { id: "cdt", e: "🔒", l: "A CDT with all the money locked for 6 months", fit: { sofia: 0, rodriguez: 0, camila: 0 }, note: "", warn: "", warnFor: { sofia: "She needs to add money every month and see her progress — a CDT locks everything.", rodriguez: "The roof leaks in 2 months and emergencies can happen any day. Locked money is a problem!", camila: "She needs money every week to buy ingredients." } },
+    { id: "checking", e: "🧾", l: "A personal checking account for everything", fit: { sofia: 0, rodriguez: 1, camila: 1 }, note: "", noteFor: { rodriguez: "Useful for paying bills, but it doesn't separate the emergency money from the roof money.", camila: "Better than cash, but if it's personal, she keeps mixing business and personal money." }, warn: "Too many features and costs for a student saving small amounts." },
+    { id: "cash", e: "💵", l: "Keep using cash at home", fit: 0, note: "", warn: "Cash at home can be lost, stolen or spent too easily. No interest and no records." },
   ],
-  ph: "it has no fee and she can check her progress.",
 };
 
 /* =====================================================================
@@ -1741,7 +1770,7 @@ function SavingsRace({ onSave, onExit }) {
       {month === 0 && <div className="start-foot"><button className="s1-btn primary big" disabled={!pred} onClick={() => setRunning(true)}><Play size={16} /> Start the race</button></div>}
       {ended && (
         <>
-          <div className={`p1-banner ${pred === winner.id ? "good" : "bad"}`}>🏆 Winner: <b>{winner.e} {winner.n}</b> with {cop(winner.v)}. {pred === winner.id ? "Your prediction was right!" : "Your prediction was different."}</div>
+          <div className={`p1-banner ${pred === winner.id ? "good" : "bad"}`}><span>🏆 Winner: <b>{winner.e} {winner.n}</b> with {cop(winner.v)}. {pred === winner.id ? "Your prediction was right!" : "Your prediction was different."}</span></div>
           <div className="g72-explain">
             {round === 0
               ? <>🚀 Turbo: $100,000 × 5% = <b>$5,000</b> interest − <b>$12,000</b> fees = <b className="neg">−$7,000</b>. The fees ate the interest!</>
@@ -1768,8 +1797,15 @@ function SavingsRace({ onSave, onExit }) {
 
 /* Goal Builder: cuánto ahorrar y en cuántos meses */
 const GOAL_LEVELS = [
-  { cid: "sofia", goal: 240000, max: 60000, min: 10000, step: 5000, deadline: 6, rule: "Sofía earns $100,000 a month and needs at least $40,000 for transport and snacks.", rate: 4 },
-  { cid: "rodriguez", goal: 1500000, max: 300000, min: 50000, step: 25000, deadline: 6, rule: "The family earns $4,200,000 and spends about $3,900,000. Their emergency fund goal is $1,500,000.", rate: 4 },
+  { cid: "sofia", goal: 240000, goalName: "headphones", min: 10000, sliderMax: 100000, step: 5000, safe: 60000, deadline: 6, rate: 4,
+    income: ["Allowance", 40000, "Bracelet sales", 60000], needs: ["Transport + snacks (she needs this)", 40000],
+    tip: "Sofía can't save ALL her money: she needs $40,000 every month for transport and snacks." },
+  { cid: "rodriguez", goal: 1500000, goalName: "emergency fund", min: 50000, sliderMax: 500000, step: 25000, safe: 300000, deadline: 6, rate: 4,
+    income: ["Family salaries", 4200000], needs: ["Food, rent, transport, school…", 3900000],
+    tip: "The family spends $3,900,000 on needs. They can't save more than what is free." },
+  { cid: "camila", goal: 3000000, goalName: "oven fund", min: 50000, sliderMax: 400000, step: 25000, safe: 300000, deadline: 12, rate: 4,
+    income: ["Money left in the business each month", 400000], needs: ["Safety cushion for slow months", 100000],
+    tip: "Sales change every month. Camila must keep $100,000 as a cushion for slow months." },
 ];
 function monthsTo(goal, monthly, rate, withInt) {
   let bal = 0, m = 0; const series = [0];
@@ -1778,44 +1814,70 @@ function monthsTo(goal, monthly, rate, withInt) {
 }
 function GoalBuilder({ onSave, onExit }) {
   const [lv, setLv] = useState(0);
-  const [vals, setVals] = useState({ sofia: 20000, rodriguez: 100000 });
+  const [vals, setVals] = useState({ sofia: 20000, rodriguez: 100000, camila: 100000 });
   const [withInt, setWithInt] = useState(false);
+  const [why, setWhy] = useState({ sofia: "", rodriguez: "", camila: "" });
   const [plans, setPlans] = useState({});
   const [st, finish] = useFinish(onSave);
   const L = GOAL_LEVELS[lv];
   const c = clientById(L.cid);
   const v = vals[L.cid];
   const res = monthsTo(L.goal, v, L.rate, withInt);
-  const ok = res.months !== null && res.months <= L.deadline;
+  const onTime = res.months !== null && res.months <= L.deadline;
+  const realistic = v <= L.safe;
+  const ok = onTime && realistic;
   const shown = res.series.slice(0, Math.max(7, Math.min(res.series.length, 13)));
-  if (st.done) return <Reward title="Goal builder! 🎯" subtitle="A plan with numbers is a real plan." coins={st.coins} saving={st.saving} onExit={onExit} />;
+  const inc = []; for (let k = 0; k < L.income.length; k += 2) inc.push([L.income[k], L.income[k + 1]]);
+  const totalInc = inc.reduce((a2, x) => a2 + x[1], 0);
+  if (st.done) return <Reward title="Goal builder! 🎯" subtitle="Three clients, three realistic plans." coins={st.coins} saving={st.saving} onExit={onExit} />;
   const lock = () => {
-    const np = { ...plans, [L.cid]: { monthly: v, months: res.months, interest: withInt } };
+    const np = { ...plans, [L.cid]: { monthly: v, months: res.months, interest: withInt, why: why[L.cid] } };
     setPlans(np);
-    if (lv === 0) { setLv(1); setWithInt(false); } else finish(25, { plans: np });
+    if (lv < GOAL_LEVELS.length - 1) { setLv(lv + 1); setWithInt(false); } else finish(25, { plans: np });
   };
   return (
-    <ActShell icon={<Target size={22} strokeWidth={2.1} />} title="Goal Builder 🎯" subtitle="Find a monthly amount that reaches the goal on time — and is realistic." onExit={onExit}>
+    <ActShell icon={<Target size={22} strokeWidth={2.1} />} title="Goal Builder 🎯" subtitle="Find a monthly amount that reaches the goal ON TIME and is REALISTIC for each client." onExit={onExit}>
+      <div className="g72-howto">
+        <b>How it works</b>
+        <span>1️⃣ Look at the client's monthly money: what comes in and what they really need.</span>
+        <span>2️⃣ Move the slider to choose how much to save every month.</span>
+        <span>3️⃣ The graph shows the savings growing month by month until the goal line.</span>
+        <span>✅ Your plan is good only if it is <b>on time</b> (before the deadline) AND <b>realistic</b> (the client can still pay their needs).</span>
+      </div>
       <div className="g72-steps">{GOAL_LEVELS.map((g, k) => <span key={g.cid} className={k === lv ? "on" : k < lv ? "done" : ""}>{k < lv ? "✓" : k + 1} {clientById(g.cid).name}</span>)}</div>
       <ClientCard c={c} small />
-      <div className="p1-banner">{L.rule} Deadline: <b>{L.deadline} months</b>.</div>
+      <div className="g72-budget2">
+        <div><small>💵 Comes in every month</small>{inc.map(([l, x]) => <span key={l}>{l}<b>{cop(x)}</b></span>)}</div>
+        <div><small>🧾 Needs (can't be saved)</small><span>{L.needs[0]}<b>−{cop(L.needs[1])}</b></span></div>
+        <div className="max"><small>🐷 The most they can save</small><b>{cop(totalInc - L.needs[1])}</b></div>
+      </div>
+      <div className="p1-banner"><span>🎯 Goal: <b>{cop(L.goal)}</b> for the {L.goalName} · ⏰ Deadline: <b>{L.deadline} months</b>. {L.tip}</span></div>
       <div className="g72-machine">
         <label className="g72-ctrl">
           <span>💰 Save per month</span>
           <button type="button" onClick={() => setVals({ ...vals, [L.cid]: Math.max(L.min, v - L.step) })}><Minus size={14} /></button>
-          <input type="range" min={L.min} max={L.max} step={L.step} value={v} onChange={(e) => setVals({ ...vals, [L.cid]: Number(e.target.value) })} />
-          <button type="button" onClick={() => setVals({ ...vals, [L.cid]: Math.min(L.max, v + L.step) })}><Plus size={14} /></button>
+          <input type="range" min={L.min} max={L.sliderMax} step={L.step} value={v} onChange={(e) => setVals({ ...vals, [L.cid]: Number(e.target.value) })} />
+          <button type="button" onClick={() => setVals({ ...vals, [L.cid]: Math.min(L.sliderMax, v + L.step) })}><Plus size={14} /></button>
           <b>{cop(v)}</b>
         </label>
         <label className="perm-check p1-check"><input type="checkbox" checked={withInt} onChange={(e) => setWithInt(e.target.checked)} /><span>Add {L.rate}% simple interest per year (savings account)</span></label>
         <div className="g72-machine-out">
-          <div><small>Months to reach {cop(L.goal)}</small><b>{res.months ?? "36+"}</b></div>
-          <div><small>Status</small><b className={ok ? "" : "neg"}>{ok ? "✅ On time!" : "⏳ Too slow"}</b></div>
+          <div><small>Months to reach {cop(L.goal)}</small><b className={onTime ? "" : "neg"}>{res.months ?? "36+"}</b></div>
+          <div><small>Left for needs</small><b className={realistic ? "" : "neg"}>{cop(totalInc - v)}</b></div>
         </div>
+      </div>
+      <div className={`g72-conseq ${ok ? "f2" : "f0"}`}>
+        <b>{ok ? "✅ Realistic and on time!" : !realistic ? "⚠️ Not realistic" : "⏳ Too slow"}</b>
+        <span>{ok ? `${cop(v)} × ${res.months} months reaches the goal, and ${c.name.startsWith("The") ? "they" : "she"} can still pay the needs.` : !realistic ? `Saving ${cop(v)} leaves only ${cop(totalInc - v)} — less than the ${cop(L.needs[1])} needed. Save a little less.` : `With ${cop(v)} a month, the goal takes ${res.months ?? "more than 36"} months. The deadline is ${L.deadline}. Save a little more.`}</span>
       </div>
       <LineChart labels={shown.map((_, k) => `M${k}`)} series={[{ name: "Savings", values: shown, color: c.color }, { name: "Goal", values: shown.map(() => L.goal), color: "#0b7a5066" }]} yMin={0} />
       {withInt && <p className="start-tip">💡 With small amounts, interest helps only a little. The monthly habit is the real engine!</p>}
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!ok} onClick={lock}>{lv === 0 ? "Lock Sofía's plan" : "Lock the family's plan"} <ChevronRight size={18} /></button></div>
+      {ok && (
+        <div className="start-block">
+          <div className="p3-sentence edit"><span>This plan works for {c.name} because</span><input className="start-input" value={why[L.cid]} onChange={(e) => setWhy({ ...why, [L.cid]: e.target.value })} placeholder="Write your reason here…" /></div>
+        </div>
+      )}
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!ok || countWords(why[L.cid]) < 4} onClick={lock}>Lock {c.name.startsWith("The") ? "the family's" : `${c.name}'s`} plan <ChevronRight size={18} /></button></div>
     </ActShell>
   );
 }
@@ -1823,13 +1885,13 @@ function GoalBuilder({ onSave, onExit }) {
 const NOTE_C13 = {
   n: 2, label: "Savings plan", question: (c) => `What savings plan do you recommend for ${c.name}?`,
   options: [
-    { id: "monthly", e: "📅", l: "Save a fixed amount every month in a savings account", fit: { sofia: 2, rodriguez: 2, camila: 1 }, note: "Small steps every month build the goal.", warn: "" },
-    { id: "sales", e: "💼", l: "Save a percent of every sale in a separate account", fit: { sofia: 1, rodriguez: 0, camila: 2 }, note: "Part of each sale builds the oven fund.", warn: "This family has no sales — a fixed monthly amount fits better." },
-    { id: "cdt", e: "🔒", l: "Put all the money in a CDT for one year", fit: { sofia: 0, rodriguez: 1, camila: 0 }, note: "Only for money they won't need soon — not the emergency part.", warn: "The goal is soon or they need access — locked money is a problem." },
-    { id: "turbo", e: "🚀", l: "Choose the highest rate without checking fees", fit: 0, note: "", warn: "Fees can eat the interest — remember the Savings Race!" },
-    { id: "piggy", e: "🐷", l: "Keep saving in a piggy bank at home", fit: { sofia: 1, rodriguez: 0, camila: 0 }, note: "Better than nothing, but there's no interest and money can disappear.", warn: "Cash at home is risky and earns no interest." },
+    { id: "fixed", e: "📅", l: "Save $40,000 from the bracelets every month for 6 months", fit: { sofia: 2, rodriguez: 0, camila: 0 }, note: "", noteFor: { sofia: "$40,000 × 6 = $240,000 — and she still has $60,000 for her life." }, warn: "", warnFor: { rodriguez: "$40,000 a month is far too slow for a $1,500,000 emergency fund.", camila: "Camila's income changes with her sales — a fixed amount from bracelets doesn't fit her." } },
+    { id: "emergency", e: "🛟", l: "Save $250,000 a month: emergency pocket first, then the roof pocket", fit: { sofia: 0, rodriguez: 2, camila: 1 }, note: "", noteFor: { rodriguez: "Emergencies first! $250,000 fits in the $300,000 they have free.", camila: "Having an emergency fund is smart, but her main goal is the oven, from her sales." }, warn: "Sofía only earns $100,000 a month — she can't save $250,000." },
+    { id: "percent", e: "💼", l: "Save 15% of every sale in the business account (oven fund)", fit: { sofia: 1, rodriguez: 0, camila: 2 }, note: "", noteFor: { camila: "When sales go up, the oven fund grows faster. When sales go down, she still saves something.", sofia: "It could work with her bracelet sales, but a fixed monthly amount is easier to track for her goal." }, warn: "The family has a salary, not sales — a percent of sales doesn't apply." },
+    { id: "cdt", e: "🔒", l: "Put all the savings in a CDT for one year", fit: 0, note: "", warn: "", warnFor: { sofia: "Her goal is in 6 months — the money would be locked for a year.", rodriguez: "An emergency fund must be available any day.", camila: "She needs the money for ingredients and the oven sooner." } },
+    { id: "turbo", e: "🚀", l: "Choose the account with the highest rate, without checking the fees", fit: 0, note: "", warn: "Fees can eat the interest — remember the Savings Race!" },
+    { id: "piggy", e: "🐷", l: "Keep saving in the piggy bank at home", fit: 0, note: "", warn: "Money at home earns nothing and can disappear — that already happened to Sofía!" },
   ],
-  ph: "she can save $40,000 a month and reach $240,000 in 6 months.",
 };
 
 /* =====================================================================
@@ -2145,15 +2207,15 @@ const DEBT_ROOMS = [
 ];
 
 const NOTE_C15 = {
-  n: 3, label: "Loan: yes or no?", question: (c) => `Should ${c.name} borrow money now?`,
+  n: 3, label: "Loan: yes or no?", question: (c) => `Should ${c.name} borrow money now? Think about the 📌 detail.`,
   options: [
-    { id: "save", e: "🐷", l: "No loan: save first and wait", fit: { sofia: 2, rodriguez: 1, camila: 1 }, note: "No interest to pay — the goal just takes a little longer.", warn: "" },
-    { id: "bank", e: "🏦", l: "A regulated loan, after comparing the total cost", fit: { sofia: 0, rodriguez: 2, camila: 2 }, note: "Compare the total cost and make sure every payment is safe.", warn: "A 14-year-old buying headphones doesn't need debt — saving works." },
-    { id: "store", e: "🏬", l: "The ‘no down payment’ store offer, without asking", fit: 0, note: "", warn: "Hidden charges can make it much more expensive. Always ask for the total!" },
+    { id: "save", e: "🐷", l: "No loan: keep saving and wait", fit: { sofia: 2, rodriguez: 0, camila: 1 }, note: "", noteFor: { sofia: "Headphones are a want, not an emergency. Saving costs no interest.", camila: "Safe, but she is losing orders every week. Maybe a responsible loan makes sense." }, warn: "", warnFor: { rodriguez: "The rainy season starts in 2 months. A leaking roof can damage the house and cost much more." } },
+    { id: "roof", e: "🏠", l: "A small regulated loan only for the roof, with an installment under $300,000", fit: { sofia: 0, rodriguez: 2, camila: 0 }, note: "", noteFor: { rodriguez: "Urgent need + an installment that fits their free money + a supervised lender." }, warn: "", warnFor: { sofia: "Sofía has no roof to repair — and a 14-year-old shouldn't take debt for headphones.", camila: "Camila doesn't need a roof loan." } },
+    { id: "equip", e: "🧁", l: "A business loan for equipment that increases sales, after checking the total cost", fit: { sofia: 0, rodriguez: 0, camila: 2 }, note: "", noteFor: { camila: "More orders than she can bake = the equipment can pay for itself, if the installment is safe." }, warn: "This client doesn't have a business that can produce more income." },
+    { id: "store", e: "🏬", l: "The ‘no down payment’ store offer, without asking for the total", fit: 0, note: "", warn: "Hidden charges can make it much more expensive. Always ask for the total!" },
     { id: "daily", e: "💀", l: "A daily lender (gota a gota)", fit: 0, note: "", warn: "Dangerous: extremely costly and can involve threats. Never a safe option." },
-    { id: "card", e: "💳", l: "A credit card, paying only part of the bill", fit: 0, note: "", warn: "Paying only part of the bill makes the purchase much more expensive." },
+    { id: "card", e: "💳", l: "A credit card, paying only part of the bill each month", fit: 0, note: "", warn: "Paying only part of the bill makes everything much more expensive." },
   ],
-  ph: "the roof is urgent and the payments fit their budget.",
 };
 
 /* =====================================================================
@@ -2332,13 +2394,12 @@ const WALLET_ITEMS = [
 const NOTE_C16 = {
   n: 4, label: "Digital tools", question: (c) => `Which digital tool do you recommend for ${c.name}?`,
   options: [
-    { id: "app", e: "📱", l: "The bank's official app to check the balance and goals", fit: { sofia: 2, rodriguez: 1, camila: 1 }, note: "Checking progress keeps the goal alive.", warn: "" },
-    { id: "wallet", e: "👛", l: "A digital wallet to receive payments by QR", fit: { sofia: 1, rodriguez: 1, camila: 2 }, note: "Fast payments and records for every sale.", warn: "" },
-    { id: "corr", e: "🏪", l: "A banking correspondent + family help for Grandma", fit: { sofia: 0, rodriguez: 2, camila: 0 }, note: "Close to home and easy to use with support.", warn: "That's a solution for someone who needs in-person help — not this client's main need." },
-    { id: "alerts", e: "🔔", l: "Text alerts for every movement", fit: 1, note: "A great safety habit — but add a tool for the client's main goal.", warn: "" },
-    { id: "share", e: "🔑", l: "Share the password with a friend who helps", fit: 0, note: "", warn: "Never share passwords or codes — not even to get help." },
+    { id: "tracker", e: "🎯", l: "The bank's official app with a goal tracker", fit: { sofia: 2, rodriguez: 1, camila: 1 }, note: "", noteFor: { sofia: "She can see her progress every week — and she doesn't need cash in her hand.", rodriguez: "Good for the parents, but Grandma needs help close to home.", camila: "Useful, but her main need is to receive and confirm payments." }, warn: "" },
+    { id: "corr", e: "🏪", l: "A banking correspondent near home + a family member who helps Grandma", fit: { sofia: 0, rodriguez: 2, camila: 0 }, note: "", noteFor: { rodriguez: "Grandma can pay and withdraw 5 minutes from home — no 40-minute trip, with support." }, warn: "This client uses a phone every day and doesn't need in-person help." },
+    { id: "qr", e: "👛", l: "A digital wallet with QR for sales + checking every payment in her own app", fit: { sofia: 1, rodriguez: 0, camila: 2 }, note: "", noteFor: { camila: "Customers pay by QR, and she confirms in her app — fake screenshots don't work anymore!", sofia: "Useful for bracelet sales, but her main need is to save and track her goal." }, warn: "Grandma has a simple phone — a QR wallet alone is too hard for her." },
+    { id: "alerts", e: "🔔", l: "Text alerts for every movement", fit: 1, note: "A great safety habit for everyone — but which tool solves THIS client's main need?", warn: "" },
+    { id: "share", e: "🔑", l: "Share the app password with a friend who helps", fit: 0, note: "", warn: "Never share passwords or codes — not even to get help." },
   ],
-  ph: "she can receive payments and see every sale.",
 };
 
 /* =====================================================================
@@ -2533,18 +2594,21 @@ const CYBER_ROOMS = [
 ];
 
 const NOTE_C17 = {
-  n: 5, label: "Security guide", multi: 3, question: (c) => `Choose 3 security rules for ${c.name}'s guide.`,
+  n: 5, label: "Security guide", multi: 3, question: (c) => `Choose 3 security rules for ${c.name}'s guide. At least 2 must fit THIS client's risks.`,
   options: [
-    { id: "pin", e: "🔑", l: "Never share your PIN, password or codes", fit: 2, note: "The #1 rule.", warn: "" },
-    { id: "link", e: "🔗", l: "Don't use links in messages — open the official app", fit: 2, note: "Stops phishing and smishing.", warn: "" },
-    { id: "2fa", e: "🛡️", l: "Turn on 2FA and text alerts", fit: 2, note: "Alerts saved the couple in the video!", warn: "" },
-    { id: "wifi", e: "📶", l: "Avoid public Wi-Fi for banking", fit: 2, note: "Hackers can steal data on public networks.", warn: "" },
-    { id: "check", e: "📊", l: "Check your statements every month", fit: 2, note: "Find strange movements early.", warn: "" },
-    { id: "bday", e: "🎂", l: "Use your birthday as your password", fit: 0, note: "", warn: "Birthdays are easy to guess. Use a long phrase instead." },
+    { id: "pin", e: "🔑", l: "Never share your PIN, password or codes", fit: 1, note: "Essential for everybody.", warn: "" },
+    { id: "2fa", e: "🛡️", l: "Turn on 2FA and text alerts", fit: 1, note: "Alerts saved the couple in the video.", warn: "" },
+    { id: "game", e: "🎮", l: "Don't click ‘free prize’ links in games or social media", fit: { sofia: 2, rodriguez: 1, camila: 1 }, note: "", noteFor: { sofia: "Teenagers get many fake prizes in games and social media." }, warn: "" },
+    { id: "wifi", e: "📶", l: "No banking apps on the school's or the mall's public Wi-Fi", fit: { sofia: 2, rodriguez: 1, camila: 1 }, note: "", noteFor: { sofia: "She uses her phone at school and in malls." }, warn: "" },
+    { id: "call", e: "📞", l: "Hang up on calls that ask for codes and call the bank yourself", fit: { sofia: 1, rodriguez: 2, camila: 1 }, note: "", noteFor: { rodriguez: "Criminals often call older people pretending to be the bank." }, warn: "" },
+    { id: "cover", e: "🧾", l: "At the correspondent: cover the PIN and keep the receipt", fit: { sofia: 1, rodriguez: 2, camila: 1 }, note: "", noteFor: { rodriguez: "Grandma will use the correspondent near home." }, warn: "" },
+    { id: "screen", e: "📲", l: "Confirm every sale in your own app — never trust screenshots", fit: { sofia: 1, rodriguez: 1, camila: 2 }, note: "", noteFor: { camila: "Some customers send fake payment screenshots!" }, warn: "" },
+    { id: "supplier", e: "🏭", l: "If a supplier says “I have a new account”, confirm by phone first", fit: { sofia: 1, rodriguez: 1, camila: 2 }, note: "", noteFor: { camila: "She pays suppliers 20 times a month — a classic scam target." }, warn: "" },
+    { id: "bday", e: "🎂", l: "Use your birthday as your password (easy to remember)", fit: 0, note: "", warn: "Birthdays are easy to guess. Use a long phrase instead." },
     { id: "cousin", e: "👪", l: "Give your PIN to a cousin in case you forget it", fit: 0, note: "", warn: "A PIN is secret — even from family." },
   ],
   extra: { q: "Emergency action: if something is wrong, the client should…", options: [{ id: "lock", l: "🔒 Lock the card in the app and call the official number" }, { id: "back", l: "📞 Call the number on the back of the card" }, { id: "adult", l: "👨‍👩‍👧 Tell a trusted adult and use the official channel" }] },
-  frame: "My 3 rules are", ph: "these are the most common scams for her.",
+  frame: "My 3 rules are",
 };
 
 /* =====================================================================
@@ -2700,7 +2764,6 @@ const NOTE_C18 = {
     { id: "card", e: "💳", l: "A personal credit card, paying only the minimum", fit: 0, note: "", warn: "Mixing personal credit with the business + minimum payments = very expensive." },
     { id: "daily", e: "💀", l: "Fast cash from a daily lender", fit: 0, note: "", warn: "Dangerous and extremely costly. Never a safe option." },
   ],
-  ph: "$400,000 stays in the business and the installment is $180,000.",
 };
 
 /* =====================================================================
@@ -2855,7 +2918,7 @@ function AccessPlan({ existing, onSave, onExit }) {
           {good && <div className="g72-conseq f2"><b>✅ This plan works for Grandma!</b><span>Every meter is green. Now explain your plan.</span></div>}
           {good && (
             <div className="start-block">
-              <div className="p3-sentence edit"><span>I recommend <b>{sel.map((a) => a.l).join(" + ")}</b> because</span><input className="start-input" value={why} onChange={(e) => setWhy(e.target.value)} placeholder="it is close to home and her family can help her." /></div>
+              <div className="p3-sentence edit"><span>I recommend <b>{sel.map((a) => a.l).join(" + ")}</b> because</span><input className="start-input" value={why} onChange={(e) => setWhy(e.target.value)} placeholder="Write your reason here…" /></div>
             </div>
           )}
           <div className="start-foot"><button className="s1-btn primary big" disabled={!good || countWords(why) < 5} onClick={() => setStep(1)}>Next: ethics pledge <ChevronRight size={18} /></button></div>
@@ -2866,7 +2929,7 @@ function AccessPlan({ existing, onSave, onExit }) {
           <div className="g72-pledge">
             <small>🤝 JUNIOR ADVISOR · ETHICS PLEDGE</small>
             {PLEDGES.map((t) => <label key={t} className="perm-check p1-check"><input type="checkbox" checked={pl.includes(t)} onChange={() => setPl(pl.includes(t) ? pl.filter((x) => x !== t) : [...pl, t])} /><span>{t}</span></label>)}
-            <div className="p3-sentence edit"><span>As an ethical advisor, I promise to</span><input className="start-input" value={promise} onChange={(e) => setPromise(e.target.value)} placeholder="always think about what is best for my client." /></div>
+            <div className="p3-sentence edit"><span>As an ethical advisor, I promise to</span><input className="start-input" value={promise} onChange={(e) => setPromise(e.target.value)} placeholder="Write your promise here…" /></div>
           </div>
           <div className="start-foot"><button className="s1-btn primary big" disabled={pl.length < PLEDGES.length || countWords(promise) < 4} onClick={() => finish(25, { picks, why, pledge: promise, notes: { rodriguez: { picks: sel.map((a) => a.l), why, fit: 2, extra: `Pledge: ${promise}` } } })}>Sign and add to my portfolio <span className="coin-tag"><Coins size={15} /> +25</span></button></div>
         </>
@@ -2949,7 +3012,7 @@ function AdvisoryPortfolio({ resp, studentName, existing, onSave, onExit }) {
       </div>
       <div className="start-block">
         <h3><PenLine size={18} /> My final advice for each client</h3>
-        {CLIENTS.map((c) => <div key={c.id} className="p3-sentence edit"><span>{c.e} My final advice for {c.name} is</span><input className="start-input" value={concl[c.id]} onChange={(e) => setConcl({ ...concl, [c.id]: e.target.value })} placeholder={c.id === "sofia" ? "to save $40,000 a month in an account with no fee." : c.id === "rodriguez" ? "to build the emergency fund before the roof loan." : "to separate her money and save half of the oven."} /></div>)}
+        {CLIENTS.map((c) => <div key={c.id} className="p3-sentence edit"><span>{c.e} My final advice for {c.name} is</span><input className="start-input" value={concl[c.id]} onChange={(e) => setConcl({ ...concl, [c.id]: e.target.value })} placeholder="Write your final advice here…" /></div>)}
       </div>
       {ready < 4 && <div className="p1-banner bad">You need at least 4 of 7 components. Complete more Advisor Notes in classes 11–19.</div>}
       <div className="p3-card-actions">
@@ -2980,7 +3043,7 @@ function PitchPractice({ onSave, onExit }) {
     <ActShell icon={<Mic size={22} strokeWidth={2.1} />} title="Pitch Practice 🎤" subtitle="Write your pitch. Then your partner plays the client and asks tough questions!" onExit={onExit}>
       <div className="start-block">
         <h3><span className="step-n">1</span> My 30-second pitch</h3>
-        {PITCH_FRAMES.map((f) => <div key={f.k} className="p3-sentence edit"><span>{f.f}</span><input className="start-input" value={v[f.k]} onChange={(e) => setV({ ...v, [f.k]: e.target.value })} placeholder={f.ph} /></div>)}
+        {PITCH_FRAMES.map((f) => <div key={f.k} className="p3-sentence edit"><span>{f.f}</span><input className="start-input" value={v[f.k]} onChange={(e) => setV({ ...v, [f.k]: e.target.value })} placeholder="Write your answer here…" /></div>)}
       </div>
       {framesOk && (
         <div className="start-block">
@@ -3029,9 +3092,9 @@ function AdvisorFair({ mode, onSave, onExit }) {
         {FAIR_STARS.map(([k, l]) => (
           <div key={k} className="p3-rub"><div><b>{l}</b></div><span /><div className="p3-stars">{[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" className={stars[k] >= n ? "on" : ""} onClick={() => setStars({ ...stars, [k]: n })}>★</button>)}</div></div>
         ))}
-        <div className="p3-sentence edit"><span>✅ One clear recommendation was</span><input className="start-input" value={c1} onChange={(e) => setC1(e.target.value)} placeholder="saving in an account with no fee." /></div>
-        <div className="p3-sentence edit"><span>❓ My question is</span><input className="start-input" value={c2} onChange={(e) => setC2(e.target.value)} placeholder="what happens if Camila's sales go down?" /></div>
-        <div className="p3-sentence edit"><span>💡 One suggestion:</span><input className="start-input" value={c3} onChange={(e) => setC3(e.target.value)} placeholder="add the total cost of the loan." /></div>
+        <div className="p3-sentence edit"><span>✅ One clear recommendation was</span><input className="start-input" value={c1} onChange={(e) => setC1(e.target.value)} placeholder="Write it here…" /></div>
+        <div className="p3-sentence edit"><span>❓ My question is</span><input className="start-input" value={c2} onChange={(e) => setC2(e.target.value)} placeholder="Write your question here…" /></div>
+        <div className="p3-sentence edit"><span>💡 One suggestion:</span><input className="start-input" value={c3} onChange={(e) => setC3(e.target.value)} placeholder="Write your suggestion here…" /></div>
         {visit && (
           <>
             <h3>Would you hire this advisor? 🤝</h3>
@@ -3092,8 +3155,8 @@ function SelfCheck72({ existing, onSave, onExit }) {
       </div>
       <div className="p3-score"><small>My self-check</small><b>{score}%</b><div className="p3-mini-bar"><i style={{ width: `${score}%` }} /></div></div>
       <div className="start-block">
-        <label className="p3-lbl">🌟 My best decision as an advisor was…<input className="start-input" value={proud} onChange={(e) => setProud(e.target.value)} placeholder="recommending a savings plan to Sofía because…" /></label>
-        <label className="p3-lbl">🔁 Next time I would do differently…<input className="start-input" value={diff} onChange={(e) => setDiff(e.target.value)} placeholder="compare the total cost before choosing a loan." /></label>
+        <label className="p3-lbl">🌟 My best decision as an advisor was…<input className="start-input" value={proud} onChange={(e) => setProud(e.target.value)} placeholder="Write your answer here…" /></label>
+        <label className="p3-lbl">🔁 Next time I would do differently…<input className="start-input" value={diff} onChange={(e) => setDiff(e.target.value)} placeholder="Write your answer here…" /></label>
       </div>
       <div className="start-foot"><button className="s1-btn primary big" disabled={!all || countWords(proud) < 4 || countWords(diff) < 3} onClick={() => finish(20, { stars, score, proud, diff })}>Send my self-check <span className="coin-tag"><Coins size={15} /> +20</span></button></div>
     </ActShell>
@@ -3121,7 +3184,7 @@ const G7P2_WEEKS = [
     { key: "c13_video", title: "Video: Jenny, Michael & Interest", desc: "Watch + 8 random questions (70%).", icon: <Video size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c13_read", title: "Reading + Interest Machine ⚙️", desc: "Can your money grow? 3 challenges.", icon: <Calculator size={22} />, coins: 25, bucket: "aprendi", topics: ["Principal", "Rate", "Time", "Fees"] },
     { key: "c13_race", title: "Savings Race 🏁", desc: "Predict the winner. Watch 12 months fly!", icon: <Flame size={22} />, coins: 25, bucket: "aprendi" },
-    { key: "c13_goal", title: "Goal Builder 🎯", desc: "Monthly savings plans for Sofía and the family.", icon: <Target size={22} />, coins: 25, bucket: "aprendi" },
+    { key: "c13_goal", title: "Goal Builder 🎯", desc: "A realistic savings plan for each of your 3 clients.", icon: <Target size={22} />, coins: 25, bucket: "aprendi" },
     { key: "c13_note", title: "Advisor Note #2 · Savings plan 📁", desc: "A plan for each client.", icon: <Briefcase size={22} />, coins: 15, bucket: "aprendi" },
   ] },
   { n: 14, g: "14", title: "Credit vs. debit", blurb: "Whose money is it? Follow the money!", e: "💳", skills: ["Reading", "Speaking"], acts: [

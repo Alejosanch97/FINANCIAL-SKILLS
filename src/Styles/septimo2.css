@@ -443,3 +443,18 @@
   body.g72-printing #g72-portfolio, body.g72-printing #g72-portfolio * { visibility: visible !important; }
   body.g72-printing #g72-portfolio { position: absolute; left: 0; top: 0; width: 100%; max-width: none; box-shadow: none; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- INSTRUCCIONES, DETALLE DEL CLIENTE Y PRESUPUESTO ---------- */
+.g72-howto { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--green); border-radius: 14px; padding: 12px 16px; margin-bottom: 14px; font-weight: 600; color: var(--ink); font-size: .92rem; line-height: 1.45; }
+.g72-howto b { font-family: var(--font-display); color: var(--green-deep); margin-bottom: 2px; }
+.g72-howto i { font-style: normal; font-weight: 800; }
+.g72-client li.g72-detail { background: var(--note, #fff8e3); border: 1px dashed var(--gold); border-radius: 10px; padding: 8px 10px; }
+.g72-budget2 { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 12px; }
+.g72-budget2 > div { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.g72-budget2 small { font-weight: 800; font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.g72-budget2 span { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: .88rem; }
+.g72-budget2 span b { font-family: var(--font-display); white-space: nowrap; }
+.g72-budget2 .max { background: linear-gradient(150deg, var(--forest-2), var(--forest)); color: #fff; border: none; align-items: center; justify-content: center; text-align: center; }
+.g72-budget2 .max small { color: var(--mint); }
+.g72-budget2 .max b { font-family: var(--font-display); font-size: 1.4rem; color: var(--gold); }
+@media (max-width: 720px) { .g72-budget2 { grid-template-columns: 1fr; } }

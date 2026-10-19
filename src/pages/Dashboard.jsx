@@ -20,6 +20,8 @@ import { Periodo3 } from "./Periodo3";
 import { Periodo4 } from "./Periodo4";
 import { Periodo1G7 } from "./Periodo1G7";
 import { Periodo2G7 } from "./Periodo2G7";
+import { Periodo3G7 } from "./Periodo3G7";
+import { Periodo4G7 } from "./Periodo4G7";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -832,6 +834,26 @@ export const Dashboard = ({ onLogout }) => {
             Periodo 2 · Grado 7
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g7p3" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g7p3"); setNavOpen(false); loadSemanaFull("7P3"); }}
+            aria-current={activeTab === "g7p3" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Rocket size={18} strokeWidth={2.2} /></span>
+            Periodo 3 · Grado 7
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g7p4" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g7p4"); setNavOpen(false); loadSemanaFull("7P4"); loadSemanaFull("7P3"); loadSemanaFull("7P2"); loadSemanaFull("7P1"); }}
+            aria-current={activeTab === "g7p4" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Award size={18} strokeWidth={2.2} /></span>
+            Periodo 4 · Grado 7
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -963,6 +985,16 @@ export const Dashboard = ({ onLogout }) => {
           <AdminPanel userData={userData} API_URL={API_URL} />
         )}
 
+        {/* ===== PERIODO 4 · GRADO 7 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g7p4" && isAdmin && (
+          <Periodo4G7 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["7P4"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 3 · GRADO 7 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g7p3" && isAdmin && (
+          <Periodo3G7 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["7P3"]} onBack={() => setActiveTab("overview")} />
+        )}
+
         {/* ===== PERIODO 2 · GRADO 7 (solo admin, vista de prueba) ===== */}
         {activeTab === "g7p2" && isAdmin && (
           <Periodo2G7 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["7P2"]} onBack={() => setActiveTab("overview")} />
@@ -1001,3 +1033,9 @@ export const Dashboard = ({ onLogout }) => {
     </div>
   );
 };
+
+
+
+
+
+
