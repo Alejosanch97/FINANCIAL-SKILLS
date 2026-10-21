@@ -22,6 +22,8 @@ import { Periodo1G7 } from "./Periodo1G7";
 import { Periodo2G7 } from "./Periodo2G7";
 import { Periodo3G7 } from "./Periodo3G7";
 import { Periodo4G7 } from "./Periodo4G7";
+import { Periodo1G8 } from "./Periodo1G8";
+import { Periodo2G8 } from "./Periodo2G8";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -856,6 +858,26 @@ export const Dashboard = ({ onLogout }) => {
             Periodo 4 · Grado 7
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g8p1" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g8p1"); setNavOpen(false); loadSemanaFull("8P1"); }}
+            aria-current={activeTab === "g8p1" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Landmark size={18} strokeWidth={2.2} /></span>
+            Periodo 1 · Grado 8
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g8p2" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g8p2"); setNavOpen(false); loadSemanaFull("8P2"); }}
+            aria-current={activeTab === "g8p2" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Coins size={18} strokeWidth={2.2} /></span>
+            Periodo 2 · Grado 8
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -987,6 +1009,16 @@ export const Dashboard = ({ onLogout }) => {
           <AdminPanel userData={userData} API_URL={API_URL} />
         )}
 
+        {/* ===== PERIODO 2 · GRADO 8 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g8p2" && isAdmin && (
+          <Periodo2G8 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["8P2"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 1 · GRADO 8 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g8p1" && isAdmin && (
+          <Periodo1G8 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["8P1"]} onBack={() => setActiveTab("overview")} />
+        )}
+
         {/* ===== PERIODO 4 · GRADO 7 (solo admin, vista de prueba) ===== */}
         {activeTab === "g7p4" && isAdmin && (
           <Periodo4G7 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["7P4"]} onBack={() => setActiveTab("overview")} />
@@ -1035,6 +1067,12 @@ export const Dashboard = ({ onLogout }) => {
     </div>
   );
 };
+
+
+
+
+
+
 
 
 
