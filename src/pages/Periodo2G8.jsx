@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
-  ArrowLeft, BookOpen, Video, Check, X, Coins, Trophy, Sparkles, Clock, ChevronRight, Lightbulb, Play,
+  ArrowLeft, BookOpen, Video, Check, X, Coins, Trophy, Sparkles, Clock, ChevronRight, ChevronLeft, Lightbulb, Play,
   PenLine, Star, Users, Lock, Store, Scale, RefreshCw, Award, Puzzle, Mic, Target, Calculator,
   ShieldCheck, Plus, Minus, Trash2, Search, Swords, Rocket, Download, Printer, ShoppingCart, Globe,
   TrendingUp, TrendingDown, Headphones, Compass, BarChart3, LineChart as LineIcon, Flame, Map as MapIcon,
@@ -1147,11 +1147,10 @@ const PF_PAGES = [
   { n: "03", key: "c13_page", t: "My strategy", e: "♟️" },
   { n: "04", key: "c14_page", t: "My savings budget", e: "💧" },
   { n: "05", key: "c15_page", t: "My emergency plan", e: "🛟" },
-  { n: "06", key: "c16_page", t: "My goal with interest", e: "📈" },
-  { n: "07", key: "c17_page", t: "Where I keep my savings", e: "🏦" },
-  { n: "08", key: "c18_page", t: "My business capital plan", e: "🚀" },
-  { n: "09", key: "c19_page", t: "Ideas from the world", e: "🌍" },
+  { n: "06", key: "c17_page", t: "Where I keep my savings", e: "🏦" },
+  { n: "07", key: "c18_page", t: "My business capital plan", e: "🚀" },
 ];
+const classLabel2 = (n) => (typeof G8P2_WEEKS !== "undefined" && G8P2_WEEKS.find((w) => w.n === +n)?.g) || n;
 function PortfolioPanel({ resp, compact, studentName }) {
   const r = resp || {};
   const done = PF_PAGES.filter((p) => r[p.key]).length;
@@ -1159,30 +1158,31 @@ function PortfolioPanel({ resp, compact, studentName }) {
     <div className={`g8-bp g82-pf ${compact ? "compact" : ""}`}>
       <div className="g8-bp-head">
         <b>🗂️ My Savings Portfolio{studentName && !compact ? ` · ${studentName.split(" ")[0]}` : ""}</b>
-        <span>{done}/9 pages{r.c20_studio ? " · 🏆 complete" : ""}</span>
+        <span>{done}/{PF_PAGES.length} pages{r.c20_studio ? " · 🏆 complete" : ""}</span>
       </div>
-      <div className="g8-bp-pages">
+      <div className="g8-bp-pages" style={{ gridTemplateColumns: `repeat(${PF_PAGES.length + 1}, minmax(0, 1fr))` }}>
         {PF_PAGES.map((p) => <div key={p.n} className={`g8-bp-page ${r[p.key] ? "done" : ""}`}><small>{p.n}</small><em>{r[p.key] ? p.e : "▫️"}</em><span>{p.t}</span></div>)}
-        <div className={`g8-bp-page final ${r.c20_studio ? "done" : ""}`}><small>10</small><em>{r.c20_studio ? "🏆" : "🔒"}</em><span>Final portfolio</span></div>
+        <div className={`g8-bp-page final ${r.c20_studio ? "done" : ""}`}><small>{String(PF_PAGES.length + 1).padStart(2, "0")}</small><em>{r.c20_studio ? "🏆" : "🔒"}</em><span>Final portfolio</span></div>
       </div>
     </div>
   );
 }
 function PFBadge({ n }) {
   const p = PF_PAGES.find((x) => x.n === n);
+  if (!p) return null;
   return <div className="g8-bpbadge"><span>🗂️ PORTFOLIO PAGE {p.n}</span><b>{p.e} {p.t}</b></div>;
 }
 
 /* ---------- GOAL JAR: la meta que acompaña todo el periodo ---------- */
 const jarSaved = (jar) => (jar ? (jar.start || 0) + Object.values(jar.logs || {}).reduce((a, v) => a + (v || 0), 0) : 0);
-function GoalJar({ jar, classN, onLog, compact }) {
+function GoalJar({ jar, classN, classLabel, onLog, compact }) {
   const [amt, setAmt] = useState("");
   const [kind, setKind] = useState("real");
   if (!jar) {
     return (
       <div className="g82-jar empty">
         <div className="g82-jar-glass"><i style={{ height: "0%" }} /><b>?</b></div>
-        <div><small>🫙 GOAL JAR</small><b>Your jar is empty — for now!</b><span>In <b>Class 12</b> you will choose a real goal. Then, at the end of every class, you add what you saved (real or simulated) and watch the jar fill up.</span></div>
+        <div><small>🫙 GOAL JAR</small><b>Your jar is empty — for now!</b><span>In <b>Class 10</b> you will choose a real goal. Then, at the end of every class, you add what you saved (real or simulated) and watch the jar fill up.</span></div>
       </div>
     );
   }
@@ -1198,9 +1198,9 @@ function GoalJar({ jar, classN, onLog, compact }) {
         <small>🫙 GOAL JAR · {jar.item}</small>
         <b>{cop(saved)} <span>of {cop(jar.target)}</span></b>
         <div className="g82-jar-stats"><span>Left: <b>{cop(left)}</b></span>{weeks !== null && <span>≈ <b>{weeks}</b> weeks at {cop(jar.weekly)}/week</span>}</div>
-        {!compact && Object.keys(jar.logs || {}).length > 0 && <div className="g82-jar-logs">{Object.entries(jar.logs).map(([k, v]) => <span key={k}>C{k}: +{cop(v)}</span>)}</div>}
+        {!compact && Object.keys(jar.logs || {}).length > 0 && <div className="g82-jar-logs">{Object.entries(jar.logs).map(([k, v]) => <span key={k}>C{classLabel2(k)}: +{cop(v)}</span>)}</div>}
         {classN && onLog && (logged
-          ? <p className="g82-jar-ok">✅ Class {classN} logged: +{cop(jar.logs[classN])}</p>
+          ? <p className="g82-jar-ok">✅ Class {classLabel || classLabel2(classN)} logged: +{cop(jar.logs[classN])}</p>
           : (
             <div className="g82-jar-log">
               <div className="g73-toggle2"><button type="button" className={kind === "real" ? "on" : ""} onClick={() => setKind("real")}>Real money</button><button type="button" className={kind === "sim" ? "on" : ""} onClick={() => setKind("sim")}>Simulated</button></div>
@@ -2892,10 +2892,10 @@ function WhereKeep({ resp, existing, onSave, onExit }) {
   const fitE = (p) => (p === "flex" || p === "pocket" ? 3 : 0);
   const G = [W_REASON, W_CONTRAST];
   const ready = g && e && fitG(g) > 0 && fitE(e) > 0 && qs.length === 5 && goalsOk(txt, 30, 100, G);
-  if (st.done) return <Reward title="Page 07 ready! 🏦" subtitle="Your money has a safe home." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  if (st.done) return <Reward title="Page 06 ready! 🏦" subtitle="Your money has a safe home." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Landmark size={22} strokeWidth={2.1} />} title="Where I'll Keep My Savings 🏦" subtitle="You don't need ONE product for everything." onExit={onExit}>
-      <PFBadge n="07" />
+      <PFBadge n="06" />
       <div className="g8-two">
         <div className="start-block">
           <h3>🎯 For my goal{goal ? `: ${goal.what} (${goal.months} months)` : ""}</h3>
@@ -2917,7 +2917,7 @@ function WhereKeep({ resp, existing, onSave, onExit }) {
         <Starters items={["I will keep my goal money in", "because", "However, my emergency fund", "compared with"]} onPick={appendStarter(setTxt)} />
         <WordField value={txt} onChange={setTxt} min={30} max={100} rows={4} goals={G} placeholder="Write your answer here…" />
       </div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(28, { goalProd: g, emProd: e, goalName: PRODS17.find((p) => p.id === g)?.n, emName: PRODS17.find((p) => p.id === e)?.n, qs, text: txt })}>Save page 07 <span className="coin-tag"><Coins size={15} /> +28</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(28, { goalProd: g, emProd: e, goalName: PRODS17.find((p) => p.id === g)?.n, emName: PRODS17.find((p) => p.id === e)?.n, qs, text: txt })}>Save page 06 <span className="coin-tag"><Coins size={15} /> +28</span></button></div>
     </ActShell>
   );
 }
@@ -3080,10 +3080,10 @@ function CapitalPlan({ resp, existing, onSave, onExit }) {
   const [st, finish] = useFinish(onSave);
   const G = [W_NUMBERS(1), W_REASON, W_PLAN];
   const ready = bs && risks.length === 3 && goalsOk(txt, 30, 100, G);
-  if (st.done) return <Reward title="Page 08 ready! 🚀" subtitle="Your business has a capital plan." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  if (st.done) return <Reward title="Page 07 ready! 🚀" subtitle="Your business has a capital plan." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Rocket size={22} strokeWidth={2.1} />} title="My Business Capital Plan 🚀" subtitle="Capital · route · timeline · risks." onExit={onExit}>
-      <PFBadge n="08" />
+      <PFBadge n="07" />
       {!bs ? <div className="p1-hint">Play the <b>Bootstrap Challenge</b> first — this page uses your results.</div> : (
         <div className="g8-diag">
           <div><small>Business</small><b>{bs.e} {bs.biz}</b></div>
@@ -3101,7 +3101,7 @@ function CapitalPlan({ resp, existing, onSave, onExit }) {
         <Starters items={["My business needs", "I chose to", "because", "If sales are slow, I will"]} onPick={appendStarter(setTxt)} />
         <WordField value={txt} onChange={setTxt} min={30} max={100} rows={4} goals={G} placeholder="Write your plan here…" />
       </div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(28, { ...bs, risks, text: txt })}>Save page 08 <span className="coin-tag"><Coins size={15} /> +28</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(28, { ...bs, risks, text: txt })}>Save page 07 <span className="coin-tag"><Coins size={15} /> +28</span></button></div>
     </ActShell>
   );
 }
@@ -3261,7 +3261,120 @@ const loadHtml2Canvas = () => (window.html2canvas ? Promise.resolve(window.html2
   s.onload = () => res(window.html2canvas); s.onerror = rej;
   document.body.appendChild(s);
 }));
-const DECISIONS20 = [["c11_page", "🧠 Knowing my triggers"], ["c12_goal", "🎯 My SMART goal with a future price"], ["c13_page", "♟️ My saving method"], ["c14_page", "💧 Cutting a money leak"], ["c15_page", "🛟 Building an emergency fund"], ["c16_page", "📈 Understanding the real rate"], ["c17_page", "🏦 Choosing where to keep my money"], ["c18_page", "🚀 Save first vs. borrow"], ["c19_page", "🌍 A strategy from another culture"]];
+const DECISIONS20 = [["c11_page", "🧠 Knowing my triggers"], ["c12_goal", "🎯 My SMART goal with a future price"], ["c13_page", "♟️ My saving method"], ["c14_page", "💧 Cutting a money leak"], ["c15_page", "🛟 Building an emergency fund"], ["c17_page", "🏦 Choosing where to keep my money"], ["c18_page", "🚀 Save first vs. borrow"]];
+const PF_LEARN = {
+  "01": "Delayed gratification · money biases and triggers",
+  "02": "SMART goals · inflation · the future price of a dream",
+  "03": "Saving methods: pay yourself first, envelopes, 52-week, round-up",
+  "04": "Opportunity cost · small habits, big totals · saving first",
+  "05": "Emergency fund · essential expenses · liquidity",
+  "06": "EA vs. monthly rate · real rate · CDT, pockets & fraud signs",
+  "07": "Capital · bootstrapping vs. loans · interest · natillera",
+};
+const listJ2 = (arr) => (arr.length <= 1 ? arr.join("") : `${arr.slice(0, -1).join(", ")} and ${arr[arr.length - 1]}`);
+const dot2 = (t) => { const x = String(t || "").trim(); return !x ? "" : /[.!?]$/.test(x) ? x : `${x}.`; };
+const noEmo = (t) => String(t || "").replace(/^[^A-Za-z“"']+/, "").trim();
+const low1 = (t) => { const x = String(t || "").trim(); return x ? x[0].toLowerCase() + x.slice(1) : x; };
+function buildPortfolio(r, jar, studentName, extra) {
+  const S = {};
+  const p1 = r.c11_page, g = r.c12_goal, p3 = r.c13_page, p4 = r.c14_page, p5 = r.c15_page, p6 = r.c17_page, p7 = r.c18_page;
+  const saved = jarSaved(jar), pct = jar ? Math.min(100, Math.round((saved / (jar.target || 1)) * 100)) : 0;
+  if (p1) {
+    const tr = (p1.triggers || []).map(noEmo);
+    S["01"] = {
+      nums: [["Marshmallow test", p1.seconds != null ? `${p1.seconds} seconds` : "—"], ["Temptation Lab", p1.profile || "—"], ["My triggers", tr.join(" · ") || "—"]],
+      say: [
+        p1.seconds != null ? `In the Marshmallow Test, I waited ${p1.seconds} seconds.${p1.profile ? ` In the Temptation Lab, my profile was “${p1.profile}”.` : ""}` : p1.profile ? `In the Temptation Lab, my profile was “${p1.profile}”.` : "",
+        tr.length ? `The situations that influence me the most are ${listJ2(tr.map(low1))}.` : "",
+        p1.habit ? `One money habit I want to improve is ${dot2(low1(p1.habit))}` : "",
+      ],
+      quote: p1.text,
+    };
+  }
+  if (g) {
+    S["02"] = {
+      nums: [["My goal", g.what], ["Price today", cop(g.price)], [`Future price · ${g.months} mo`, cop(g.future)], ["I already had", cop(g.start || 0)], ["My plan", `${cop(g.weekly)} / week`], ["Goal Jar", `${cop(saved)} · ${pct}%`]],
+      say: [
+        `My goal is ${dot2(g.what)} Today it costs ${cop(g.price)}, but with ${g.infl}% inflation, in ${g.months} months it will cost ${cop(g.future)}.`,
+        `I already had ${cop(g.start || 0)}, and my plan is to save ${cop(g.weekly)} every week.`,
+        jar ? `My Goal Jar has ${cop(saved)} now: ${pct}% of my goal.` : "",
+        g.planB ? `My plan B: ${dot2(g.planB)}` : "",
+      ],
+      quote: g.why,
+    };
+  }
+  if (p3) {
+    S["03"] = {
+      nums: [["My method", p3.methodName], ["Per month", cop(p3.amount)], ["Result", p3.reach > 0 ? `Goal in month ${p3.reach}` : `12 months: ${cop(p3.final12)}`]],
+      say: [
+        `In the Strategy League, four saving methods raced through the same year. I chose ${p3.methodName} with ${cop(p3.amount)} a month.`,
+        p3.reach > 0 ? `With this method, I reach my goal in month ${p3.reach}.` : `With this method, I save ${cop(p3.final12)} in 12 months.`,
+      ],
+      quote: p3.text,
+    };
+  }
+  if (p4) {
+    S["04"] = {
+      nums: [["Valeria saves", `${cop(p4.valeriaSaves)} / year`], ["My money", `${cop(p4.income)} / month`], ["I save first", `${p4.rate}% = ${cop(p4.saveAmt)}`]],
+      bar: p4.income > 0 ? [{ label: "Savings first", value: p4.saveAmt, color: "#0b7a50" }, { label: "To spend", value: Math.max(0, p4.income - p4.saveAmt), color: "#f5b23e" }] : null,
+      say: [
+        `Valeria had three small money leaks. If she changes them, she saves ${cop(p4.valeriaSaves)} in one year. That is the opportunity cost of small habits.`,
+        `In my own budget, I have ${cop(p4.income)} a month and I save ${p4.rate}% first: ${cop(p4.saveAmt)}.`,
+      ],
+      quote: p4.text,
+    };
+  }
+  if (p5) {
+    const build = p5.refill ? Math.ceil(p5.target / p5.refill) : null;
+    S["05"] = {
+      nums: [["Essentials", `${cop(p5.monthly)} / month`], ["Fund size", `${p5.months} months`], ["My target", cop(p5.target)], ["Kept in", p5.whereName || "—"]],
+      say: [
+        `My essential expenses are ${cop(p5.monthly)} a month, so my emergency fund is ${p5.months} month${p5.months > 1 ? "s" : ""} of essentials: ${cop(p5.target)}.`,
+        `I keep it in a ${low1(p5.whereName || "safe place")}, because in an emergency I need my money fast.${build ? ` I can save ${cop(p5.refill)} a month, so I need ${build} months to build it.` : ""}`,
+        (p5.rulesT || []).length ? `My rules: ${listJ2((p5.rulesT || []).map(noEmo).map(low1))}.` : "",
+      ],
+      quote: p5.text,
+    };
+  }
+  if (p6) {
+    S["06"] = {
+      nums: [["For my goal", p6.goalName || "—"], ["For emergencies", p6.emName || "—"]],
+      say: [
+        `I compared accounts, pockets and CDTs, and I learned that 10% EA is not 10% a month, and that a guaranteed high return is a red flag.`,
+        `For my goal, I chose ${p6.goalName}. For my emergency fund, I chose ${p6.emName}, because emergencies need liquidity.`,
+      ],
+      quote: p6.text,
+    };
+  }
+  if (p7) {
+    S["07"] = {
+      nums: [["Business", `${p7.e || ""} ${p7.biz || ""}`], ["Capital", cop(p7.capital)], ["Route", p7.route === "save" ? `🥾 Save · ${p7.saveMonths} months` : `🏦 Loan · ${cop(p7.interest)} interest`]],
+      say: [
+        `My business idea is ${dot2(low1(p7.biz))} It needs ${cop(p7.capital)} of capital.`,
+        p7.route === "save" ? `I chose to save first: ${cop(p7.sav)} a month, and I launch in month ${p7.saveMonths} with zero debt.` : `I chose to borrow and launch now, but I pay ${cop(p7.interest)} in interest (${p7.term} installments of ${cop(p7.inst)}).`,
+        (p7.risks || []).length ? `Three risks I must consider: ${listJ2((p7.risks || []).map(noEmo).map(low1))}.` : "",
+      ],
+      quote: p7.text,
+    };
+  }
+  const intro = `Hello! My name is ${studentName || "…"}. This is my Savings Portfolio: how saving today helps me achieve something bigger tomorrow.${g ? ` My goal is ${g.what}.` : ""}`;
+  const topSay = extra.top.length ? `My 3 most important decisions are: ${listJ2(extra.top.map((k, i) => `${i + 1}) ${noEmo(DECISIONS20.find((d) => d[0] === k)?.[1]).toLowerCase()}`))}.${extra.why ? ` Number 1 is the most important because ${dot2(low1(extra.why.replace(/^because\s+/i, "")))}` : ""}` : "";
+  const fixSay = extra.issues.length ? `My portfolio had ${extra.issues.length} contradiction${extra.issues.length > 1 ? "s" : ""}, and I fixed ${extra.issues.length > 1 ? "them" : "it"}: ${listJ2(extra.issues.map((x) => ({ date: "I moved the deadline", cheaper: "I chose a cheaper option", more: "I will save more per week", move: "I moved my emergency fund to a liquid product" }[extra.fix[x.id]] || "…")))}.` : "My pages agree with each other: my plan makes sense.";
+  return { S, intro, topSay, fixSay, outro: "Thank you for listening! Do you have any questions?" };
+}
+function PFSection({ n, data, big }) {
+  const p = PF_PAGES.find((x) => x.n === n);
+  if (!data) return <section className="g8-fp empty"><h4><span>{n}</span>{p.e} {p.t}</h4><p className="g8-fp-empty">Not completed yet — finish this page to present it.</p></section>;
+  return (
+    <section className={`g8-fp ${big ? "big" : ""}`}>
+      <h4><span>{n}</span>{p.e} {p.t}</h4>
+      <div className="g8-fp-nums">{data.nums.map(([l, v]) => <div key={l}><small>{l}</small><b>{v}</b></div>)}</div>
+      {data.bar && <StackBar parts={data.bar} />}
+      <div className="g8-fp-say"><small>🎤 I SAY</small>{data.say.filter(Boolean).map((t, i) => <p key={i}>{t}</p>)}{data.quote && String(data.quote).trim() && <p className="q">“{String(data.quote).trim()}”</p>}</div>
+      <div className="g8-fp-learn">💡 I can explain: {PF_LEARN[n]}</div>
+    </section>
+  );
+}
 function PortfolioStudio({ resp, jar, studentName, existing, onSave, onExit }) {
   const r = resp || {};
   const g = r.c12_goal, bud = r.c14_page, strat = r.c13_page, keep = r.c17_page;
@@ -3270,6 +3383,7 @@ function PortfolioStudio({ resp, jar, studentName, existing, onSave, onExit }) {
   const [top, setTop] = useState(existing?.top || []);
   const [why, setWhy] = useState(existing?.why || "");
   const [busy, setBusy] = useState(false);
+  const [slide, setSlide] = useState(null);
   const [st, finish] = useFinish(onSave);
   const pages = PF_PAGES.filter((p) => r[p.key]).length;
   const needW = g ? Math.max(0, Math.round((g.target - (g.start || 0)) / (g.months * 4.33))) : 0;
@@ -3281,18 +3395,25 @@ function PortfolioStudio({ resp, jar, studentName, existing, onSave, onExit }) {
   if (g && budW !== null && budW < needW * 0.95) issues.push({ id: "budget", e: "⚖️", t: `Your goal needs ≈ ${cop(needW)} a week, but your savings budget (page 04) gives ≈ ${cop(budW)} a week.` });
   if (g && strat && (strat.reach < 0 || strat.reach > g.months)) issues.push({ id: "strategy", e: "♟️", t: `Your strategy (page 03) reaches the goal ${strat.reach > 0 ? `in month ${strat.reach}` : "after 12 months"}, but your deadline is month ${g.months}.` });
   if (g && logsN >= 2 && saved < expected * 0.8) issues.push({ id: "jar", e: "🫙", t: `Your Goal Jar has ${cop(saved)}, but your plan expected ≈ ${cop(expected)} by now.` });
-  if (keep && keep.emProd && !["flex", "pocket"].includes(keep.emProd)) issues.push({ id: "emergency", e: "🛟", t: "Your emergency fund is in a product with low liquidity." });
+  if (keep && keep.emProd && !["flex", "pocket"].includes(keep.emProd)) issues.push({ id: "emergency", e: "🛟", t: "Your emergency fund (page 06) is in a product with low liquidity." });
   const FIXES = [["date", "📅 Move the deadline"], ["cheaper", "🏷️ Choose a cheaper option"], ["more", "💵 Save more per week"]];
   const fixed = issues.every((x) => fix[x.id]);
   const G = [W_REASON];
-  const ready = pages >= 6 && fixed && top.length === 3 && goalsOk(why, 15, 70, G);
+  const minPages = PF_PAGES.length - 2;
+  const ready = pages >= minPages && fixed && top.length === 3 && goalsOk(why, 15, 70, G);
+  const B = buildPortfolio(r, jar, studentName, { top, why, issues, fix });
   const png = async () => { setBusy(true); try { const h2c = await loadHtml2Canvas(); const cv = await h2c(document.getElementById("g8-final"), { scale: 2, backgroundColor: "#ffffff", useCORS: true }); const a = document.createElement("a"); a.href = cv.toDataURL("image/png"); a.download = `Savings_Portfolio_${(studentName || "student").replace(/\s+/g, "_")}.png`; a.click(); } catch (e) { /* sin imagen */ } setBusy(false); };
   const print = () => { document.body.classList.add("g8-printing"); const off = () => { document.body.classList.remove("g8-printing"); window.removeEventListener("afterprint", off); }; window.addEventListener("afterprint", off); setTimeout(() => window.print(), 50); };
-  const Sec = ({ n, children }) => { const p = PF_PAGES.find((x) => x.n === n); const has = r[p.key]; return <section className={`g8-fp ${has ? "" : "empty"}`}><h4><span>{p.n}</span>{p.e} {p.t}</h4>{has ? children : <p className="g8-fp-empty">Not completed yet.</p>}</section>; };
-  const s = (k) => r[k] || {};
+  const closing = <section className="g8-fp habit big"><h4><span>⭐</span>My decisions</h4><div className="g8-fp-say"><small>🎤 I SAY</small><p>{B.fixSay}</p>{B.topSay && <p>{B.topSay}</p>}</div></section>;
+  const slides = [
+    { k: "intro", node: <div className="g8-slide-cover"><small>SAVINGS PORTFOLIO · GRADE 8</small><h2>Saving Today, Achieving Tomorrow</h2>{jar && <div className="g82-final-jar"><GoalJar jar={jar} compact /></div>}<p className="g8-fp-sayline">🎤 {B.intro}</p></div> },
+    ...PF_PAGES.filter((p) => B.S[p.n]).map((p) => ({ k: p.n, node: <PFSection n={p.n} data={B.S[p.n]} big /> })),
+    { k: "top", node: closing },
+    { k: "end", node: <div className="g8-slide-cover"><h2>Thank you! 🙌</h2><p className="g8-fp-sayline">🎤 {B.outro}</p></div> },
+  ];
   if (st.done) return <Reward title="My Savings Portfolio is complete! 🏆" subtitle="A plan that makes sense — in English." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
-    <ActShell icon={<Award size={22} strokeWidth={2.1} />} title="Portfolio Studio 🗂️" subtitle="Make it make sense: check, fix, choose, present." onExit={onExit}>
+    <ActShell icon={<Award size={22} strokeWidth={2.1} />} title="Portfolio Studio 🗂️" subtitle="Check it, fix it, choose your top decisions — then present it." onExit={onExit}>
       <div className="start-block">
         <h3><span className="step-n">1</span> 🕵️ Contradiction detector</h3>
         {issues.length === 0 ? <div className="p1-banner good"><Check size={18} /> <span><b>Your plan makes sense!</b> No contradictions between your pages.</span></div> : issues.map((x) => (
@@ -3308,31 +3429,32 @@ function PortfolioStudio({ resp, jar, studentName, existing, onSave, onExit }) {
         <div className="g74-chips">{DECISIONS20.filter(([k]) => r[k]).map(([k, l]) => <button key={k} type="button" className={top.includes(k) ? "on" : ""} disabled={!top.includes(k) && top.length >= 3} onClick={() => setTop(top.includes(k) ? top.filter((x) => x !== k) : [...top, k])}>{top.includes(k) ? `${top.indexOf(k) + 1}. ` : ""}{l}</button>)}</div>
         <WordField value={why} onChange={setWhy} min={15} max={70} rows={2} goals={G} placeholder="Why is your number 1 decision the most important? Write your answer here…" />
       </div>
+      <div className="start-block"><h3><span className="step-n">3</span> 🎤 My presentation</h3><p className="start-tip">Your pages became a <b>presentation script</b>. Each page has your <b>key numbers</b> and the sentences you will <b>say</b> (🎤). Read them aloud, point to the numbers and explain the concept. Press <b>Present</b> to show one page at a time.</p></div>
       <div className="g8-final g82-final" id="g8-final">
         <header><small>SAVINGS PORTFOLIO · GRADE 8 · INSTITUTO CREAR</small><h2>Saving Today, Achieving Tomorrow</h2><p>By <b>{studentName}</b>{g ? ` · Goal: ${g.what}` : ""}</p></header>
+        <div className="g8-fp-intro">🎤 {B.intro}</div>
         {jar && <div className="g82-final-jar"><GoalJar jar={jar} compact /></div>}
-        <div className="g8-fp-grid">
-          <Sec n="01"><p>{s("c11_page").profile || "—"}</p><p>Triggers: {(s("c11_page").triggers || []).join(" · ")}</p><i>“{(s("c11_page").text || "").split(" ").slice(0, 18).join(" ")}…”</i></Sec>
-          <Sec n="02"><p><b>{s("c12_goal").what}</b> · {s("c12_goal").months} months</p><p>Today {cop(s("c12_goal").price)} → future <b>{cop(s("c12_goal").future)}</b> ({s("c12_goal").infl}%)</p><p>Plan: {cop(s("c12_goal").weekly)}/week</p></Sec>
-          <Sec n="03"><p>Method: <b>{s("c13_page").methodName}</b> · {cop(s("c13_page").amount)}/month</p><p>{s("c13_page").reach > 0 ? `Goal in month ${s("c13_page").reach}` : `12 months: ${cop(s("c13_page").final12)}`}</p></Sec>
-          <Sec n="04"><p>Valeria saves <b>{cop(s("c14_page").valeriaSaves)}</b>/year</p><p>I save first: {s("c14_page").rate}% = {cop(s("c14_page").saveAmt)}/month</p></Sec>
-          <Sec n="05"><p>Essentials {cop(s("c15_page").monthly)}/month · target <b>{cop(s("c15_page").target)}</b> ({s("c15_page").months} mo)</p><p>Kept in: {s("c15_page").whereName}</p></Sec>
-          <Sec n="06"><p>{s("c16_page").rateB}% EA → {cop(s("c16_page").finalB)} vs 0% → {cop(s("c16_page").finalA)}</p><p>Real value: {cop(s("c16_page").realB)}</p></Sec>
-          <Sec n="07"><p>Goal → <b>{s("c17_page").goalName}</b></p><p>Emergency → <b>{s("c17_page").emName}</b></p></Sec>
-          <Sec n="08"><p>{s("c18_page").e} {s("c18_page").biz} · capital {cop(s("c18_page").capital)}</p><p>{s("c18_page").route === "save" ? `🥾 Save · ${s("c18_page").saveMonths} months` : `🏦 Loan · ${cop(s("c18_page").interest)} interest`}</p></Sec>
-          <Sec n="09"><p><b>{s("c19_page").ideaName}</b></p><i>“{(s("c19_page").text || "").split(" ").slice(0, 18).join(" ")}…”</i></Sec>
-          <section className="g8-fp habit"><h4><span>⭐</span>My top 3 decisions</h4><p>{top.map((k, i) => `${i + 1}. ${DECISIONS20.find((d) => d[0] === k)[1]}`).join("   ")}</p>{why && <i>“{why}”</i>}</section>
+        <div className="g8-fp-list">
+          {PF_PAGES.map((p) => <PFSection key={p.n} n={p.n} data={B.S[p.n]} />)}
+          <section className="g8-fp habit"><h4><span>⭐</span>My decisions</h4><div className="g8-fp-say"><small>🎤 I SAY</small><p>{B.fixSay}</p>{B.topSay ? <p>{B.topSay}</p> : <p className="g8-fp-empty">Choose your top 3 decisions above.</p>}</div></section>
         </div>
-        <footer>💡 Concepts: delayed gratification · biases · SMART goals · inflation · saving methods · opportunity cost · emergency fund · liquidity · EA vs. monthly · real rate · CDT · fraud signs · bootstrapping · ROSCA · natillera</footer>
+        <div className="g8-fp-intro end">🎤 {B.outro}</div>
       </div>
-      {pages < 6 && <div className="p1-banner bad"><span>You need at least 6 of the 9 pages. You have {pages}.</span></div>}
-      <div className="p3-card-actions"><button className="s1-btn ghost" disabled={busy} onClick={png}><Download size={17} /> {busy ? "Creating…" : "Download PNG"}</button><button className="s1-btn ghost" onClick={print}><Printer size={17} /> Print / PDF</button></div>
+      {pages < minPages && <div className="p1-banner bad"><span>You need at least {minPages} of the {PF_PAGES.length} pages. You have {pages}.</span></div>}
+      <div className="p3-card-actions"><button className="s1-btn primary" onClick={() => setSlide(0)}><Mic size={17} /> Present</button><button className="s1-btn ghost" disabled={busy} onClick={png}><Download size={17} /> {busy ? "Creating…" : "Download PNG"}</button><button className="s1-btn ghost" onClick={print}><Printer size={17} /> Print / PDF</button></div>
       <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(50, { pages, issues: issues.map((x) => x.id), fix, newMonths, top, why, saved })}>Publish my portfolio <span className="coin-tag"><Coins size={15} /> +50</span></button></div>
+      {slide !== null && (
+        <div className="g8-present" role="dialog">
+          <div className="g8-present-top"><span>{slide + 1} / {slides.length}</span><button type="button" onClick={() => setSlide(null)}><X size={18} /> Close</button></div>
+          <div className="g8-present-stage">{slides[slide].node}</div>
+          <div className="g8-present-nav"><button type="button" disabled={slide === 0} onClick={() => setSlide(slide - 1)}><ChevronLeft size={20} /> Back</button><button type="button" disabled={slide === slides.length - 1} onClick={() => setSlide(slide + 1)}>Next <ChevronRight size={20} /></button></div>
+        </div>
+      )}
     </ActShell>
   );
 }
 
-const SHOW82 = ["I explained my goal and its future price.", "I showed my Goal Jar progress.", "I explained my saving method and why it fits me.", "I showed one money leak and its opportunity cost.", "I explained my emergency plan.", "I explained nominal vs. real rate.", "I said where I will keep my savings and why."];
+const SHOW82 = ["I explained my goal and its future price.", "I showed my Goal Jar progress.", "I explained my saving method and why it fits me.", "I showed one money leak and its opportunity cost.", "I explained my emergency plan.", "I explained nominal vs. real rate.", "I said where I will keep my savings and why.", "I explained how I would get the capital for a business."];
 function Showcase82({ onSave, onExit }) {
   const [checks, setChecks] = useState([]);
   const [peer, setPeer] = useState("");
@@ -3428,13 +3550,13 @@ function SurvivalArena({ onSave, onExit }) {
 
 /* ---------- AUTOEVALUACIÓN · PERIODO 2 ---------- */
 const RUBRIC82 = [
-  { id: "brain", t: "I can recognize biases that push me to spend", d: "Delayed gratification, urgency, social pressure…", acts: ["c11_starter", "c11_marsh", "c11_lab", "c11_rush", "c11_page"], check: { q: "“Only 5 minutes left! Buy now!” is an example of…", options: ["Urgency bias", "A SMART goal", "Compound interest"], tip: "Review: Class 11 · Temptation Lab." } },
-  { id: "goal", t: "I can set a SMART goal with a future price", d: "Short/medium/long term + inflation.", acts: ["c12_starter", "c12_read", "c12_timeline", "c12_goal"], check: { q: "$1,000,000 with +5% inflation for one year =", options: ["$1,050,000", "$1,005,000", "$1,500,000"], tip: "Price × 1.05. Review: Class 12 · Goal Timeline." } },
-  { id: "method", t: "I can compare saving methods", d: "Pay yourself first, envelopes, 52-week, round-up.", acts: ["c13_starter", "c13_video", "c13_battle", "c13_page"], check: { q: "Which method needs MORE money at the end of the year?", options: ["52-week challenge", "Pay yourself first", "Round-up"], tip: "Its contributions grow every week. Review: Class 13 · Strategy Battle." } },
-  { id: "opp", t: "I can calculate the opportunity cost of small habits", d: "1, 5 and 10 years.", acts: ["c14_read", "c14_hunter", "c14_rush", "c14_page"], check: { q: "$4,000 × 5 days × 52 weeks =", options: ["$1,040,000", "$20,000", "$208,000"], tip: "Review: Class 14 · Leak Hunter." } },
-  { id: "emerg", t: "I can plan an emergency fund", d: "How much, where, when to use it.", acts: ["c15_story", "c15_survival", "c15_rush", "c15_page"], check: { q: "Where should an emergency fund be?", options: ["A liquid product, like a pocket", "A 2-year CDT", "A crypto club"], tip: "Liquidity first. Review: Class 15 · My Emergency Plan." } },
-  { id: "rates", t: "I can understand EA, monthly and real rates", d: "And compare savings products.", acts: ["c16_read", "c16_rate", "c16_rush", "c17_lab"], check: { q: "Rate 8% EA, inflation 8%. Real gain ≈", options: ["0%", "16%", "8%"], tip: "Review: Class 16 · Rate Translator." } },
-  { id: "world", t: "I can compare saving with borrowing and community saving", d: "Bootstrapping, ROSCA, natillera.", acts: ["c18_story", "c18_boot", "c19_tour", "c19_nat"], check: { q: "Does a natillera create extra money?", options: ["No — members use their own money", "Yes, it multiplies it", "Only in December"], tip: "Review: Class 19 · Natillera Simulator." } },
+  { id: "brain", t: "I can recognize biases that push me to spend", d: "Delayed gratification, urgency, social pressure…", acts: ["c11_starter", "c11_marsh", "c11_lab", "c11_rush", "c11_page"], check: { q: "“Only 5 minutes left! Buy now!” is an example of…", options: ["Urgency bias", "A SMART goal", "Compound interest"], tip: "Review: Class 9 · Temptation Lab." } },
+  { id: "goal", t: "I can set a SMART goal with a future price", d: "Short/medium/long term + inflation.", acts: ["c12_starter", "c12_read", "c12_timeline", "c12_goal"], check: { q: "$1,000,000 with +5% inflation for one year =", options: ["$1,050,000", "$1,005,000", "$1,500,000"], tip: "Price × 1.05. Review: Class 10 · Goal Timeline." } },
+  { id: "method", t: "I can compare saving methods", d: "Pay yourself first, envelopes, 52-week, round-up.", acts: ["c13_starter", "c13_video", "c13_rush", "c13_battle", "c13_page"], check: { q: "Which method needs MORE money at the end of the year?", options: ["52-week challenge", "Pay yourself first", "Round-up"], tip: "Its contributions grow every week. Review: Class 11 · Strategy Battle." } },
+  { id: "opp", t: "I can calculate the opportunity cost of small habits", d: "1, 5 and 10 years.", acts: ["c14_starter", "c14_read", "c14_hunter", "c14_rush", "c14_page"], check: { q: "$4,000 × 5 days × 52 weeks =", options: ["$1,040,000", "$20,000", "$208,000"], tip: "Review: Class 12 · Leak Hunter." } },
+  { id: "emerg", t: "I can plan an emergency fund", d: "How much, where, when to use it.", acts: ["c15_starter", "c15_story", "c15_survival", "c15_rush", "c15_page"], check: { q: "Where should an emergency fund be?", options: ["A liquid product, like a pocket", "A 2-year CDT", "A crypto club"], tip: "Liquidity first. Review: Class 13 · My Emergency Plan." } },
+  { id: "rates", t: "I can understand EA, monthly and real rates", d: "And compare savings products.", acts: ["c16_starter", "c16_rate", "c17_lab", "c17_rush", "c17_page"], check: { q: "Rate 8% EA, inflation 8%. Real gain ≈", options: ["0%", "16%", "8%"], tip: "Review: Class 14 · Rate Translator." } },
+  { id: "world", t: "I can compare saving with borrowing and community saving", d: "Bootstrapping, ROSCA, natillera.", acts: ["c18_starter", "c18_story", "c18_boot", "c19_nat", "c18_page"], check: { q: "Does a natillera create extra money?", options: ["No — members use their own money", "Yes, it multiplies it", "Only in December"], tip: "Review: Class 15 · Natillera Simulator." } },
 ];
 const STAR_L2 = ["", "Starting", "Developing", "Good", "Excellent"];
 const HOW_L2 = [["read", "📖 Reading"], ["video", "🎬 Video"], ["game", "🎮 Game"], ["write", "✍️ Writing"], ["sim", "🧮 Simulator"]];
@@ -3489,75 +3611,67 @@ function SelfCheck82({ existing, checklist, onSave, onExit }) {
    ESTRUCTURA DEL PERIODO 2 (clases 11–21) · Goal Jar + Savings Portfolio
    ===================================================================== */
 const A = (key, title, desc, icon, coins, bucket) => ({ key, title, desc, icon, coins, bucket });
+/* Starters combinados (8 clases): tasas + productos · emprender + ahorrar en grupo */
+const START_1617 = {
+  cards: [...START_16.cards.filter((c) => ["Interest rate", "EA (effective annual)", "Monthly rate", "Inflation", "Real rate"].includes(c.t)), ...START_17.cards.filter((c) => ["CDT", "Liquidity", "Fees", "Fraud"].includes(c.t))],
+  rounds: [START_16.rounds[0], START_16.rounds[1], START_16.rounds[2], START_17.rounds[0], START_17.rounds[1], START_17.rounds[2]],
+};
+const START_1819 = {
+  cards: [...START_18.cards, ...START_19.cards.filter((c) => ["ROSCA", "Natillera", "Trust"].includes(c.t))],
+  pairs: [...START_18.pairs.filter((p) => p.a !== "Installment"), { a: "Natillera", b: "A Colombian group saving with a payout date" }, { a: "ROSCA", b: "Everyone pays, one member receives each turn" }],
+};
 const G8P2_WEEKS = [
-  { n: 11, g: "11", title: "The Brain vs. The Wallet", blurb: "Why is saving so hard? Test your waiting power and meet your biases.", e: "🧠", skills: ["Video", "Game"], acts: [
+  { n: 11, g: "9", title: "The Brain vs. The Wallet", blurb: "Why is saving so hard? Test your waiting power and meet your biases.", e: "🧠", skills: ["Game", "Rush"], acts: [
     A("c11_starter", "Starter: Brain & Money 🧱", "6 key words + match game.", <Lightbulb size={22} />, 20, "quizzes"),
-    A("c11_video", "Video: Delayed Gratification 🎬", "Short video · no quiz · predict your time.", <Video size={22} />, 10, "quizzes"),
     A("c11_marsh", "The Marshmallow Test 🍬⏳", "Can you wait 60 seconds? For real.", <Timer size={22} />, 30, "aprendi"),
     A("c11_lab", "Temptation Lab 🧪", "8 temptations · Present You vs. Future You.", <Brain size={22} />, 30, "aprendi"),
     A("c11_rush", "Smart or Impulse? Rush ⚡", "14 situations · beat the clock.", <Zap size={22} />, 24, "aprendi"),
     A("c11_page", "My Money Personality 🧠 · Page 01", "Your triggers + your strategy.", <PenLine size={22} />, 25, "aprendi"),
   ] },
-  { n: 12, g: "12", title: "The Future Price of a Dream", blurb: "Short, medium and long-term goals — and inflation. Create your Goal Jar!", e: "🎯", skills: ["Reading", "Math"], acts: [
+  { n: 12, g: "10", title: "The Future Price of a Dream", blurb: "Short, medium and long-term goals — and inflation. Create your Goal Jar!", e: "🎯", skills: ["Reading", "Math"], acts: [
     A("c12_starter", "Starter: Goals & Time 🧱", "SMART, deadline, inflation + quick game.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c12_read", "Reading: The Price of Tomorrow 📖", "Three friends, three goals · quiz (8 of 12).", <BookOpen size={22} />, 42, "quizzes"),
     A("c12_timeline", "Goal Timeline: Future Edition ⏳", "Sort 9 goals + inflation time machine.", <Hourglass size={22} />, 31, "aprendi"),
     A("c12_goal", "My Real Goal 🎯 · Page 02", "A SMART goal → your Goal Jar 🫙", <Target size={22} />, 30, "aprendi"),
   ] },
-  { n: 13, g: "13", title: "The Savings Strategy League", blurb: "Four saving methods race through the same year. Who wins?", e: "♟️", skills: ["Video", "Simulator"], acts: [
+  { n: 13, g: "11", title: "The Savings Strategy League", blurb: "Four saving methods race through the same year. Who wins?", e: "♟️", skills: ["Video", "Simulator"], acts: [
     A("c13_starter", "Starter: Saving Methods 🧱", "6 methods + match game.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c13_video", "Video: Saving Tips for Teens 🎬", "5 tips · 8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A("c13_rush", "Which Method? Rush ⚡", "12 situations · 4 methods.", <Zap size={22} />, 24, "aprendi"),
     A("c13_battle", "Strategy Battle 🏆", "Predict · race · switch · league table.", <Trophy size={22} />, 36, "aprendi"),
     A("c13_page", "My Strategy ♟️ · Page 03", "Your method tested with your goal.", <Target size={22} />, 28, "aprendi"),
   ] },
-  { n: 14, g: "14", title: "The True Price of Small Choices", blurb: "Small habits, big totals. Travel 10 years into the future.", e: "💧", skills: ["Reading", "Math"], acts: [
+  { n: 14, g: "12", title: "The True Price of Small Choices", blurb: "Small habits, big totals. Travel 10 years into the future.", e: "💧", skills: ["Reading", "Math"], acts: [
     A("c14_starter", "Starter: Small Choices 🧱", "Opportunity cost from zero.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c14_read", "Reading: What Did That Coffee Really Cost? ☕", "A research article · quiz (8 of 12).", <BookOpen size={22} />, 42, "quizzes"),
     A("c14_hunter", "Leak Hunter: Time Machine 💧⏳", "Build a leak · travel 1, 5, 10 years.", <Hourglass size={22} />, 37, "aprendi"),
     A("c14_rush", "Price or Opportunity Cost? ⚡", "12 cards · 60 seconds.", <Zap size={22} />, 24, "aprendi"),
     A("c14_page", "My Savings Budget 💧 · Page 04", "Help Valeria + your savings budget.", <PiggyBank size={22} />, 30, "aprendi"),
   ] },
-  { n: 15, g: "15", title: "The Emergency That Changed Everything", blurb: "Same accident, two endings. Survive 12 months with and without a fund.", e: "🛟", skills: ["Story", "Simulator"], acts: [
+  { n: 15, g: "13", title: "The Emergency That Changed Everything", blurb: "Same accident, two endings. Survive 12 months with and without a fund.", e: "🛟", skills: ["Story", "Simulator"], acts: [
     A("c15_starter", "Starter: Emergencies 🧱", "Fund, liquidity, debt + quick math.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c15_story", "Same Accident, Two Endings 📱💥", "A story · predict what happens.", <BookOpen size={22} />, 15, "quizzes"),
     A("c15_survival", "12-Month Survival 🛟", "Two lives, one year of surprises.", <LifeBuoy size={22} />, 34, "aprendi"),
     A("c15_rush", "Emergency or Not? Rush 🛟", "Use the fund — or plan it?", <Zap size={22} />, 24, "aprendi"),
     A("c15_page", "My Emergency Plan 🛟 · Page 05", "How much, where, when.", <Shield size={22} />, 30, "aprendi"),
   ] },
-  { n: 16, g: "16", title: "The 10% Illusion", blurb: "EA vs. monthly, nominal vs. real. Become a rate detective.", e: "🔎", skills: ["Reading", "Math"], acts: [
-    A("c16_starter", "Starter: Interest & Rates 🧱", "7 key words + quick math.", <Lightbulb size={22} />, 20, "quizzes"),
-    A("c16_read", "Reading: Why 10% Is Not Always 10% 📖", "An explainer · quiz (8 of 12).", <BookOpen size={22} />, 42, "quizzes"),
+  { n: 16, g: "14", title: "The 10% Illusion & the Fine Print", blurb: "EA vs. monthly, real rates — and which product (or scam) is behind the ad.", e: "🔎", skills: ["Math", "Decision"], acts: [
+    A("c16_starter", "Starter: Rates & Products 🧱", "Rates, CDT, liquidity, fraud + quick math.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c16_rate", "Rate Translator 🔎", "3 ideas + console + calculator + 6 offers.", <Percent size={22} />, 33, "aprendi"),
-    A("c16_rush", "Real Gain or Real Loss? ⚡", "Rate vs. inflation · 12 cards.", <Zap size={22} />, 24, "aprendi"),
-    A("c16_page", "My Goal with Interest 📈 · Page 06", "0% pocket vs. account with interest.", <TrendingUp size={22} />, 28, "aprendi"),
-  ] },
-  { n: 17, g: "17", title: "The Fine Print Challenge", blurb: "Accounts, pockets, CDTs — and one dangerous offer.", e: "🏦", skills: ["Reading", "Decision"], acts: [
-    A("c17_starter", "Starter: Savings Products 🧱", "7 key words + quick game.", <Lightbulb size={22} />, 20, "quizzes"),
-    A("c17_read", "Reading: The Fine Print Challenge 📖", "An investigation · quiz (8 of 12).", <BookOpen size={22} />, 42, "quizzes"),
     A("c17_lab", "Savings Product Lab 🔍", "3 customers · 4 offers · 1 scam.", <Search size={22} />, 36, "aprendi"),
     A("c17_rush", "Legit or Too Good to Be True? 🚩", "12 offers · spot the fraud.", <Zap size={22} />, 24, "aprendi"),
-    A("c17_page", "Where I'll Keep My Savings 🏦 · Page 07", "One product for the goal, one for emergencies.", <Landmark size={22} />, 28, "aprendi"),
+    A("c17_page", "Where I'll Keep My Savings 🏦 · Page 06", "One product for the goal, one for emergencies.", <Landmark size={22} />, 28, "aprendi"),
   ] },
-  { n: 18, g: "18", title: "Build It Without Borrowing", blurb: "Young founders, MVPs and the real cost of a loan.", e: "🚀", skills: ["Story", "Business"], acts: [
-    A("c18_starter", "Starter: Founder Words 🧱", "Capital, loan, MVP + match game.", <Lightbulb size={22} />, 20, "quizzes"),
+  { n: 18, g: "15", title: "Build It: Save, Borrow or Save Together", blurb: "Young founders, the real cost of a loan — and the Colombian natillera.", e: "🚀", skills: ["Story", "Business"], acts: [
+    A("c18_starter", "Starter: Founder Words 🧱", "Capital, loan, MVP, natillera + match game.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c18_story", "Founder Stories 🚀", "3 young founders · guess what happens.", <Rocket size={22} />, 15, "quizzes"),
     A("c18_boot", "Bootstrap Challenge 🥾", "Shopping list · save or borrow · sales reality.", <Hammer size={22} />, 30, "aprendi"),
-    A("c18_rush", "Start Now or Later? Rush 🚀", "What does a business REALLY need?", <Zap size={22} />, 24, "aprendi"),
-    A("c18_page", "My Business Capital Plan 🚀 · Page 08", "Capital · route · timeline · risks.", <Briefcase size={22} />, 28, "aprendi"),
-  ] },
-  { n: 19, g: "19", title: "How the World Saves", blurb: "Japan, Germany, China, Kenya and Colombia — and a natillera simulator.", e: "🌍", skills: ["Reading", "Global"], acts: [
-    A("c19_starter", "Starter: Saving Together 🧱", "ROSCA, natillera, trust + quick game.", <Lightbulb size={22} />, 20, "quizzes"),
-    A("c19_read", "Reading: World Saving Tour 📖", "A travel magazine · quiz (8 of 12).", <BookOpen size={22} />, 42, "quizzes"),
-    A("c19_tour", "World Saving Tour 🛂", "5 missions · 5 stamps.", <Plane size={22} />, 32, "aprendi"),
     A("c19_nat", "Natillera Simulator 🍮", "A group pool with real problems.", <Users size={22} />, 28, "aprendi"),
-    A("c19_page", "Ideas from the World 🌍 · Page 09", "Borrow one strategy for your goal.", <Globe size={22} />, 26, "aprendi"),
+    A("c18_page", "My Business Capital Plan 🚀 · Page 07", "Capital · route · timeline · risks.", <Briefcase size={22} />, 28, "aprendi"),
   ] },
-  { n: 20, g: "20", title: "Portfolio Studio", blurb: "Make it make sense: detect contradictions, fix them and present.", e: "🗂️", skills: ["Writing", "Speaking"], acts: [
+  { n: 20, g: "16", title: "Portfolio & Savings Boss", blurb: "Present your portfolio, survive the arena and beat the Boss.", e: "🏆", skills: ["Speaking", "Challenge"], acts: [
     A("c20_studio", "Portfolio Studio 🗂️", "Contradiction detector + your final portfolio.", <Award size={22} />, 50, "aprendi"),
     A("c20_present", "Portfolio Showcase 🎤", "Present in 2 minutes + peer feedback.", <Mic size={22} />, 20, "comportamiento"),
-  ] },
-  { n: 21, g: "21", title: "Savings Boss: The Final Test", blurb: "Financial Survival Arena, the Boss quiz and your self-check.", e: "⚔️", skills: ["Challenge", "Review"], acts: [
     A("c21_arena", "Financial Survival Arena ⚔️", "The Dream · The Emergency · The Offer.", <Swords size={22} />, 50, "aprendi"),
     A("c21_quiz", "Savings Boss Quiz ⚔️", "15 questions from the period (70%).", <Trophy size={22} />, 70, "quizzes"),
     A("c21_self", "My Self-Check", "Prove 7 skills + how you learned them.", <Star size={22} />, 20, "comportamiento"),
@@ -3676,7 +3790,7 @@ export const Periodo2G8 = ({ userData, API_URL, existingRow, onBack }) => {
       case "c15_survival": view = <Survival12 onSave={save} onExit={exit} />; break;
       case "c15_rush": view = <SpeedSort title="Emergency or Not? Rush 🛟" subtitle="Use the fund — or plan it?" buckets={RUSH_EMERG.buckets} items={RUSH_EMERG.items} doneTitle="Emergency planner! 🛟" onSave={save} onExit={exit} />; break;
       case "c15_page": view = <EmergencyPlan existing={resp.c15_page} onSave={save} onExit={exit} />; break;
-      case "c16_starter": view = starter("Starter: Interest & Rates 🧱", "EA, monthly, real — from zero.", START_16); break;
+      case "c16_starter": view = starter("Starter: Rates & Products 🧱", "EA, monthly, real rate — and where to keep your money.", START_1617); break;
       case "c16_read": view = reading("READING · B1 · EXPLAINER", "Why 10% Is Not Always 10%", "Two ads say 10%. Are they the same?", READ_16, GLOSS_16, Q_16, "🔎"); break;
       case "c16_rate": view = <RateTranslator onSave={save} onExit={exit} />; break;
       case "c16_rush": view = <SpeedSort title="Real Gain or Real Loss? ⚡" subtitle="Compare the rate with inflation." buckets={RUSH_REAL.buckets} items={RUSH_REAL.items} doneTitle="Inflation fighter! 📈" onSave={save} onExit={exit} />; break;
@@ -3686,7 +3800,7 @@ export const Periodo2G8 = ({ userData, API_URL, existingRow, onBack }) => {
       case "c17_lab": view = <ProductLab onSave={save} onExit={exit} />; break;
       case "c17_rush": view = <SpeedSort title="Legit or Too Good to Be True? 🚩" subtitle="Spot the fraud signals." buckets={RUSH_SCAM.buckets} items={RUSH_SCAM.items} doneTitle="Fraud detector! 🚩" onSave={save} onExit={exit} />; break;
       case "c17_page": view = <WhereKeep resp={resp} existing={resp.c17_page} onSave={save} onExit={exit} />; break;
-      case "c18_starter": view = starter("Starter: Founder Words 🧱", "Capital, loans and bootstrapping.", START_18); break;
+      case "c18_starter": view = starter("Starter: Founder Words 🧱", "Capital, loans, bootstrapping — and saving together.", START_1819); break;
       case "c18_story": view = <FounderStories onSave={save} onExit={exit} />; break;
       case "c18_boot": view = <BootstrapChallenge onSave={save} onExit={exit} />; break;
       case "c18_rush": view = <SpeedSort title="Start Now or Later? Rush 🚀" subtitle="What does a new business REALLY need?" buckets={RUSH_MVP.buckets} items={RUSH_MVP.items} doneTitle="MVP builder! 🧪" onSave={save} onExit={exit} />; break;
@@ -3720,7 +3834,7 @@ export const Periodo2G8 = ({ userData, API_URL, existingRow, onBack }) => {
           <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / w.acts.length) * 100}%` }} /></div><span className="pill">{wDone}/{w.acts.length}</span></div>
         </div>
         <PortfolioPanel resp={respRef.current} compact />
-        {w.n >= 12 && <GoalJar jar={jar} classN={respRef.current.c12_goal ? w.n : null} onLog={logJar} />}
+        {w.n >= 12 && <GoalJar jar={jar} classN={respRef.current.c12_goal ? w.n : null} classLabel={w.g} onLog={logJar} />}
         <div className="s1-quest">
           {w.acts.map((a) => (
             <div key={a.key} className={`act-card ${checklist[a.key] ? "done" : ""} ${PAGE_ACTS2.includes(a.key) ? "g8-page-act" : ""} ${a.title.startsWith("Starter") ? "g8-starter-act" : ""} ${a.key.endsWith("_rush") ? "g8-rush-act" : ""} ${a.key.endsWith("_read") || a.key.endsWith("_video") ? "g73-learn-act" : ""}`}>
@@ -3745,7 +3859,7 @@ export const Periodo2G8 = ({ userData, API_URL, existingRow, onBack }) => {
         <div className="s1-progress"><div className="bar"><i style={{ width: `${pctDone}%` }} /></div><span className="pill">{pctDone}%</span></div>
         <div className="p1-hero-chips"><span><Coins size={14} /> {coinsTotal} coins</span><span><Check size={14} /> {doneCount}/{TOTAL_ACTS2} activities</span><span>🫙 Goal Jar</span><span>🗂️ Savings Portfolio</span><span>🎯 SDG 8</span></div>
       </div>
-      <div className="g8-howyear"><b>🫙 This period:</b><span>In Class 12 you choose a REAL goal. At the end of every class, add what you saved to your <b>Goal Jar</b> and watch it fill up. Each class: Starter → one video or reading → games and simulators → a Portfolio page.</span></div>
+      <div className="g8-howyear"><b>🫙 This period:</b><span>In Class 10 you choose a REAL goal. At the end of every class, add what you saved to your <b>Goal Jar</b> and watch it fill up. Each class (45 min): Starter → one video, reading or story → games, rushes and simulators → a Portfolio page.</span></div>
       <GoalJar jar={jar} />
       <PortfolioPanel resp={respRef.current} studentName={name} />
       {checklist.c20_studio && <button type="button" className="p3-card-link" onClick={() => setAct("c20_studio")}><Award size={18} /> See my Savings Portfolio <ChevronRight size={16} /></button>}

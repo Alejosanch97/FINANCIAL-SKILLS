@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
-  ArrowLeft, BookOpen, Video, Check, X, Coins, Trophy, Sparkles, Clock, ChevronRight, Lightbulb, Play,
+  ArrowLeft, BookOpen, Video, Check, X, Coins, Trophy, Sparkles, Clock, ChevronRight, ChevronLeft, Lightbulb, Play,
   PenLine, Star, Users, Lock, Store, Scale, RefreshCw, Award, Puzzle, Mic, Target, Calculator,
   ShieldCheck, Plus, Minus, Trash2, Search, Swords, Rocket, Download, Printer, ShoppingCart, Globe,
   TrendingUp, TrendingDown, Headphones, Compass, BarChart3, LineChart as LineIcon, Flame, Map as MapIcon,
@@ -1034,15 +1034,13 @@ function PctBar({ parts }) {
    PIEZAS DE OCTAVO · Financial City + Money Blueprint
    ===================================================================== */
 const BP_PAGES = [
-  { n: "01", key: "c1_snapshot", t: "Money snapshot", e: "📸" },
-  { n: "02", key: "c2_income", t: "Income map", e: "🗺️" },
-  { n: "03", key: "c3_statement", t: "Expense profile", e: "🧾" },
-  { n: "04", key: "c4_battle", t: "Balanced budget", e: "⚖️" },
-  { n: "05", key: "c5_scanner", t: "Verified transaction", e: "🔍" },
+  { n: "01", key: "c2_income", t: "Income map", e: "🗺️" },
+  { n: "02", key: "c3_statement", t: "My statement", e: "🧾" },
+  { n: "03", key: "c4_battle", t: "Balanced budget", e: "⚖️" },
+  { n: "04", key: "c5_scanner", t: "Verified transaction", e: "🔍" },
+  { n: "05", key: "c9_rules", t: "Safe money app", e: "🔐" },
   { n: "06", key: "c6_books", t: "Profit & loss report", e: "📒" },
   { n: "07", key: "c7_autopsy", t: "Spending dashboard", e: "📊" },
-  { n: "08", key: "c8_sim", t: "Country comparison", e: "🌍" },
-  { n: "09", key: "c9_rules", t: "Digital safety checklist", e: "🔐" },
 ];
 function BlueprintPanel({ resp, compact, studentName }) {
   const r = resp || {};
@@ -1051,19 +1049,20 @@ function BlueprintPanel({ resp, compact, studentName }) {
     <div className={`g8-bp ${compact ? "compact" : ""}`}>
       <div className="g8-bp-head">
         <b>📐 My Money Blueprint{studentName && !compact ? ` · ${studentName.split(" ")[0]}` : ""}</b>
-        <span>{done}/9 pages{r.c10_blueprint ? " · 🏆 complete" : ""}</span>
+        <span>{done}/{BP_PAGES.length} pages{r.c10_blueprint ? " · 🏆 complete" : ""}</span>
       </div>
-      <div className="g8-bp-pages">
+      <div className="g8-bp-pages" style={{ gridTemplateColumns: `repeat(${BP_PAGES.length + 1}, minmax(0, 1fr))` }}>
         {BP_PAGES.map((p) => (
           <div key={p.n} className={`g8-bp-page ${r[p.key] ? "done" : ""}`}><small>{p.n}</small><em>{r[p.key] ? p.e : "▫️"}</em><span>{p.t}</span></div>
         ))}
-        <div className={`g8-bp-page final ${r.c10_blueprint ? "done" : ""}`}><small>10</small><em>{r.c10_blueprint ? "🏆" : "🔒"}</em><span>Final Blueprint</span></div>
+        <div className={`g8-bp-page final ${r.c10_blueprint ? "done" : ""}`}><small>{String(BP_PAGES.length + 1).padStart(2, "0")}</small><em>{r.c10_blueprint ? "🏆" : "🔒"}</em><span>Final Blueprint</span></div>
       </div>
     </div>
   );
 }
 function BPBadge({ n }) {
   const p = BP_PAGES.find((x) => x.n === n);
+  if (!p) return null;
   return <div className="g8-bpbadge"><span>📐 BLUEPRINT PAGE {p.n}</span><b>{p.e} {p.t}</b></div>;
 }
 
@@ -1126,7 +1125,7 @@ function ChatThread({ title, msgs }) {
 }
 
 /* ---------- Documento tipo recibo / factura ---------- */
-function ReceiptDoc({ doc, onLine, picked, reveal }) {
+function ReceiptDoc({ doc, onLine, picked, reveal, marked = [] }) {
   return (
     <div className={`g8-receipt ${doc.kind}`}>
       <header><b>{doc.store}</b><small>{doc.sub}</small><i>{doc.label}</i></header>
@@ -1135,7 +1134,7 @@ function ReceiptDoc({ doc, onLine, picked, reveal }) {
         {doc.lines.map((l, i) => {
           const isBad = reveal && doc.bad === i;
           return (
-            <button key={i} type="button" disabled={!onLine} className={`g8-rline ${l.kind || ""} ${picked === i ? "picked" : ""} ${isBad ? "bad" : ""}`} onClick={() => onLine && onLine(i)}>
+            <button key={i} type="button" disabled={!onLine} className={`g8-rline ${l.kind || ""} ${picked === i ? "picked" : ""} ${marked.includes(i) ? "calc" : ""} ${isBad ? "bad" : ""}`} onClick={() => onLine && onLine(i)}>
               <span>{l.t}</span><b>{l.v}</b>
             </button>
           );
@@ -1727,7 +1726,7 @@ function MoneySnapshot({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Snapshot saved! 📸" subtitle="Blueprint page 01 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Wallet size={22} strokeWidth={2.1} />} title="My Money Snapshot 📸" subtitle="A photo of YOUR money today. Real or approximate numbers — nobody judges." onExit={onExit}>
-      <BPBadge n="01" />
+      <BPBadge n="00" />
       <HowTo>Write how much money you usually receive and spend in <b>one month</b>. If you don't receive money, imagine a realistic situation (for example, $150,000 a month).</HowTo>
       <div className="g8-two">
         <div className="start-block g8-col in"><h3>⬇️ Money IN</h3>{SNAP_IN.map(([k, e, l]) => <div key={k} className="g8-row"><span>{e} {l}</span><MoneyInput value={inc[k] || ""} onChange={(v) => setInc({ ...inc, [k]: v })} /></div>)}<div className="g8-row tot"><span>Total in</span><b>{cop(tIn)}</b></div></div>
@@ -1880,10 +1879,10 @@ function IncomeMap({ existing, onSave, onExit }) {
   const totalBy = (t) => active.filter((x) => x[3] === t).reduce((a, [k]) => a + num(amt[k]), 0);
   const tot = active.reduce((a, [k]) => a + num(amt[k]), 0);
   const ready = active.length >= 2 && dream !== null && goalsOk(why, 8, 60, [W_REASON]);
-  if (st.done) return <Reward title="Income map ready! 🗺️" subtitle="Blueprint page 02 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  if (st.done) return <Reward title="Income map ready! 🗺️" subtitle="Blueprint page 01 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<MapIcon size={22} strokeWidth={2.1} />} title="My Income Map 🗺️" subtitle="Where does your money come from today — and tomorrow?" onExit={onExit}>
-      <BPBadge n="02" />
+      <BPBadge n="01" />
       {stage === 0 ? (
         <>
           <HowTo>First, 6 quick cases: is it <b>active</b> income, <b>passive</b> income or a <b>gift/allowance</b>?</HowTo>
@@ -1902,7 +1901,7 @@ function IncomeMap({ existing, onSave, onExit }) {
             <p className="start-tip">Write 2 sentences: the sector of that job and why you like it.</p>
             <WordField value={why} onChange={setWhy} min={8} max={60} rows={3} goals={[W_REASON]} placeholder="Write your answer here…" />
           </div>
-          <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(25, { amounts: amt, total: tot, active: totalBy("active"), passive: totalBy("passive"), gifts: totalBy("gift"), dream, dreamJob: DREAM_JOBS[dream][1], sector: SECT[DREAM_JOBS[dream][2]][2], why })}>{active.length < 2 ? "Add 2+ sources" : "Save page 02"} <span className="coin-tag"><Coins size={15} /> +25</span></button></div>
+          <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(25, { amounts: amt, total: tot, active: totalBy("active"), passive: totalBy("passive"), gifts: totalBy("gift"), dream, dreamJob: DREAM_JOBS[dream][1], sector: SECT[DREAM_JOBS[dream][2]][2], why })}>{active.length < 2 ? "Add 2+ sources" : "Save page 01"} <span className="coin-tag"><Coins size={15} /> +25</span></button></div>
         </>
       )}
     </ActShell>
@@ -2043,10 +2042,10 @@ function MyStatement({ existing, onSave, onExit }) {
   const fixedN = rows.filter((r) => r.f === "fixed").length, varN = rows.filter((r) => r.f === "variable").length;
   const FR = [{ k: "a", f: "My biggest category is" }, { k: "b", f: "My fixed expenses are" }, { k: "c", f: "One change I can make is" }];
   const ready = rows.length >= 8 && fixedN >= 2 && varN >= 2 && FR.every((x) => countWords(concl[x.k]) >= 4);
-  if (st.done) return <Reward title="Statement created! 🧾" subtitle="Blueprint page 03 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  if (st.done) return <Reward title="Statement created! 🧾" subtitle="Blueprint page 02 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<FileText size={22} strokeWidth={2.1} />} title="Create My Statement 🧾" subtitle="Now YOU are the bank. Build a realistic month statement for yourself." onExit={onExit}>
-      <BPBadge n="03" />
+      <BPBadge n="02" />
       <HowTo>1) Write your monthly income. 2) Tap cards to add movements (8 or more). 3) Change the day and the amount if you want. The statement orders them by date and calculates the <b>balance</b>. Include at least 2 fixed and 2 variable expenses.</HowTo>
       <div className="g8-row big"><span>💵 My monthly income (day 1)</span><MoneyInput value={income} onChange={setIncome} /></div>
       <div className="g8-txpool">{TX_POOL.map((p) => <button key={p[1]} type="button" onClick={() => add(p)}><em>{p[0]}</em>{p[1]}<small>{cop(p[2])}</small></button>)}</div>
@@ -2067,7 +2066,7 @@ function MyStatement({ existing, onSave, onExit }) {
       {rows.length > 0 && <HBars rows={[{ e: "✅", l: "Needs", v: by("need"), c: "#0b7a50" }, { e: "🎁", l: "Wants", v: by("want"), c: "#e07a2f" }, { e: "🐷", l: "Savings", v: by("save"), c: "#f5b23e" }]} />}
       <div className="g73-checklist">{[["8+ movements", rows.length >= 8], ["2+ fixed", fixedN >= 2], ["2+ variable", varN >= 2], ["Balance never below $0", withBal.every((r) => r.bal >= 0)]].map(([l, ok]) => <span key={l} className={ok ? "ok" : ""}>{ok ? "✅" : "○"} {l}</span>)}</div>
       <div className="start-block"><h3><PenLine size={18} /> My 3 conclusions</h3>{FR.map((x) => <div key={x.k} className="p3-sentence edit"><span>{x.f}</span><input className="start-input" value={concl[x.k]} onChange={(e) => setConcl({ ...concl, [x.k]: e.target.value })} placeholder="Write your answer here…" /></div>)}</div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(30, { income: num(income), rows, needs: by("need"), wants: by("want"), save: by("save"), concl, final: withBal.length ? withBal[withBal.length - 1].bal : num(income) })}>Save page 03 <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(30, { income: num(income), rows, needs: by("need"), wants: by("want"), save: by("save"), concl, final: withBal.length ? withBal[withBal.length - 1].bal : num(income) })}>Save page 02 <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
     </ActShell>
   );
 }
@@ -2159,7 +2158,7 @@ function BudgetBattle({ existing, onSave, onExit }) {
   const valid = balanced && save > 0;
   const tgt = { need: income * 0.5, want: income * 0.3, save: income * 0.2 };
   const Bars = ({ b, inc, ex }) => <PctBar parts={[{ label: "Needs", value: Math.round(((groupOf(b, "need") + (ex || 0)) / inc) * 100), color: "#0b7a50" }, { label: "Wants", value: Math.round((groupOf(b, "want") / inc) * 100), color: "#e07a2f" }, { label: "Savings", value: Math.round((groupOf(b, "save") / inc) * 100), color: "#f5b23e" }]} />;
-  if (st.done) return <Reward title="Budget survived! ⚖️" subtitle="Blueprint page 04 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  if (st.done) return <Reward title="Budget survived! ⚖️" subtitle="Blueprint page 03 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   const editor = (
     <>
       <div className="g73-toggle2"><button type="button" className={mode === "503020" ? "on" : ""} onClick={() => setMode("503020")}>📊 50 / 30 / 20 guide</button><button type="button" className={mode === "zero" ? "on" : ""} onClick={() => setMode("zero")}>0️⃣ Zero-based check</button></div>
@@ -2177,7 +2176,7 @@ function BudgetBattle({ existing, onSave, onExit }) {
   );
   return (
     <ActShell icon={<Scale size={22} strokeWidth={2.1} />} title="Budget Battle ⚖️" subtitle="Plan $600,000. Survive a surprise. Rebuild." onExit={onExit}>
-      <BPBadge n="04" />
+      <BPBadge n="03" />
       <div className="g72-steps">{["1 · Plan it", "2 · Surprise!", "3 · Rebuild", "4 · Explain"].map((s, i) => <span key={s} className={round === i ? "on" : round > i ? "done" : ""}>{s}</span>)}</div>
       {round === 0 && (
         <>
@@ -2212,7 +2211,7 @@ function BudgetBattle({ existing, onSave, onExit }) {
             <Starters items={["To pay for the surprise, I reduced", "because", "I kept", "Next month I will add an emergency category so that"]} onPick={appendStarter(setTxt)} />
             <WordField value={txt} onChange={setTxt} min={25} max={100} rows={4} goals={[W_REASON]} placeholder="Write your answer here…" />
           </div>
-          <div className="start-foot"><button className="s1-btn primary big" disabled={!goalsOk(txt, 25, 100, [W_REASON])} onClick={() => finish(35, { mode, before: b1, after: b2, event: ev.h, eventAdd: ev.add, eventCut: ev.cut, text: txt })}>Save page 04 <span className="coin-tag"><Coins size={15} /> +35</span></button></div>
+          <div className="start-foot"><button className="s1-btn primary big" disabled={!goalsOk(txt, 25, 100, [W_REASON])} onClick={() => finish(35, { mode, before: b1, after: b2, event: ev.h, eventAdd: ev.add, eventCut: ev.cut, text: txt })}>Save page 03 <span className="coin-tag"><Coins size={15} /> +35</span></button></div>
         </>
       )}
     </ActShell>
@@ -2239,57 +2238,121 @@ const START_5 = {
   ],
 };
 const DOCS5 = [
-  { kind: "tirilla", store: "SUPERMERCADO LA COSECHA", sub: "Your list: 1 milk, 1 bread, 1 eggs, 1 rice", label: "RECEIPT", lines: [{ t: "Milk 1L", v: "$4,800" }, { t: "Sliced bread", v: "$6,500" }, { t: "Milk 1L", v: "$4,800" }, { t: "Eggs x12", v: "$8,200" }, { t: "Rice 1kg", v: "$4,600" }, { t: "TOTAL", v: "$28,900", kind: "tot" }], bad: 2, why: "Duplicate charge! The milk appears twice, but you bought only one.", fix: "Total should be $24,100." },
-  { kind: "tirilla", store: "PAPELERÍA EL LÁPIZ", sub: "Calle 10 #5-20", label: "RECEIPT", lines: [{ t: "Drawing pad", v: "$12,000" }, { t: "Colored pencils", v: "$8,500" }, { t: "Eraser + sharpener", v: "$3,500" }, { t: "TOTAL", v: "$27,000", kind: "tot" }], bad: 3, why: "Wrong sum! 12,000 + 8,500 + 3,500 = $24,000, not $27,000.", fix: "Total should be $24,000." },
-  { kind: "factura", store: "TECNOMUNDO S.A.S.", sub: "NIT 900.456.123-1 · Factura electrónica FE-2231", label: "INVOICE", meta: [["Buyer", "Camila R."], ["Date", "12/03/2026"]], lines: [{ t: "Headphones BT-200 (taxed 19%)", v: "$100,000" }, { t: "Subtotal", v: "$100,000", kind: "sub" }, { t: "IVA 19%", v: "$9,500", kind: "tax" }, { t: "TOTAL", v: "$109,500", kind: "tot" }], bad: 2, why: "Wrong tax! 19% of $100,000 is $19,000, not $9,500.", fix: "IVA $19,000 · Total $119,000. (Here the store charged LESS — but the invoice is still wrong and must be corrected.)" },
-  { kind: "voucher", store: "DATÁFONO · CREAR PAY", sub: "Your purchase at Zapatería Paso Firme: $58,000", label: "CARD VOUCHER", lines: [{ t: "Card", v: "**** 4821" }, { t: "Type", v: "DEBIT" }, { t: "AMOUNT", v: "$85,000", kind: "tot" }, { t: "Status", v: "APPROVED" }], bad: 2, why: "The numbers are switched! The purchase was $58,000 but the voucher charged $85,000.", fix: "Ask for a refund of $27,000." },
-  { kind: "tirilla", store: "PANADERÍA SAN JOSÉ", sub: "Paid in cash", label: "RECEIPT", lines: [{ t: "6 pandebonos", v: "$9,000" }, { t: "Hot chocolate x3", v: "$4,500" }, { t: "TOTAL", v: "$13,500", kind: "tot" }, { t: "Cash received", v: "$20,000" }, { t: "Change", v: "$5,500" }], bad: 4, why: "Wrong change! 20,000 − 13,500 = $6,500, not $5,500.", fix: "You should receive $1,000 more." },
-  { kind: "factura", store: "DROGUERÍA SALUD TOTAL", sub: "NIT 830.222.555-4 · Factura electrónica FE-9910", label: "INVOICE", meta: [["Buyer", "Andrés M."], ["Date", "31/02/2026"]], lines: [{ t: "Vitamins (taxed 19%)", v: "$20,000" }, { t: "IVA 19%", v: "$3,800", kind: "tax" }, { t: "TOTAL", v: "$23,800", kind: "tot" }], badMeta: true, bad: -1, why: "Impossible date! February never has 31 days. The invoice is not valid — ask for a new one.", fix: "Ask for a corrected invoice with the real date." },
+  { kind: "tirilla", store: "SUPERMERCADO LA COSECHA", sub: "Calle 45 #12-30 · Cashier 3", label: "RECEIPT", who: "🛒 Sofía", open: "On May 4 I bought",
+    story: "Sofía's mom sent her to the supermarket with this shopping list. Sofía took ONE of each product and paid everything together at the cashier. Check her receipt.",
+    list: ["1 milk (1L)", "1 sliced bread", "1 dozen eggs", "1 bag of rice (1kg)"],
+    lines: [{ t: "Milk 1L", v: "$4,800" }, { t: "Sliced bread", v: "$6,500" }, { t: "Milk 1L", v: "$4,800" }, { t: "Eggs x12", v: "$8,200" }, { t: "Rice 1kg", v: "$4,600" }, { t: "TOTAL", v: "$28,900", kind: "tot" }],
+    bad: 2, short: "Milk charged twice", why: "Duplicate charge! Sofía took only ONE milk, but the receipt charges two.", fix: "Total should be $24,100." },
+  { kind: "tirilla", store: "PAPELERÍA EL LÁPIZ", sub: "Calle 10 #5-20", label: "RECEIPT", who: "✏️ Tomás", open: "On April 20 I bought",
+    story: "Tomás bought three things for art class. The cashier added the prices by hand. Check if the total is correct.",
+    list: ["1 drawing pad", "1 box of colored pencils", "1 eraser + sharpener"],
+    lines: [{ t: "Drawing pad", v: "$12,000" }, { t: "Colored pencils", v: "$8,500" }, { t: "Eraser + sharpener", v: "$3,500" }, { t: "TOTAL", v: "$27,000", kind: "tot" }],
+    bad: 3, short: "Wrong total", why: "Wrong sum! 12,000 + 8,500 + 3,500 = $24,000, not $27,000.", fix: "Total should be $24,000." },
+  { kind: "factura", store: "TECNOMUNDO S.A.S.", sub: "NIT 900.456.123-1 · Factura electrónica FE-2231", label: "INVOICE", who: "🎧 Camila", open: "On March 12 I bought",
+    story: "On March 12, Camila bought headphones. The price is $100,000 BEFORE tax, and headphones pay IVA of 19%. She asked for an electronic invoice with her name.",
+    list: ["Headphones BT-200: $100,000 + IVA 19%"],
+    meta: [["Buyer", "Camila R."], ["Date", "12/03/2026"]], lines: [{ t: "Headphones BT-200 (taxed 19%)", v: "$100,000" }, { t: "Subtotal", v: "$100,000", kind: "sub" }, { t: "IVA 19%", v: "$9,500", kind: "tax" }, { t: "TOTAL", v: "$109,500", kind: "tot" }],
+    bad: 2, short: "Wrong IVA", why: "Wrong tax! 19% of $100,000 is $19,000, not $9,500.", fix: "IVA $19,000 · Total $119,000. (Here the store charged LESS — but the invoice is still wrong and must be corrected.)" },
+  { kind: "voucher", store: "DATÁFONO · CREAR PAY", sub: "Zapatería Paso Firme · Terminal 02", label: "CARD VOUCHER", who: "👟 Julián", open: "On June 2 I bought",
+    story: "Julián bought school shoes. The price tag said $58,000. He paid with his debit card and the machine printed this voucher.",
+    list: ["School shoes · price tag: $58,000"],
+    lines: [{ t: "Card", v: "**** 4821" }, { t: "Type", v: "DEBIT" }, { t: "AMOUNT", v: "$85,000", kind: "tot" }, { t: "Status", v: "APPROVED" }],
+    bad: 2, short: "Charged $85,000, not $58,000", why: "The numbers are switched! The purchase was $58,000 but the voucher charged $85,000.", fix: "Ask for a refund of $27,000." },
+  { kind: "tirilla", store: "PANADERÍA SAN JOSÉ", sub: "Carrera 7 #20-15", label: "RECEIPT", who: "🥐 Lucía", open: "On May 18 I bought",
+    story: "Lucía bought breakfast for her family. She paid with ONE bill of $20,000 and the cashier gave her the change. Did she get the right change?",
+    list: ["6 pandebonos", "3 hot chocolates", "Paid with a $20,000 bill"],
+    lines: [{ t: "6 pandebonos", v: "$9,000" }, { t: "Hot chocolate x3", v: "$4,500" }, { t: "TOTAL", v: "$13,500", kind: "tot" }, { t: "Cash received", v: "$20,000" }, { t: "Change", v: "$5,500" }],
+    bad: 4, short: "Wrong change", why: "Wrong change! 20,000 − 13,500 = $6,500, not $5,500.", fix: "Lucía should receive $1,000 more." },
+  { kind: "factura", store: "DROGUERÍA SALUD TOTAL", sub: "NIT 830.222.555-4 · Factura electrónica FE-9910", label: "INVOICE", who: "💊 Andrés", open: "In February I bought",
+    story: "Andrés bought vitamins in February and asked for an electronic invoice with his name. Check EVERY part of the invoice — not only the numbers.",
+    list: ["Vitamins: $20,000 + IVA 19%"],
+    meta: [["Buyer", "Andrés M."], ["Date", "31/02/2026"]], lines: [{ t: "Vitamins (taxed 19%)", v: "$20,000" }, { t: "IVA 19%", v: "$3,800", kind: "tax" }, { t: "TOTAL", v: "$23,800", kind: "tot" }],
+    badMeta: true, bad: -1, short: "Impossible date (31 Feb)", why: "Impossible date! February never has 31 days. The invoice is not valid — ask for a new one.", fix: "Ask for a corrected invoice with the real date." },
 ];
+const isMoney = (s) => /^\$[\d,]+$/.test(String(s).trim());
+const fmtN = (x) => Math.round(x).toLocaleString("en-US");
+function ScanCalc({ doc, sel, op, setOp, onClear }) {
+  const vals = sel.map((k) => num(String(doc.lines[k].v).replace(/[$,]/g, "")));
+  const sum = vals.reduce((a, x) => a + x, 0);
+  let formula = "Tap the lines", result = null;
+  if (vals.length) {
+    if (op === "add") { formula = vals.map(fmtN).join(" + "); result = sum; }
+    if (op === "sub") { formula = vals.length < 2 ? `${fmtN(vals[0])} − … (select 2 lines)` : vals.map(fmtN).join(" − "); result = vals.length < 2 ? null : vals[0] - vals.slice(1).reduce((a, x) => a + x, 0); }
+    if (op === "iva") { formula = `19% of ${fmtN(sum)}`; result = Math.round(sum * 0.19); }
+    if (op === "tot") { formula = `${fmtN(sum)} + 19% IVA`; result = Math.round(sum * 1.19); }
+  }
+  return (
+    <div className="g8-calc">
+      <div className="g8-calc-title"><Calculator size={15} /> Calculator</div>
+      <div className="g8-calc-ops">{[["add", "➕ Add"], ["sub", "➖ Subtract"], ["iva", "19% IVA"], ["tot", "Price + IVA"]].map(([k, l]) => <button key={k} type="button" className={op === k ? "on" : ""} onClick={() => setOp(k)}>{l}</button>)}</div>
+      <div className="g8-calc-screen"><small>{formula}</small><b>{result === null ? "—" : cop(result)}</b></div>
+      <p className="g8-calc-tip">{op === "sub" ? "The FIRST line you tap is the big number." : op === "add" ? "Tap the lines you want to add." : "Tap the price before tax."}</p>
+      <button type="button" className="p1-link" onClick={onClear}><RefreshCw size={13} /> Clear</button>
+    </div>
+  );
+}
 function ReceiptScanner({ existing, onSave, onExit }) {
   const [i, setI] = useState(0);
   const [pick, setPick] = useState(null);
-  const [calc, setCalc] = useState(false);
-  const [sum, setSum] = useState([]);
+  const [mode, setMode] = useState("find");
+  const [sel, setSel] = useState([]);
+  const [op, setOp] = useState("add");
   const [res, setRes] = useState([]);
   const [shown, setShown] = useState(false);
+  const [chosen, setChosen] = useState(existing?.doc ?? null);
   const [letter, setLetter] = useState(existing?.letter || { a: "", b: "", c: "" });
   const [st, finish] = useFinish(onSave);
   const d = DOCS5[i];
-  const val = (s) => num(String(s).replace(/,/g, ""));
-  const onLine = (k) => { if (shown) return; if (calc) setSum([...sum, val(d.lines[k].v)]); else setPick(k); };
+  const onLine = (k) => {
+    if (shown) return;
+    if (mode === "calc") { if (!isMoney(d.lines[k].v)) return; setSel(sel.includes(k) ? sel.filter((x) => x !== k) : [...sel, k]); }
+    else setPick(k);
+  };
   const check = () => { const ok = d.badMeta ? pick === "meta" : pick === d.bad; setRes([...res, ok]); setShown(true); };
-  const next = () => { setI(i + 1); setPick(null); setShown(false); setSum([]); setCalc(false); };
+  const next = () => { setI(i + 1); setPick(null); setShown(false); setSel([]); setMode("find"); setOp("add"); };
   const score = res.filter(Boolean).length;
-  const FR = [{ k: "a", f: "Good afternoon. On March 12 I bought" }, { k: "b", f: "However, the receipt shows" }, { k: "c", f: "Could you please" }];
-  if (st.done) return <Reward title="Receipt Scanner master! 🔍" subtitle="Blueprint page 05 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  const C = chosen !== null ? DOCS5[chosen] : null;
+  const FR = [{ k: "a", f: `Good afternoon. ${C ? C.open : "On … I bought"}` }, { k: "b", f: "However, the receipt shows" }, { k: "c", f: "Could you please" }];
+  if (st.done) return <Reward title="Receipt Scanner master! 🔍" subtitle="Blueprint page 04 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Search size={22} strokeWidth={2.1} />} title="Receipt Scanner 🔍" subtitle="6 documents. Each one has ONE error. Find it." onExit={onExit}>
-      <BPBadge n="05" />
+      <BPBadge n="04" />
       {i < DOCS5.length ? (
         <>
           <div className="p1-match-stats"><span>Document <b>{i + 1}/{DOCS5.length}</b></span><span>Found: <b>{score}</b> 🔍</span></div>
-          <HowTo>Tap the line with the error (or the <b>date box</b>). Use the 🧮 calculator: turn it on and tap lines to add them.</HowTo>
+          <div className="g8-story"><b>{d.who}</b><p>{d.story}</p><div className="g8-story-list"><small>📋 WHAT REALLY HAPPENED</small>{d.list.map((x) => <span key={x}>{x}</span>)}</div></div>
+          <div className="g73-toggle2"><button type="button" className={mode === "find" ? "on" : ""} onClick={() => setMode("find")}>🔍 Find the error</button><button type="button" className={mode === "calc" ? "on" : ""} onClick={() => setMode("calc")}>🧮 Use the calculator</button></div>
+          <HowTo>{mode === "find" ? <>Compare the document with <b>what really happened</b>. Tap the line with the error (or the <b>date box</b>) and press the button.</> : <>Tap the lines with prices, then choose an operation: <b>add</b>, <b>subtract</b> or <b>IVA</b>. Then go back to 🔍 to mark the error.</>}</HowTo>
           <div className="g8-scan">
             <div>
-              <ReceiptDoc doc={d} onLine={onLine} picked={pick} reveal={shown} />
-              {d.meta && <button type="button" className={`g8-metapick ${pick === "meta" ? "on" : ""} ${shown && d.badMeta ? "bad" : ""}`} disabled={shown} onClick={() => !calc && setPick("meta")}>📅 The error is in the date / buyer data</button>}
+              <ReceiptDoc doc={d} onLine={onLine} picked={mode === "find" ? pick : null} marked={mode === "calc" ? sel : []} reveal={shown} />
+              {d.meta && <button type="button" className={`g8-metapick ${pick === "meta" && mode === "find" ? "on" : ""} ${shown && d.badMeta ? "bad" : ""}`} disabled={shown || mode === "calc"} onClick={() => setPick("meta")}>📅 The error is in the date / buyer data</button>}
             </div>
-            <div className="g8-calc">
-              <button type="button" className={`s1-btn ${calc ? "primary" : "ghost"}`} onClick={() => setCalc(!calc)}><Calculator size={15} /> Calculator {calc ? "ON" : "OFF"}</button>
-              <div className="g8-calc-screen"><small>{sum.length ? sum.map((x) => x.toLocaleString("en-US")).join(" + ") : "Tap lines to add"}</small><b>{cop(sum.reduce((a, x) => a + x, 0))}</b></div>
-              <button type="button" className="p1-link" onClick={() => setSum([])}><RefreshCw size={13} /> Clear</button>
-            </div>
+            <ScanCalc doc={d} sel={sel} op={op} setOp={setOp} onClear={() => setSel([])} />
           </div>
           {shown && <div className={`g72-conseq ${res[res.length - 1] ? "f2" : "f0"}`}><b>{res[res.length - 1] ? "✅ Error found!" : "❌ Not that one."}</b><span>{d.why}</span><small>🛠️ {d.fix}</small></div>}
-          <div className="start-foot">{!shown ? <button className="s1-btn primary big" disabled={pick === null} onClick={check}>This is the error <Check size={16} /></button> : <button className="s1-btn primary big" onClick={next}>{i === DOCS5.length - 1 ? "Write the complaint" : "Next document"} <ChevronRight size={18} /></button>}</div>
+          <div className="start-foot">{!shown ? <button className="s1-btn primary big" disabled={pick === null || mode === "calc"} onClick={check}>{mode === "calc" ? "Go back to 🔍 to mark the error" : "This is the error"} <Check size={16} /></button> : <button className="s1-btn primary big" onClick={next}>{i === DOCS5.length - 1 ? "Write the complaint" : "Next document"} <ChevronRight size={18} /></button>}</div>
         </>
       ) : (
         <>
-          <Mission e="✉️" title="Final case: write a respectful complaint">Choose one of the documents and write a polite message to the store. Explain what you bought, what is wrong and what you want them to do.</Mission>
-          <div className="start-block">{FR.map((x) => <div key={x.k} className="p3-sentence edit"><span>{x.f}</span><input className="start-input" value={letter[x.k]} onChange={(e) => setLetter({ ...letter, [x.k]: e.target.value })} placeholder="Write your answer here…" /></div>)}<p className="start-tip">💡 Polite words: please, could you, I would like, thank you.</p></div>
-          <div className="g8-letter"><small>✉️ PREVIEW</small><p>{FR.map((x) => `${x.f} ${letter[x.k] || "…"}`).join(" ")} Thank you.</p></div>
-          <div className="start-foot"><button className="s1-btn primary big" disabled={!FR.every((x) => countWords(letter[x.k]) >= 4)} onClick={() => finish(score * 4 + 10, { found: score, total: DOCS5.length, letter })}>Save page 05 <span className="coin-tag"><Coins size={15} /> +{score * 4 + 10}</span></button></div>
+          <Mission e="✉️" title="Final case: write a respectful complaint">Choose ONE document. Then write a polite message to the store: what you bought, what is wrong and what you want them to do.</Mission>
+          <div className="start-block">
+            <h3><span className="step-n">1</span> Choose the document</h3>
+            <div className="g8-docpick">{DOCS5.map((x, k) => <button key={k} type="button" className={chosen === k ? "on" : ""} onClick={() => setChosen(k)}><small>{x.label}</small><b>{x.store}</b><span>{x.who} · {x.short}</span></button>)}</div>
+          </div>
+          {C && (
+            <div className="g8-scan one">
+              <ReceiptDoc doc={C} picked={null} reveal />
+              <div className="g72-conseq f2"><b>❗ The problem</b><span>{C.why}</span><small>🛠️ {C.fix}</small></div>
+            </div>
+          )}
+          {C && (
+            <>
+              <div className="start-block"><h3><span className="step-n">2</span> Write your complaint</h3>{FR.map((x) => <div key={x.k} className="p3-sentence edit"><span>{x.f}</span><input className="start-input" value={letter[x.k]} onChange={(e) => setLetter({ ...letter, [x.k]: e.target.value })} placeholder="Write your answer here…" /></div>)}<p className="start-tip">💡 Polite words: please, could you, I would like, thank you.</p></div>
+              <div className="g8-letter"><small>✉️ PREVIEW · to {C.store}</small><p>{FR.map((x) => `${x.f} ${letter[x.k] || "…"}`).join(" ")} Thank you.</p></div>
+            </>
+          )}
+          <div className="start-foot"><button className="s1-btn primary big" disabled={!C || !FR.every((x) => countWords(letter[x.k]) >= 4)} onClick={() => finish(score * 4 + 10, { found: score, total: DOCS5.length, letter, doc: chosen, docStore: C.store, docWhy: C.why, open: C.open })}>{C ? "Save page 04" : "Choose a document first"} <span className="coin-tag"><Coins size={15} /> +{score * 4 + 10}</span></button></div>
         </>
       )}
     </ActShell>
@@ -2397,7 +2460,9 @@ function BalanceBooks({ existing, onSave, onExit }) {
   const [guess, setGuess] = useState("");
   const [guessOk, setGuessOk] = useState(null);
   const [dec, setDec] = useState(existing?.decisions || {});
-  const [stPrice, setStPrice] = useState(7000);
+  const [prices, setPrices] = useState(existing?.prices || {});
+  const priceOf = (p) => (dec[p.k] === "improve" ? prices[p.k] || p.price : p.price);
+  const stPrice = priceOf(PRODUCTS6[2]);
   const [rec, setRec] = useState(existing?.rec || "");
   const [st, finish] = useFinish(onSave);
   const notes = useMemo(() => shuffleArr(ROSA_NOTES.map((n, i) => ({ ...n, i }))), []);
@@ -2407,9 +2472,11 @@ function BalanceBooks({ existing, onSave, onExit }) {
   const exp = ROSA_NOTES.filter((n) => !n.in).reduce((a, n) => a + n.v, 0) + FORGOT.filter((f) => f.real && found[f.k]).reduce((a, f) => a + f.v, 0);
   const realFound = FORGOT.filter((f) => f.real).every((f) => found[f.k]) && !found.tv;
   const profit = rev - exp;
-  const pp = PRODUCTS6.map((p) => ({ ...p, price: p.k === "stuffed" ? stPrice : p.price })).map((p) => ({ ...p, unitP: p.price - p.cost, total: (p.price - p.cost) * (p.k === "stuffed" ? Math.round(p.units * clamp(1 - (stPrice - 7000) / 8000, 0.4, 1.2)) : p.units) }));
+  const pp = PRODUCTS6.map((p) => { const np = priceOf(p); const u = Math.round(p.units * clamp(1 - (np - p.price) / (p.price * 1.15), 0.4, 1.2)); return { ...p, base: p.price, price: np, units: u, unitP: np - p.cost, total: (np - p.cost) * u }; });
   const newProfit = profit - PRODUCTS6.reduce((a, p) => a + (p.price - p.cost) * p.units, 0) + pp.filter((p) => dec[p.k] !== "remove").reduce((a, p) => a + p.total, 0);
   const decided = PRODUCTS6.every((p) => dec[p.k]);
+  const diff = newProfit - profit;
+  const better = decided && diff > 0;
   if (st.done) return <Reward title="Books balanced! 📒" subtitle="Blueprint page 06 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<FileText size={22} strokeWidth={2.1} />} title="Balance the Books 📒" subtitle="Aunt Rosa's loose papers for one month. Is the business really making money?" onExit={onExit}>
@@ -2458,14 +2525,17 @@ function BalanceBooks({ existing, onSave, onExit }) {
               </div>
             ))}
           </div>
-          {dec.stuffed === "improve" && <div className="g72-machine">{Ctl({ l: "🥩 New price for the stuffed arepa", v: stPrice, set: setStPrice, mn: 7000, mx: 11000, stp: 500, fmt: cop })}<p className="start-tip">Higher price = more profit per unit, but fewer customers.</p></div>}
-          <div className="g73-score"><small>NEW MONTHLY PROFIT (estimate)</small><b className={newProfit > profit ? "good" : ""}>{cop(newProfit)}</b><span>Before: {cop(profit)}</span></div>
+          {pp.filter((p) => dec[p.k] === "improve").length > 0 && <div className="g72-machine">{pp.filter((p) => dec[p.k] === "improve").map((p) => <React.Fragment key={p.k}>{Ctl({ l: `${p.e} New price: ${p.n}`, v: p.price, set: (v) => setPrices({ ...prices, [p.k]: v }), mn: p.base, mx: Math.round(p.base * 1.6 / 500) * 500, stp: p.base < 4000 ? 250 : 500, fmt: cop })}</React.Fragment>)}<p className="start-tip">Higher price = more profit per unit, but fewer customers. Watch the “Sold” column change.</p></div>}
+          <div className="g73-score"><small>NEW MONTHLY PROFIT (estimate)</small><b className={!decided ? "" : diff > 0 ? "good" : "bad"}>{cop(newProfit)}</b><span>Before: {cop(profit)}{decided ? ` · ${diff > 0 ? "+" : diff < 0 ? "−" : "±"}${cop(Math.abs(diff))}` : ""}</span></div>
+          {decided && diff < 0 && <div className="p1-banner bad"><span>📉 <b>Your plan earns {cop(-diff)} LESS than before.</b> Look at the profit per unit: did you remove a product that makes money? Change a decision or a price.</span></div>}
+          {decided && diff === 0 && <div className="p1-banner bad"><span>➖ <b>Your plan doesn't change the profit yet.</b> Rosa needs more money: choose “Improve” and change a price, or move another decision.</span></div>}
+          {better && <div className="p1-banner good"><span>📈 <b>Great! Your plan earns {cop(diff)} MORE per month.</b> Now explain your decisions to Aunt Rosa.</span></div>}
           <div className="start-block">
             <h3><PenLine size={18} /> My recommendation for Aunt Rosa (min 30 words)</h3>
             <Starters items={["Aunt Rosa, your real profit is", "The most profitable product is", "I recommend", "because", "Also, you should write down"]} onPick={appendStarter(setRec)} />
             <WordField value={rec} onChange={setRec} min={30} max={110} rows={5} goals={[W_NUMBERS(1), W_ADVICE]} placeholder="Write your recommendation here…" />
           </div>
-          <div className="start-foot"><button className="s1-btn primary big" disabled={!decided || !goalsOk(rec, 30, 110, [W_NUMBERS(1), W_ADVICE])} onClick={() => finish(35, { revenue: rev, expenses: exp, profit, newProfit, decisions: dec, stuffedPrice: stPrice, rec })}>Save page 06 <span className="coin-tag"><Coins size={15} /> +35</span></button></div>
+          <div className="start-foot"><button className="s1-btn primary big" disabled={!better || !goalsOk(rec, 30, 110, [W_NUMBERS(1), W_ADVICE])} onClick={() => finish(35, { revenue: rev, expenses: exp, profit, newProfit, decisions: dec, prices: Object.fromEntries(pp.map((p) => [p.k, p.price])), stuffedPrice: stPrice, rec })}>{decided && !better ? "Improve the profit first" : "Save page 06"} <span className="coin-tag"><Coins size={15} /> +35</span></button></div>
         </>
       )}
     </ActShell>
@@ -2602,11 +2672,11 @@ function MyTracker({ existing, onSave, onExit }) {
   const daysUsed = new Set(items.map((x) => x.d)).size;
   const rows = MYCATS.map(([k, e, l]) => ({ e, l, v: items.filter((x) => x.c === k).reduce((a, x) => a + x.v, 0) })).filter((r) => r.v > 0).sort((a, b) => b.v - a.v);
   const tot = items.reduce((a, x) => a + x.v, 0);
-  const ready = items.length >= 7 && daysUsed >= 3 && countWords(insight) >= 10;
+  const ready = items.length >= 5 && daysUsed >= 2 && countWords(insight) >= 8 && realText(insight);
   if (st.done) return <Reward title="Tracker saved! 📝" subtitle="You measured your own money." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
-    <ActShell icon={<PenLine size={22} strokeWidth={2.1} />} title="My 7-Day Tracker 📝" subtitle="Record YOUR real purchases (or a typical week). Find your own leak." onExit={onExit}>
-      <HowTo>Add at least <b>7 purchases</b> on <b>3 or more days</b>. Small ones count too! The chart updates automatically.</HowTo>
+    <ActShell icon={<PenLine size={22} strokeWidth={2.1} />} title="My Quick Tracker 📝" subtitle="5 of YOUR purchases (real or a typical week). Find your own leak." onExit={onExit}>
+      <HowTo>Add <b>5 purchases</b> on <b>2 or more days</b>. Small ones count too! The chart updates automatically.</HowTo>
       <div className="start-block g8-tracker-add">
         <div className="type-toggle wrap">{DAYS7.map((x) => <button key={x} type="button" className={d === x ? "on" : ""} onClick={() => setD(x)}>{x}</button>)}</div>
         <div className="type-toggle wrap">{MYCATS.map(([k, e, l]) => <button key={k} type="button" className={c === k ? "on" : ""} onClick={() => setC(k)}>{e} {l}</button>)}</div>
@@ -2615,7 +2685,7 @@ function MyTracker({ existing, onSave, onExit }) {
       <div className="g8-week7">{DAYS7.map((x) => <div key={x}><b>{x}</b>{items.map((it, i) => ({ ...it, i })).filter((it) => it.d === x).map((it) => <span key={it.i}>{MYCATS.find((m) => m[0] === it.c)[1]} {cop(it.v)}<button type="button" onClick={() => setItems(items.filter((_, j) => j !== it.i))}>×</button></span>)}</div>)}</div>
       {rows.length > 0 && <><HBars rows={rows} /><p className="start-tip p1-center">Total: <b>{cop(tot)}</b> · Biggest: <b>{rows[0].e} {rows[0].l}</b> ({Math.round((rows[0].v / tot) * 100)}%)</p></>}
       <div className="start-block"><div className="p3-sentence edit"><span>💡 My discovery:</span><input className="start-input" value={insight} onChange={(e) => setInsight(e.target.value)} placeholder="Write your answer here…" /></div></div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(25, { items, total: tot, top: rows[0]?.l, insight })}>{items.length < 7 ? `${items.length}/7 purchases` : daysUsed < 3 ? "Use 3+ days" : "Save my tracker"} <span className="coin-tag"><Coins size={15} /> +25</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(25, { items, total: tot, top: rows[0]?.l, insight })}>{items.length < 5 ? `${items.length}/5 purchases` : daysUsed < 2 ? "Use 2+ days" : "Save my tracker"} <span className="coin-tag"><Coins size={15} /> +25</span></button></div>
     </ActShell>
   );
 }
@@ -2669,7 +2739,7 @@ function HouseholdSim({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Global budget analyst! 🌍" subtitle="Blueprint page 08 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Globe size={22} strokeWidth={2.1} />} title="Household Budget Simulator 🌍" subtitle="Visit 5 fictional homes around the world. Compare % and real money." onExit={onExit}>
-      <BPBadge n="08" />
+      <BPBadge n="00" />
       <div className="g72-steps">{["1 · Visit the homes", "2 · % vs. amount", "3 · Surprise", "4 · Compare"].map((s, i) => <span key={s} className={stage === i ? "on" : stage > i ? "done" : ""}>{s}</span>)}</div>
       {stage === 0 && (
         <>
@@ -2873,10 +2943,10 @@ function SafeSetup({ resp, existing, onSave, onExit }) {
   const GR = [W_REASON, W_CONTRAST];
   const ready = setupOk && goodN >= 4 && bad.length === 0 && stars > 0 && goalsOk(review, 25, 100, GR);
   const PW_L = ["Very weak", "Weak", "OK", "Good", "Strong"];
-  if (st.done) return <Reward title="Digital shield on! 🔐" subtitle="Blueprint page 09 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
+  if (st.done) return <Reward title="Digital shield on! 🔐" subtitle="Blueprint page 05 is ready." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Lock size={22} strokeWidth={2.1} />} title="Safe Setup + My Rules 🔐" subtitle="Create a FICTIONAL account safely, choose your rules and write an app review." onExit={onExit}>
-      <BPBadge n="09" />
+      <BPBadge n="05" />
       <div className="p1-banner bad"><span>⚠️ Practice only: never type your real passwords, your full name or bank information here.</span></div>
       <div className="g8-two">
         <div className="start-block g8-setup">
@@ -2914,7 +2984,7 @@ function SafeSetup({ resp, existing, onSave, onExit }) {
         <div className="p3-stars">{[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" className={stars >= n ? "on" : ""} onClick={() => setStars(n)}>★</button>)}</div>
         <WordField value={review} onChange={setReview} min={25} max={100} rows={4} goals={GR} placeholder="Write your review here…" />
       </div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(30, { setup: { user, tfa, permOk }, ruleIds: rules, rules: rules.map((id) => SAFE_RULES.find((r) => r.id === id).t), stars, review })}>Save page 09 <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(30, { setup: { user, tfa, permOk }, ruleIds: rules, rules: rules.map((id) => SAFE_RULES.find((r) => r.id === id).t), stars, review })}>Save page 05 <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
     </ActShell>
   );
 }
@@ -3083,6 +3153,11 @@ const RUSH_SAFE = {
    ===================================================================== */
 const BOSS1_ITEMS = [["🚌", "Bus card", 70000, "need"], ["🍱", "Lunches", 150000, "need"], ["📱", "Phone plan", 30000, "need"], ["🎬", "Streaming", 17000, "want"], ["🎮", "Game credits", 40000, "want"], ["👕", "New hoodie", 60000, "want"], ["🎁", "Gift for a friend", 25000, "want"]];
 const BOSS2_ROWS = [["Mon", "Juice sales", 120000, "in"], ["Mon", "Fruit from the market", 140000, "out"], ["Wed", "Juice sales", 95000, "in"], ["Wed", "Cups and straws", 25000, "out"], ["Thu", "Netflix for my house", 17000, "personal"], ["Fri", "Taxi to the market", 18000, "out"], ["Sat", "Juice sales", 210000, "in"]];
+/* Starter combinado · clase 5: documentos + apps seguras */
+const START_5_9 = {
+  cards: [...START_5.cards.filter((c) => ["Receipt", "Invoice (factura)", "Voucher", "VAT / IVA"].includes(c.t)), ...START_9.cards.filter((c) => ["Permissions", "Subscription", "2FA", "Fake reviews"].includes(c.t))],
+  rounds: [START_5.rounds[1], START_5.rounds[2], START_9.rounds[0], START_9.rounds[1], START_9.rounds[2], START_9.rounds[3]],
+};
 function CityBoss({ onSave, onExit }) {
   const [ch, setCh] = useState(0);
   const [cls, setCls] = useState({});
@@ -3158,50 +3233,188 @@ const loadHtml2Canvas = () => (window.html2canvas ? Promise.resolve(window.html2
   s.onload = () => res(window.html2canvas); s.onerror = rej;
   document.body.appendChild(s);
 }));
+const SECTOR_WHY = { 1: "it takes resources from nature", 2: "it transforms raw materials into products", 3: "it gives a service to people", 4: "it creates knowledge and information", 5: "it makes the big decisions for organizations" };
+const aAn = (w) => (/^[aeiou]/i.test(String(w || "")) ? "an" : "a");
+const pctOf = (v, t) => (t > 0 ? Math.round((v / t) * 100) : 0);
+const listJoin = (arr) => (arr.length <= 1 ? arr.join("") : `${arr.slice(0, -1).join(", ")} and ${arr[arr.length - 1]}`);
+const endDot = (t) => { const x = String(t || "").trim(); return !x ? "" : /[.!?]$/.test(x) ? x : `${x}.`; };
+const BP_LEARN = {
+  "01": "Active, passive & gift income · the 5 economic sectors",
+  "02": "Bank statement · needs, wants & savings · fixed & variable expenses",
+  "03": "50/30/20 · zero-based budget · emergency changes",
+  "04": "Receipts, invoices & vouchers · IVA 19% · consumer rights",
+  "05": "Permissions · 2FA · strong passwords · fake reviews · subscriptions",
+  "06": "Revenue, expenses, profit & loss · ledger · business decisions",
+  "07": "Money leaks · reading spending data · the 24-hour rule",
+};
+function buildBlueprint(r, studentName, habit, because) {
+  const s2 = r.c2_income, s3 = r.c3_statement, s4 = r.c4_battle, s5 = r.c5_scanner, s6 = r.c6_books, s7 = r.c7_autopsy, s9 = r.c9_rules, lab9 = r.c9_lab, radar = r.c1_radar;
+  const S = {};
+  if (s2) {
+    const srcs = MY_SOURCES.filter(([k]) => num(s2.amounts?.[k]) > 0).map(([k, e, l]) => `${l.toLowerCase()} (${cop(num(s2.amounts[k]))})`);
+    const kinds = [s2.active > 0 && `${cop(s2.active)} is active income`, s2.passive > 0 && `${cop(s2.passive)} is passive income`, s2.gifts > 0 && `${cop(s2.gifts)} comes from gifts or allowance`].filter(Boolean);
+    const sn = DREAM_JOBS[s2.dream]?.[2];
+    S["01"] = {
+      nums: [["Monthly income", cop(s2.total)], ["Active", cop(s2.active)], ["Passive", cop(s2.passive)], ["Gifts", cop(s2.gifts)], ["Future job", `${DREAM_JOBS[s2.dream]?.[0] || ""} ${s2.dreamJob}`]],
+      say: [
+        `Every month, my money comes from ${listJoin(srcs)}. In total, I receive ${cop(s2.total)}.`,
+        kinds.length ? `${listJoin(kinds)}.`.replace(/^./, (c) => c.toUpperCase()) : "",
+        `In the future, I want to be ${aAn(s2.dreamJob)} ${s2.dreamJob.toLowerCase()}. This job is in the ${s2.sector.toLowerCase()} sector because ${SECTOR_WHY[sn] || "of the type of work"}.`,
+      ],
+      quote: s2.why,
+    };
+  }
+  if (s3) {
+    const spent = s3.needs + s3.wants + s3.save;
+    S["02"] = {
+      nums: [["Income", cop(s3.income)], ["Needs", `${cop(s3.needs)} · ${pctOf(s3.needs, s3.income)}%`], ["Wants", `${cop(s3.wants)} · ${pctOf(s3.wants, s3.income)}%`], ["Savings", `${cop(s3.save)} · ${pctOf(s3.save, s3.income)}%`], ["Final balance", cop(s3.final)]],
+      bar: [{ label: "Needs", value: s3.needs, color: "#0b7a50" }, { label: "Wants", value: s3.wants, color: "#e07a2f" }, { label: "Savings", value: s3.save, color: "#f5b23e" }],
+      say: [
+        `I created my own bank statement with ${s3.rows?.length || 0} movements in one month. My income was ${cop(s3.income)}.`,
+        `I spent ${cop(s3.needs)} on needs (${pctOf(s3.needs, s3.income)}%) and ${cop(s3.wants)} on wants (${pctOf(s3.wants, s3.income)}%), and I saved ${cop(s3.save)} (${pctOf(s3.save, s3.income)}%).`,
+        `At the end of the month, my balance was ${cop(s3.final)}${spent > s3.income ? ", so I spent more than my income" : ""}.`,
+        s3.concl ? [s3.concl.a && `My biggest category is ${endDot(s3.concl.a)}`, s3.concl.b && `My fixed expenses are ${endDot(s3.concl.b)}`, s3.concl.c && `One change I can make is ${endDot(s3.concl.c)}`].filter(Boolean).join(" ") : "",
+      ],
+    };
+  }
+  if (s4) {
+    const before = groupOf(s4.before || {}, "save"), after = groupOf(s4.after || {}, "save");
+    const ch = BB_CATS.filter((c) => (s4.before || {})[c.k] !== (s4.after || {})[c.k]).slice(0, 3).map((c) => `${c.l.toLowerCase()} from ${cop(s4.before[c.k] || 0)} to ${cop(s4.after[c.k] || 0)}`);
+    S["03"] = {
+      nums: [["Budget", cop(600000)], ["Method", s4.mode === "zero" ? "Zero-based" : "50/30/20"], ["Surprise", s4.event], ["Savings before", cop(before)], ["Savings after", cop(after)]],
+      say: [
+        `I planned a budget of ${cop(600000)} with ${s4.mode === "zero" ? "a zero-based budget, so every peso had a job" : "the 50/30/20 guide: 50% needs, 30% wants and 20% savings"}. At first, I saved ${cop(before)}.`,
+        `Then a surprise happened: ${String(s4.event || "").replace(/[.!?]+$/, "")}${s4.eventAdd ? `, an extra expense of ${cop(s4.eventAdd)}` : s4.eventCut ? `, and my income went down ${cop(s4.eventCut)}` : ""}.`,
+        ch.length ? `To balance my budget again, I changed ${listJoin(ch)}. After the surprise, my savings were ${cop(after)}.` : `After the surprise, my savings were ${cop(after)}.`,
+      ],
+      quote: s4.text,
+    };
+  }
+  if (s5) {
+    const doc = s5.doc != null ? DOCS5[s5.doc] : null;
+    const L = s5.letter || {};
+    S["04"] = {
+      nums: [["Documents checked", s5.total], ["Errors found", `${s5.found}/${s5.total}`], ["My case", doc ? doc.store : "—"], ["The error", doc ? doc.short : "—"]],
+      say: [
+        `I checked ${s5.total} documents: receipts, invoices and a card voucher. I found ${s5.found} of the ${s5.total} errors.`,
+        doc ? `For my complaint I chose ${doc.store.replace(/\.$/, "")}. The problem: ${doc.why}` : "",
+        `This is my complaint: “Good afternoon. ${s5.open || (doc ? doc.open : "On March 12 I bought")} ${endDot(L.a) || "…"} However, the receipt shows ${endDot(L.b) || "…"} Could you please ${endDot(L.c) || "…"} Thank you.”`,
+      ],
+    };
+  }
+  if (s9) {
+    const appN = lab9?.choice ? APPS9.find((x) => x.id === lab9.choice)?.n : null;
+    const rl = (s9.rules || []).map((t) => t.charAt(0).toLowerCase() + t.slice(1));
+    S["05"] = {
+      nums: [["2FA", s9.setup?.tfa ? "ON ✅" : "OFF"], ["Permissions", s9.setup?.permOk ? "Only the necessary ones" : "Check them"], ["My rules", `${rl.length} rules`], ["My review", `${"★".repeat(s9.stars || 0)}${appN ? ` · ${appN}` : ""}`]],
+      say: [
+        `Money apps can help us, but they can also be dangerous.${lab9 ? ` In the App Security Lab I investigated 4 apps and found ${lab9.permFound || 0} unnecessary permissions and ${lab9.fakeFound || 0} fake reviews.` : ""}${appN ? ` I recommended ${appN}.` : ""}`,
+        `I created a practice account with a strong password, two-factor authentication (2FA) ON, and I denied the permissions the app doesn't need: contacts, photos and location.`,
+        rl.length ? `My digital money rules: ${rl.length > 1 ? `${rl.slice(0, -1).join(", ")} and ${rl[rl.length - 1]}` : rl[0]}.` : "",
+      ],
+      quote: s9.review,
+    };
+  }
+  if (s6) {
+    const D = s6.decisions || {};
+    const P = s6.prices || { stuffed: s6.stuffedPrice };
+    const by = (v) => PRODUCTS6.filter((p) => D[p.k] === v);
+    const parts = [
+      by("keep").length && `I keep the ${listJoin(by("keep").map((p) => p.n.toLowerCase()))}`,
+      by("improve").length && `I improve the ${listJoin(by("improve").map((p) => `${p.n.toLowerCase()} (new price ${cop(P[p.k] || p.price)})`))}`,
+      by("remove").length && `I remove the ${listJoin(by("remove").map((p) => p.n.toLowerCase()))}`,
+    ].filter(Boolean);
+    const d = s6.newProfit - s6.profit;
+    S["06"] = {
+      nums: [["Revenue", cop(s6.revenue)], ["Expenses", cop(s6.expenses)], ["Real profit", cop(s6.profit)], ["With my plan", cop(s6.newProfit)]],
+      say: [
+        `Aunt Rosa's arepa business had revenue of ${cop(s6.revenue)} and expenses of ${cop(s6.expenses)}, so her real profit was ${cop(s6.profit)}. She forgot some expenses, like gas and bags, and a personal TV does not go in the business ledger.`,
+        parts.length ? `My decisions: ${parts.join("; ")}.` : "",
+        `With my plan, the monthly profit is ${cop(s6.newProfit)}: ${cop(Math.abs(d))} ${d >= 0 ? "more" : "less"} than before.`,
+      ],
+      quote: s6.rec,
+    };
+  }
+  if (s7) {
+    const acts = [s7.home > 0 && `bring snacks from home ${s7.home} day${s7.home > 1 ? "s" : ""} a week`, s7.rule24 && "use the 24-hour rule for online buys", s7.bottle && "use a reusable water bottle"].filter(Boolean);
+    S["07"] = {
+      nums: [["Saved per week", cop(s7.saveWeek)], ["In 4 weeks", cop(s7.save4)], ["In a school year", cop((s7.saveWeek || 0) * 40)]],
+      say: [
+        `I analyzed Mateo's spending data and found his money leaks.`,
+        acts.length ? `My plan for Mateo: ${listJoin(acts)}.` : "",
+        `As a result, he saves ${cop(s7.saveWeek)} per week, ${cop(s7.save4)} in 4 weeks and ${cop((s7.saveWeek || 0) * 40)} in a school year.`,
+      ],
+      quote: s7.text,
+    };
+  }
+  const intro = `Hello! My name is ${studentName || "…"}. This is my Money Blueprint: my personal financial plan for this period.${radar?.profile ? ` In the Money Radar, my profile was “${radar.profile}”.` : ""}`;
+  const habitSay = `One financial habit I want to improve is ${habit || "…"} because ${endDot(because) || "…"}`;
+  return { S, intro, habitSay, outro: "Thank you for listening! Do you have any questions?" };
+}
+function BPSection({ n, data, big }) {
+  const p = BP_PAGES.find((x) => x.n === n);
+  if (!data) return <section className="g8-fp empty"><h4><span>{n}</span>{p.e} {p.t}</h4><p className="g8-fp-empty">Not completed yet — finish this page to present it.</p></section>;
+  return (
+    <section className={`g8-fp ${big ? "big" : ""}`}>
+      <h4><span>{n}</span>{p.e} {p.t}</h4>
+      <div className="g8-fp-nums">{data.nums.map(([l, v]) => <div key={l}><small>{l}</small><b>{v}</b></div>)}</div>
+      {data.bar && <StackBar parts={data.bar} />}
+      <div className="g8-fp-say"><small>🎤 I SAY</small>{data.say.filter(Boolean).map((t, i) => <p key={i}>{t}</p>)}{data.quote && <p className="q">“{String(data.quote).trim()}”</p>}</div>
+      <div className="g8-fp-learn">💡 I can explain: {BP_LEARN[n]}</div>
+    </section>
+  );
+}
 function FinalBlueprint({ resp, studentName, existing, onSave, onExit }) {
   const r = resp || {};
   const [habit, setHabit] = useState(existing?.habit || "");
   const [because, setBecause] = useState(existing?.because || "");
   const [busy, setBusy] = useState(false);
+  const [slide, setSlide] = useState(null);
   const [st, finish] = useFinish(onSave);
   const pages = BP_PAGES.filter((p) => r[p.key]).length;
-  const ready = pages >= 6 && countWords(habit) >= 3 && countWords(because) >= 5;
+  const ready = pages >= 5 && countWords(habit) >= 3 && countWords(because) >= 5;
+  const B = buildBlueprint(r, studentName, habit, because);
   const png = async () => { setBusy(true); try { const h2c = await loadHtml2Canvas(); const cv = await h2c(document.getElementById("g8-final"), { scale: 2, backgroundColor: "#ffffff", useCORS: true }); const a = document.createElement("a"); a.href = cv.toDataURL("image/png"); a.download = `Money_Blueprint_${(studentName || "student").replace(/\s+/g, "_")}.png`; a.click(); } catch (e) { /* sin imagen */ } setBusy(false); };
   const print = () => { document.body.classList.add("g8-printing"); const off = () => { document.body.classList.remove("g8-printing"); window.removeEventListener("afterprint", off); }; window.addEventListener("afterprint", off); setTimeout(() => window.print(), 50); };
-  const Sec = ({ n, children }) => { const p = BP_PAGES.find((x) => x.n === n); const has = r[p.key]; return <section className={`g8-fp ${has ? "" : "empty"}`}><h4><span>{p.n}</span>{p.e} {p.t}</h4>{has ? children : <p className="g8-fp-empty">Not completed yet.</p>}</section>; };
-  const s1 = r.c1_snapshot, s2 = r.c2_income, s3 = r.c3_statement, s4 = r.c4_battle, s5 = r.c5_scanner, s6 = r.c6_books, s7 = r.c7_autopsy, s8 = r.c8_sim, s9 = r.c9_rules, radar = r.c1_radar;
+  const slides = [
+    { k: "intro", node: <div className="g8-slide-cover"><small>MONEY BLUEPRINT · GRADE 8</small><h2>My Personal Financial Plan</h2><p className="g8-fp-sayline">🎤 {B.intro}</p></div> },
+    ...BP_PAGES.filter((p) => B.S[p.n]).map((p) => ({ k: p.n, node: <BPSection n={p.n} data={B.S[p.n]} big /> })),
+    { k: "habit", node: <section className="g8-fp habit big"><h4><span>07</span>🔁 My habit</h4><div className="g8-fp-say"><small>🎤 I SAY</small><p>{B.habitSay}</p></div></section> },
+    { k: "end", node: <div className="g8-slide-cover"><h2>Thank you! 🙌</h2><p className="g8-fp-sayline">🎤 {B.outro}</p></div> },
+  ];
   if (st.done) return <Reward title="My Money Blueprint is complete! 🏆" subtitle="Your first real financial plan — in English." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
-    <ActShell icon={<Award size={22} strokeWidth={2.1} />} title="My Money Blueprint 📐" subtitle="It builds itself with your 9 pages. Add your habit and present it!" onExit={onExit}>
+    <ActShell icon={<Award size={22} strokeWidth={2.1} />} title="My Money Blueprint 📐" subtitle="Your 7 pages become a presentation script. Add your habit, practice and present it!" onExit={onExit}>
+      <HowTo>This is your <b>presentation</b>. Each page has your <b>key numbers</b> and the sentences you will <b>say</b> (🎤). Read them aloud, point to the numbers and explain the concept. Press <b>Present</b> to show one page at a time.</HowTo>
       <div className="g8-final" id="g8-final">
-        <header><small>MONEY BLUEPRINT · GRADE 8 · INSTITUTO CREAR</small><h2>My Personal Financial Plan</h2><p>By <b>{studentName}</b>{radar ? ` · Radar: ${radar.profile}` : ""}</p></header>
-        <div className="g8-fp-grid">
-          <Sec n="01">{s1 && <><p>In {cop(s1.tIn)} · Out {cop(s1.tOut)} · Left <b>{cop(s1.left)}</b></p><p>{s1.mood}</p><i>🎯 {s1.goal}</i></>}</Sec>
-          <Sec n="02">{s2 && <><p>💼 Active {cop(s2.active)} · 🌙 Passive {cop(s2.passive)} · 🎁 Gifts {cop(s2.gifts)}</p><p>Future job: <b>{s2.dreamJob}</b> ({s2.sector})</p></>}</Sec>
-          <Sec n="03">{s3 && <><p>{s3.rows.length} movements · Income {cop(s3.income)}</p><StackBar parts={[{ label: "Needs", value: s3.needs, color: "#0b7a50" }, { label: "Wants", value: s3.wants, color: "#e07a2f" }, { label: "Savings", value: s3.save, color: "#f5b23e" }]} /></>}</Sec>
-          <Sec n="04">{s4 && <><p>Surprise: <b>{s4.event}</b></p><p>🐷 Savings after: {cop(groupOf(s4.after, "save"))}</p><i>“{s4.text.split(" ").slice(0, 22).join(" ")}…”</i></>}</Sec>
-          <Sec n="05">{s5 && <><p>🔍 Errors found: <b>{s5.found}/{s5.total}</b></p><i>✉️ “However, the receipt shows {s5.letter?.b}”</i></>}</Sec>
-          <Sec n="06">{s6 && <><p>Revenue {cop(s6.revenue)} − Expenses {cop(s6.expenses)}</p><p>📈 Real profit: <b>{cop(s6.profit)}</b> → plan: {cop(s6.newProfit)}</p></>}</Sec>
-          <Sec n="07">{s7 && <><p>💧 Leak fixed: saves <b>{cop(s7.save4)}</b> in 4 weeks</p><i>“{s7.text.split(" ").slice(0, 20).join(" ")}…”</i></>}</Sec>
-          <Sec n="08">{s8 && <><p>🌍 Compared: <b>{s8.famA}</b> vs. <b>{s8.famB}</b></p><i>“{s8.text.split(" ").slice(0, 22).join(" ")}…”</i></>}</Sec>
-          <Sec n="09">{s9 && <><ul>{s9.rules.slice(0, 4).map((x) => <li key={x}>{x}</li>)}</ul></>}</Sec>
-          <section className="g8-fp habit"><h4><span>10</span>🔁 My habit</h4><p><b>One financial habit I want to improve is</b> {habit || "…"} <b>because</b> {because || "…"}</p></section>
+        <header><small>MONEY BLUEPRINT · GRADE 8 · INSTITUTO CREAR</small><h2>My Personal Financial Plan</h2><p>By <b>{studentName}</b>{r.c1_radar ? ` · Radar: ${r.c1_radar.profile}` : ""}</p></header>
+        <div className="g8-fp-intro">🎤 {B.intro}</div>
+        <div className="g8-fp-list">
+          {BP_PAGES.map((p) => <BPSection key={p.n} n={p.n} data={B.S[p.n]} />)}
+          <section className="g8-fp habit"><h4><span>07</span>🔁 My habit</h4><div className="g8-fp-say"><small>🎤 I SAY</small><p>{B.habitSay}</p></div></section>
         </div>
-        <footer>💡 Concepts: income · expenses · needs & wants · fixed & variable · 50/30/20 · zero-based budget · receipts & invoices · IVA · ledger · profit & loss · money leaks · cost of living · app safety</footer>
+        <div className="g8-fp-intro end">🎤 {B.outro}</div>
       </div>
       <div className="start-block">
         <h3><PenLine size={18} /> My habit</h3>
         <div className="p3-sentence edit"><span>One financial habit I want to improve is</span><input className="start-input" value={habit} onChange={(e) => setHabit(e.target.value)} placeholder="Write your answer here…" /></div>
         <div className="p3-sentence edit"><span>because</span><input className="start-input" value={because} onChange={(e) => setBecause(e.target.value)} placeholder="Write your answer here…" /></div>
       </div>
-      {pages < 6 && <div className="p1-banner bad"><span>You need at least 6 of the 9 pages. You have {pages}.</span></div>}
-      <div className="p3-card-actions"><button className="s1-btn ghost" disabled={busy} onClick={png}><Download size={17} /> {busy ? "Creating…" : "Download PNG"}</button><button className="s1-btn ghost" onClick={print}><Printer size={17} /> Print / PDF</button></div>
+      {pages < 5 && <div className="p1-banner bad"><span>You need at least 5 of the 7 pages. You have {pages}.</span></div>}
+      <div className="p3-card-actions"><button className="s1-btn primary" onClick={() => setSlide(0)}><Mic size={17} /> Present</button><button className="s1-btn ghost" disabled={busy} onClick={png}><Download size={17} /> {busy ? "Creating…" : "Download PNG"}</button><button className="s1-btn ghost" onClick={print}><Printer size={17} /> Print / PDF</button></div>
       <div className="start-foot"><button className="s1-btn primary big" disabled={!ready} onClick={() => finish(50, { habit, because, pages })}>Publish my Blueprint <span className="coin-tag"><Coins size={15} /> +50</span></button></div>
+      {slide !== null && (
+        <div className="g8-present" role="dialog">
+          <div className="g8-present-top"><span>{slide + 1} / {slides.length}</span><button type="button" onClick={() => setSlide(null)}><X size={18} /> Close</button></div>
+          <div className="g8-present-stage">{slides[slide].node}</div>
+          <div className="g8-present-nav"><button type="button" disabled={slide === 0} onClick={() => setSlide(slide - 1)}><ChevronLeft size={20} /> Back</button><button type="button" disabled={slide === slides.length - 1} onClick={() => setSlide(slide + 1)}>Next <ChevronRight size={20} /></button></div>
+        </div>
+      )}
     </ActShell>
   );
 }
 
-const SHOW8 = ["I showed my money snapshot and my income map.", "I explained my budget before and after the surprise.", "I showed one error I found in a receipt.", "I explained the real profit of Aunt Rosa's business.", "I described my spending chart with data words.", "I shared my digital safety rules and my habit."];
+const SHOW8 = ["I showed my income map and my future job.", "I explained my budget before and after the surprise.", "I showed one error I found in a receipt.", "I explained my rules to use money apps safely.", "I explained the real profit of Aunt Rosa's business.", "I described my spending chart with data words.", "I shared the habit I want to improve."];
 function Showcase8({ onSave, onExit }) {
   const [checks, setChecks] = useState([]);
   const [peer, setPeer] = useState("");
@@ -3252,20 +3465,20 @@ const BOSS_8P1 = [
   { q: "Ten identical 5-star reviews are probably…", options: ["fake", "real, because many people love the same app", "illegal", "ads"], correct: 0, feedback: "Copy-paste = red flag." },
 ];
 const RUBRIC8 = [
-  { id: "plan", t: "I can explain income, expenses, needs and wants", d: "And why planning matters.", acts: ["c1_basics", "c1_rush", "c1_game", "c1_snapshot", "c2_income", "c3_detective"],
+  { id: "plan", t: "I can explain income, expenses, needs and wants", d: "And why planning matters.", acts: ["c1_basics", "c1_rush", "c1_read", "c1_game", "c3_rush", "c3_detective", "c3_statement"],
     check: { q: "Income $500,000 · needs $300,000 · wants $150,000. How much is left?", options: ["$50,000", "$150,000", "$800,000"], tip: "Income − needs − wants. Review: Class 1 · Where Did It Go?" } },
+  { id: "sectors", t: "I can classify jobs by economic sector and map my income", d: "Primary to quinary · active, passive, gifts.", acts: ["c2_starter", "c2_video", "c2_read", "c2_city", "c2_income"],
+    check: { q: "A factory that makes chocolate belongs to the…", options: ["Secondary sector", "Primary sector", "Tertiary sector"], tip: "Transformation = secondary. Review: Class 2 · Economic City Builder." } },
   { id: "budget", t: "I can build and adjust a budget", d: "50/30/20 and zero-based.", acts: ["c4_first", "c4_video", "c4_math", "c4_battle"],
     check: { q: "50/30/20 with $600,000. How much goes to SAVINGS?", options: ["$120,000", "$180,000", "$300,000"], tip: "20% of 600,000. Review: Class 4 · Budget Math." } },
-  { id: "docs", t: "I can read receipts and invoices and find errors", d: "Subtotal, IVA, total.", acts: ["c5_docs", "c5_rush", "c5_read", "c5_scanner"],
+  { id: "docs", t: "I can read receipts and invoices and find errors", d: "Subtotal, IVA, total.", acts: ["c5_docs", "c5_scanner"],
     check: { q: "Subtotal $100,000 + IVA 19% =", options: ["$119,000", "$100,019", "$190,000"], tip: "100,000 × 1.19. Review: Class 5 · Receipt Scanner." } },
-  { id: "books", t: "I can keep a ledger and calculate profit or loss", d: "Revenue − expenses.", acts: ["c6_basics", "c6_rush", "c6_week", "c6_books"],
+  { id: "digital", t: "I can choose and use money apps safely", d: "Permissions, 2FA, reviews.", acts: ["c5_docs", "c9_rush", "c9_lab", "c9_rules"],
+    check: { q: "A budget app asks for your contacts. You…", options: ["Deny it — it isn't necessary", "Accept — apps need everything", "Send your password too"], tip: "Only necessary permissions. Review: Class 5 · App Security Lab." } },
+  { id: "books", t: "I can keep a ledger and calculate profit or loss", d: "Revenue − expenses.", acts: ["c6_basics", "c6_rush", "c6_read", "c6_week", "c6_books"],
     check: { q: "Revenue $2,000,000 − expenses $2,300,000 =", options: ["A loss of $300,000", "A profit of $300,000", "$4,300,000"], tip: "Expenses bigger than revenue = loss. Review: Class 6 · Balance the Books." } },
-  { id: "habits", t: "I can analyze spending data and fix a money leak", d: "Charts + data words.", acts: ["c7_rush", "c7_read", "c7_autopsy", "c7_mine"],
+  { id: "habits", t: "I can analyze spending data and fix a money leak", d: "Charts + data words.", acts: ["c7_starter", "c7_rush", "c7_read", "c7_autopsy", "c7_mine"],
     check: { q: "$3,000 a day × 20 school days =", options: ["$60,000", "$23,000", "$6,000"], tip: "Small × many times. Review: Class 7 · Spending Autopsy." } },
-  { id: "global", t: "I can compare budgets and cost of living", d: "% vs. amount, exchange rates.", acts: ["c8_starter", "c8_video", "c8_city", "c8_sim"],
-    check: { q: "Family A spends 40% of $300. Family B spends 15% of $3,000. Who spends MORE dollars?", options: ["Family B", "Family A", "The same"], tip: "40% of 300 = 120 · 15% of 3,000 = 450. Review: Class 8 · Household Simulator." } },
-  { id: "digital", t: "I can choose and use money apps safely", d: "Permissions, 2FA, reviews.", acts: ["c9_starter", "c9_rush", "c9_lab", "c9_rules"],
-    check: { q: "A budget app asks for your contacts. You…", options: ["Deny it — it isn't necessary", "Accept — apps need everything", "Send your password too"], tip: "Only necessary permissions. Review: Class 9 · App Security Lab." } },
 ];
 const STAR_L = ["", "Starting", "Developing", "Good", "Excellent"];
 const HOW_L = [["read", "📖 Reading"], ["video", "🎬 Video"], ["game", "🎮 Game"], ["write", "✍️ Writing"], ["sim", "🧮 Simulator"]];
@@ -3325,81 +3538,66 @@ function SelfCheck8({ existing, checklist, onSave, onExit }) {
    ESTRUCTURA DEL PERIODO (10 clases) · Financial City
    ===================================================================== */
 const G8P1_WEEKS = [
-  { n: 1, g: "1", title: "The Missing Money", blurb: "Your Money Radar, the basics and a story: $400,000 gone in one week.", e: "🧭", skills: ["Reading", "Listening"], acts: [
+  { n: 1, g: "1", title: "The Missing Money", blurb: "Your Money Radar, the basics and a story: $400,000 gone in one week.", e: "🧭", skills: ["Reading", "Game"], acts: [
     { key: "c1_radar", title: "My Money Radar 🧭", desc: "10 situations · 5 pillars. Where am I today?", icon: <Compass size={22} />, coins: 15, bucket: "comportamiento", topics: ["Money", "Business", "Wellbeing", "Digital", "Global"] },
     { key: "c1_basics", title: "Starter: Money Words 🧱", desc: "7 key words from zero + match game.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
     { key: "c1_rush", title: "Need or Want? Speed Rush ⚡", desc: "16 cards · 60 seconds · build a combo!", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
-    { key: "c1_video", title: "Video: Teens and Money 🎬", desc: "Igor's talk · 8 random questions (70%).", icon: <Video size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c1_read", title: "Reading: The Missing Money 📖", desc: "Valentina's first paycheck · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c1_game", title: "Where Did It Go? 🔎", desc: "Rebuild her week, audit it, go back in time.", icon: <Search size={22} />, coins: 30, bucket: "aprendi" },
-    { key: "c1_snapshot", title: "My Money Snapshot 📸 · Page 01", desc: "A photo of YOUR money today.", icon: <Wallet size={22} />, coins: 25, bucket: "aprendi" },
   ] },
-  { n: 2, g: "2", title: "The City That Makes Money", blurb: "Economic sectors and sources of income. Build a city where money travels.", e: "🏙️", skills: ["Listening", "Reading"], acts: [
+  { n: 2, g: "2", title: "The City That Makes Money", blurb: "The 5 economic sectors and your sources of income. Build a city where money travels.", e: "🏙️", skills: ["Listening", "Game"], acts: [
     { key: "c2_starter", title: "Starter: Sectors & Income 🧱", desc: "From primary to quinary + quick game.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
     { key: "c2_video", title: "Video: Economic Sectors 🎬", desc: "5 sectors explained · 8 random questions (70%).", icon: <Video size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c2_read", title: "Reading: The Journey of a Cup of Coffee ☕", desc: "An economic report · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c2_city", title: "Economic City Builder 🏙️", desc: "Build 4 value chains. Follow the money.", icon: <Building2 size={22} />, coins: 40, bucket: "aprendi" },
     { key: "c2_sort", title: "Sector Sort: Colombia at Work 🇨🇴", desc: "18 real jobs · 5 sectors.", icon: <Puzzle size={22} />, coins: 40, bucket: "quizzes" },
-    { key: "c2_income", title: "My Income Map 🗺️ · Page 02", desc: "Active, passive, gifts — today and tomorrow.", icon: <MapIcon size={22} />, coins: 25, bucket: "aprendi" },
+    { key: "c2_income", title: "My Income Map 🗺️ · Page 01", desc: "Active, passive, gifts — today and tomorrow.", icon: <MapIcon size={22} />, coins: 25, bucket: "aprendi" },
   ] },
   { n: 3, g: "3", title: "The Shopping Trap", blurb: "Needs vs. wants, fixed vs. variable. Read a statement — then create yours.", e: "🛍️", skills: ["Reading", "Math"], acts: [
     { key: "c3_starter", title: "Starter: Need, Want, Fixed, Variable 🧱", desc: "6 key words + quick game.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
     { key: "c3_rush", title: "Fixed or Variable? Rush ⚡", desc: "14 expenses · beat the clock.", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
-    { key: "c3_detective", title: "Expense Detective 🕵️", desc: "Daniel's bank statement: 24 movements to investigate.", icon: <Search size={22} />, coins: 36, bucket: "aprendi" },
     { key: "c3_read", title: "Reading: The Weekend Sale 💬", desc: "A group chat + a diary · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c3_statement", title: "Create My Statement 🧾 · Page 03", desc: "Be the bank: build your month.", icon: <FileText size={22} />, coins: 30, bucket: "aprendi" },
+    { key: "c3_detective", title: "Expense Detective 🕵️", desc: "Daniel's bank statement: 24 movements to investigate.", icon: <Search size={22} />, coins: 36, bucket: "aprendi" },
+    { key: "c3_statement", title: "Create My Statement 🧾 · Page 02", desc: "Be the bank: build your month.", icon: <FileText size={22} />, coins: 30, bucket: "aprendi" },
   ] },
-  { n: 4, g: "4", title: "Budget Under Pressure", blurb: "From your first 3-jar budget to a budget that survives a surprise.", e: "⚖️", skills: ["Math", "Listening"], acts: [
+  { n: 4, g: "4", title: "Budget Under Pressure", blurb: "From your first 3-jar budget to a budget that survives a surprise.", e: "⚖️", skills: ["Listening", "Math"], acts: [
     { key: "c4_first", title: "Starter: My First Budget 🫙", desc: "$100,000 and three jars.", icon: <PiggyBank size={22} />, coins: 18, bucket: "quizzes" },
     { key: "c4_video", title: "Video: The 50/30/20 Rule 🎬", desc: "8 random questions (70%).", icon: <Video size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c4_math", title: "Budget Math 🧮", desc: "8 problems: 50/30/20, zero-based, %.", icon: <Calculator size={22} />, coins: 30, bucket: "quizzes" },
-    { key: "c4_read", title: "Reading: The Budget That Broke on Tuesday 📖", desc: "A decision case · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c4_battle", title: "Budget Battle ⚖️ · Page 04", desc: "Plan · surprise · rebuild · explain.", icon: <Scale size={22} />, coins: 35, bucket: "aprendi" },
+    { key: "c4_battle", title: "Budget Battle ⚖️ · Page 03", desc: "Plan · surprise · rebuild · explain.", icon: <Scale size={22} />, coins: 35, bucket: "aprendi" },
   ] },
-  { n: 5, g: "5", title: "The Case of the Fake Receipt", blurb: "Receipts, invoices, vouchers and IVA. Six documents, six errors.", e: "🧾", skills: ["Reading", "Writing"], acts: [
-    { key: "c5_docs", title: "Starter: Financial Documents 🧱", desc: "Receipt, invoice, voucher, IVA, NIT.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
-    { key: "c5_rush", title: "Receipt, Invoice or Voucher? ⚡", desc: "12 documents · 3 boxes · 60 seconds.", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
-    { key: "c5_read", title: "Reading: The Supermarket Mystery 📖", desc: "An investigation file · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c5_scanner", title: "Receipt Scanner 🔍 · Page 05", desc: "Find 6 errors + write a complaint.", icon: <Receipt size={22} />, coins: 34, bucket: "aprendi" },
+  { n: 5, g: "5", title: "Fake Receipt? Fake App? Protect Your Money", blurb: "Check receipts and invoices — then choose and set up a money app safely.", e: "🛡️", skills: ["Detective", "Digital"], acts: [
+    { key: "c5_docs", title: "Starter: Receipts & Apps 🧱", desc: "Receipt, invoice, IVA, permissions, 2FA, subscriptions.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
+    { key: "c5_scanner", title: "Receipt Scanner 🔍 · Page 04", desc: "Find 6 errors + write a complaint.", icon: <Receipt size={22} />, coins: 34, bucket: "aprendi" },
+    { key: "c9_rush", title: "Safe or Red Flag? 🚩 Rush", desc: "12 situations · protect your money.", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
+    { key: "c9_lab", title: "App Security Lab 🔬", desc: "Investigate 4 apps for Sara: permissions, reviews, price.", icon: <Shield size={22} />, coins: 30, bucket: "aprendi" },
+    { key: "c9_rules", title: "Safe Setup + My Rules 🔐 · Page 05", desc: "Practice account, rules and a review.", icon: <Lock size={22} />, coins: 30, bucket: "aprendi" },
   ] },
-  { n: 6, g: "6", title: "Is the Arepa Business Making Money?", blurb: "Run the stand, keep the ledger, find the real profit.", e: "🫓", skills: ["Business", "Math"], acts: [
+  { n: 6, g: "6", title: "Is the Arepa Business Making Money?", blurb: "Run the stand, keep the ledger, find the real profit.", e: "🫓", skills: ["Reading", "Business"], acts: [
     { key: "c6_basics", title: "Starter: Revenue, Profit, Loss 🧱", desc: "6 key words + quick math.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
     { key: "c6_rush", title: "Revenue, Expense or Personal? ⚡", desc: "Keep Aunt Rosa's ledger clean.", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
     { key: "c6_read", title: "Reading: The Busy Shop with No Profit 📖", desc: "Interview + ledger · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c6_week", title: "Arepa Shop Manager 🫓", desc: "6 days: forecast, prepare, sell, record.", icon: <Store size={22} />, coins: 30, bucket: "aprendi" },
     { key: "c6_books", title: "Balance the Books 📒 · Page 06", desc: "Sort, find the missing costs, improve.", icon: <FileText size={22} />, coins: 35, bucket: "aprendi" },
   ] },
-  { n: 7, g: "7", title: "The Invisible Money Leak", blurb: "Small purchases, big surprises. Find leaks with real data.", e: "💧", skills: ["Math", "Writing"], acts: [
+  { n: 7, g: "7", title: "The Invisible Money Leak", blurb: "Small purchases, big surprises. Find leaks with real data.", e: "💧", skills: ["Reading", "Data"], acts: [
     { key: "c7_starter", title: "Starter: Leaks & Habits 🧱", desc: "6 key words + quick math.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
     { key: "c7_rush", title: "Leak or Plan? Rush ⚡", desc: "Spot the money leaks fast.", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
     { key: "c7_read", title: "Reading: Small Purchases, Big Surprises 📖", desc: "A data investigation · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
     { key: "c7_autopsy", title: "Spending Autopsy 📊 · Page 07", desc: "Charts, habits and a data report.", icon: <BarChart3 size={22} />, coins: 35, bucket: "aprendi" },
-    { key: "c7_mine", title: "My 7-Day Tracker 📝", desc: "Your own purchases, your own chart.", icon: <PenLine size={22} />, coins: 25, bucket: "aprendi" },
+    { key: "c7_mine", title: "My Quick Tracker 📝", desc: "5 of your purchases · your own chart.", icon: <PenLine size={22} />, coins: 25, bucket: "aprendi" },
   ] },
-  { n: 8, g: "8", title: "Five Families, Five Budgets", blurb: "Household budgets and cost of living around the world.", e: "🌍", skills: ["Listening", "Global"], acts: [
-    { key: "c8_starter", title: "Starter: Cost of Living 🧱", desc: "Currency, exchange rate, % vs. amount.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
-    { key: "c8_video", title: "Video: Living on $1,500 🎬", desc: "Cities around the world · 8 random questions (70%).", icon: <Video size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c8_city", title: "Live on $1,500 ✈️", desc: "Calculate your living number in 6 cities.", icon: <MapIcon size={22} />, coins: 24, bucket: "aprendi" },
-    { key: "c8_read", title: "Reading: Five Families, Five Budgets 📖", desc: "A data magazine · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c8_sim", title: "Household Budget Simulator 🌍 · Page 08", desc: "5 homes · a surprise · compare two.", icon: <Globe size={22} />, coins: 35, bucket: "aprendi" },
-  ] },
-  { n: 9, g: "9", title: "Would You Trust This App?", blurb: "Budgeting apps, permissions, fake reviews and a safe setup.", e: "📱", skills: ["Digital", "Writing"], acts: [
-    { key: "c9_starter", title: "Starter: App Safety Words 🧱", desc: "Permissions, privacy, 2FA, subscriptions.", icon: <Lightbulb size={22} />, coins: 20, bucket: "quizzes" },
-    { key: "c9_rush", title: "Safe or Red Flag? 🚩 Rush", desc: "12 situations · protect your money.", icon: <Zap size={22} />, coins: 24, bucket: "aprendi" },
-    { key: "c9_lab", title: "App Security Lab 🔬", desc: "Investigate 4 apps for Sara.", icon: <Shield size={22} />, coins: 30, bucket: "aprendi" },
-    { key: "c9_read", title: "Reading: The App That Wanted Too Much 📖", desc: "Reviews + privacy · quiz (8 of 12).", icon: <BookOpen size={22} />, coins: 42, bucket: "quizzes" },
-    { key: "c9_rules", title: "Safe Setup + My Rules 🔐 · Page 09", desc: "Practice account, rules and a review.", icon: <Lock size={22} />, coins: 30, bucket: "aprendi" },
-  ] },
-  { n: 10, g: "10", title: "The Money Blueprint Challenge", blurb: "Save Financial City, publish your Blueprint, beat the Boss.", e: "🏆", skills: ["Speaking", "Review"], acts: [
+  { n: 8, g: "8", title: "The Money Blueprint Challenge", blurb: "Save Financial City, publish your Blueprint, beat the Boss.", e: "🏆", skills: ["Speaking", "Review"], acts: [
     { key: "c10_boss", title: "Financial City Boss 🏙️⚔️", desc: "3 challenges: personal, business, digital.", icon: <Swords size={22} />, coins: 50, bucket: "aprendi" },
-    { key: "c10_blueprint", title: "My Money Blueprint 📐", desc: "It builds itself with your 9 pages!", icon: <Award size={22} />, coins: 50, bucket: "aprendi" },
+    { key: "c10_blueprint", title: "My Money Blueprint 📐", desc: "It builds itself with your 7 pages!", icon: <Award size={22} />, coins: 50, bucket: "aprendi" },
     { key: "c10_present", title: "Blueprint Showcase 🎤", desc: "Present and get feedback.", icon: <Mic size={22} />, coins: 20, bucket: "comportamiento" },
     { key: "c10_quiz", title: "Boss Battle · Period 1 ⚔️", desc: "15 questions from the whole period (70%).", icon: <Trophy size={22} />, coins: 70, bucket: "quizzes" },
     { key: "c10_self", title: "My Self-Check", desc: "Prove 7 skills + how you learned them.", icon: <Star size={22} />, coins: 20, bucket: "comportamiento" },
   ] },
 ];
 const ALL_ACTS = G8P1_WEEKS.flatMap((w) => w.acts);
-const TOTAL_ACTS = ALL_ACTS.length;
+const coreActs = (w) => (w.bonus ? w.acts : w.acts.filter((a) => !a.bonus));
+const CORE_ACTS = G8P1_WEEKS.filter((w) => !w.bonus).flatMap((w) => w.acts.filter((a) => !a.bonus));
+const TOTAL_ACTS = CORE_ACTS.length;
 const PAGE_ACTS = [...BP_PAGES.map((p) => p.key), "c10_blueprint"];
 
 /* =====================================================================
@@ -3431,14 +3629,14 @@ export const Periodo1G8 = ({ userData, API_URL, existingRow, onBack }) => {
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); }, [week, act]);
 
   const name = userData?.Nombre_Completo || "Student";
-  const doneCount = ALL_ACTS.filter((a) => checklist[a.key]).length;
+  const doneCount = CORE_ACTS.filter((a) => checklist[a.key]).length;
   const pctDone = Math.round((doneCount / TOTAL_ACTS) * 100);
-  const weekDone = (w) => w.acts.every((a) => checklist[a.key]);
+  const weekDone = (w) => coreActs(w).every((a) => checklist[a.key]);
   const coinsTotal = Math.round(points.comportamiento + points.quizzes + points.aprendi);
 
   const persist = (nextChecklist, nextPoints, respPatch) => {
     respRef.current = { ...respRef.current, ...respPatch };
-    const done = ALL_ACTS.filter((a) => nextChecklist[a.key]).length;
+    const done = CORE_ACTS.filter((a) => nextChecklist[a.key]).length;
     const row = {
       Student_Key: userData.Student_Key, Semana: PERIOD_KEY, Grado: GRADE,
       Estado: done >= TOTAL_ACTS ? "completed" : "in_progress",
@@ -3506,7 +3704,7 @@ export const Periodo1G8 = ({ userData, API_URL, existingRow, onBack }) => {
       case "c4_math": view = <NumberRounds icon={<Calculator size={22} />} title="Budget Math 🧮" subtitle="50/30/20, zero-based and percentages." rounds={BUDGET_MATH} coinsPer={3} bonus={6} doneTitle="Budget mathematician! 🧮" onSave={save} onExit={exit} />; break;
       case "c4_battle": view = <BudgetBattle existing={resp.c4_battle} onSave={save} onExit={exit} />; break;
 
-      case "c5_docs": view = starter("Starter: Financial Documents 🧱", "The papers that prove where your money went.", START_5); break;
+      case "c5_docs": view = starter("Starter: Receipts & Apps 🧱", "Proof of what you paid — and how to keep your money safe in apps.", START_5_9); break;
       case "c5_read": view = reading("READING · B1 · INVESTIGATION FILE", "The Supermarket Mystery", "What if the receipt says you paid more than you should have?", READ_5, GLOSS_5, Q_5, "🧾"); break;
       case "c5_scanner": view = <ReceiptScanner existing={resp.c5_scanner} onSave={save} onExit={exit} />; break;
 
@@ -3543,7 +3741,7 @@ export const Periodo1G8 = ({ userData, API_URL, existingRow, onBack }) => {
 
   if (week) {
     const w = G8P1_WEEKS.find((x) => x.n === week);
-    const wDone = w.acts.filter((a) => checklist[a.key]).length;
+    const wDone = coreActs(w).filter((a) => checklist[a.key]).length;
     const next = G8P1_WEEKS[G8P1_WEEKS.indexOf(w) + 1];
     return (
       <div className={WRAP}>
@@ -3552,7 +3750,7 @@ export const Periodo1G8 = ({ userData, API_URL, existingRow, onBack }) => {
           <span className="s1-tag">{w.e} GRADE 8 · PERIOD 1 · CLASS {w.g}</span>
           <h1>{w.title}</h1>
           <p>{w.blurb}</p>
-          <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / w.acts.length) * 100}%` }} /></div><span className="pill">{wDone}/{w.acts.length}</span></div>
+          <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / coreActs(w).length) * 100}%` }} /></div><span className="pill">{wDone}/{coreActs(w).length}</span></div>
         </div>
         <BlueprintPanel resp={respRef.current} compact />
         <div className="s1-quest">
@@ -3564,7 +3762,7 @@ export const Periodo1G8 = ({ userData, API_URL, existingRow, onBack }) => {
             </div>
           ))}
         </div>
-        {next && wDone === w.acts.length && <div className="start-foot"><button className="s1-btn primary big" onClick={() => setWeek(next.n)}>Go to class {next.g}: {next.title} <ChevronRight size={18} /></button></div>}
+        {next && wDone === coreActs(w).length && <div className="start-foot"><button className="s1-btn primary big" onClick={() => setWeek(next.n)}>Go to class {next.g}: {next.title} <ChevronRight size={18} /></button></div>}
       </div>
     );
   }
@@ -3584,18 +3782,18 @@ export const Periodo1G8 = ({ userData, API_URL, existingRow, onBack }) => {
       {checklist.c10_blueprint && <button type="button" className="p3-card-link" onClick={() => setAct("c10_blueprint")}><Award size={18} /> See my Money Blueprint <ChevronRight size={16} /></button>}
       <div className="p1-passport">
         <div className="p1-passport-head"><b>🏙️ Financial City Passport</b><span>Finish a class to get its stamp</span></div>
-        <div className="p1-stamps">{G8P1_WEEKS.map((w) => <button key={w.n} type="button" className={`p1-stamp ${weekDone(w) ? "done" : ""}`} onClick={() => setWeek(w.n)} title={w.title}><em>{w.e}</em><small>{w.g}</small></button>)}</div>
+        <div className="p1-stamps" style={{ gridTemplateColumns: `repeat(${G8P1_WEEKS.length}, minmax(0, 1fr))` }}>{G8P1_WEEKS.map((w) => <button key={w.n} type="button" className={`p1-stamp ${weekDone(w) ? "done" : ""}`} onClick={() => setWeek(w.n)} title={w.title}><em>{w.e}</em><small>{w.g}</small></button>)}</div>
       </div>
       <div className="p1-weeks">
         {G8P1_WEEKS.map((w) => {
-          const d = w.acts.filter((a) => checklist[a.key]).length; const full = d === w.acts.length;
+          const ca = coreActs(w); const d = ca.filter((a) => checklist[a.key]).length; const full = d === ca.length;
           return (
             <button key={w.n} type="button" className={`p1-week-card ${full ? "done" : ""}`} onClick={() => setWeek(w.n)}>
               <div className="p1-week-top"><span className="p1-week-n">Class {w.g}</span><em>{full ? "✅" : w.e}</em></div>
               <h3>{w.title}</h3><p>{w.blurb}</p>
               <div className="act-topics">{w.skills.map((s) => <span key={s}>{s}</span>)}</div>
-              <div className="p1-week-bar"><i style={{ width: `${(d / w.acts.length) * 100}%` }} /></div>
-              <small>{d}/{w.acts.length} activities</small>
+              <div className="p1-week-bar"><i style={{ width: `${(d / ca.length) * 100}%` }} /></div>
+              <small>{d}/{ca.length} activities</small>
             </button>
           );
         })}

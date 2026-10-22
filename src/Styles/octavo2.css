@@ -4,8 +4,8 @@
    Misma paleta: bosque, verde, dorado, coral y menta (sin azules).
    ===================================================================== */
 
-.g82 .p1-stamps { grid-template-columns: repeat(11, 1fr); }
-@media (max-width: 760px) { .g82 .p1-stamps { grid-template-columns: repeat(6, 1fr); } }
+.g82 .p1-stamps { grid-template-columns: repeat(8, 1fr); }
+@media (max-width: 760px) { .g82 .p1-stamps { grid-template-columns: repeat(4, 1fr); } }
 .g82 .p1-stamp.jar::after { content: "🫙"; position: absolute; top: -6px; right: -6px; font-size: .8rem; }
 .g82 .p1-stamp { position: relative; }
 .g82 .g8-hero::after { content: "🫙" !important; }
