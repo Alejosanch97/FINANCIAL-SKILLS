@@ -100,7 +100,7 @@ const W_REASON = { l: "Give a reason", re: /\b(because|since|so|that's why|that 
 const W_ADVICE = { l: "Give advice", re: /\b(should|could|need to|needs to|has to|have to|must|it's better|try to|i recommend|i suggest)\b/i, ex: "should · could · need to · I recommend" };
 const W_CONTRAST = { l: "Show a contrast", re: /\b(however|although|but|while|whereas|even though|on the other hand|compared (with|to))\b/i, ex: "however · although · but · while" };
 const W_OPINION = { l: "Give your opinion", re: /\b(i think|i believe|in my opinion|i recommend|i suggest|i choose|i chose|i would)\b/i, ex: "I think · I believe · in my opinion" };
-const W_NUMBERS = (n = 2) => ({ l: `Use ${n} numbers`, test: (t) => ((t || "").match(/\d[\d,.%]*/g) || []).length >= n, ex: "$350,000 · 20% · 4 weeks" });
+const W_NUMBERS = (n = 2) => ({ l: `Use ${n} number${n > 1 ? "s" : ""}`, test: (t) => ((t || "").match(/\d[\d,.%]*/g) || []).length >= n, ex: "$350,000 · 20% · 4 weeks" });
 const goalHit = (g, t) => (g.test ? g.test(t || "") : g.re ? g.re.test(t || "") : true);
 /* Evita textos basura tipo "a a a a": pide palabras reales y variadas */
 const realText = (t) => { const w = (t || "").toLowerCase().match(/[a-záéíóúñ']+/g) || []; if (w.length < 4) return w.length > 0; const longW = w.filter((x) => x.length >= 3).length; return new Set(w).size / w.length >= 0.45 && longW / w.length >= 0.4; };
@@ -1802,48 +1802,63 @@ function BankTycoon({ onSave, onExit }) {
 
 /* ---------- GUIDE 01 · TOTAL COST DUEL (cuenta para Valentina) ---------- */
 const ACC18 = [
-  { id: "clasica", e: "🏦", n: "Cuenta Clásica", fee: 9900, free: 4, wcost: 2500, perks: "Debit card · branches in every city" },
+  { id: "clasica", e: "🏦", n: "Classic Account", fee: 9900, free: 4, wcost: 2500, perks: "Debit card · branches in every city" },
   { id: "neo", e: "📲", n: "NeoPocket", fee: 0, free: 1, wcost: 4500, perks: "App only · no branches · instant transfers" },
-  { id: "joven", e: "🎓", n: "Cuenta Joven", fee: 3500, free: 2, wcost: 3000, perks: "For students · debit card · app" },
+  { id: "joven", e: "🎓", n: "Youth Account", fee: 3500, free: 2, wcost: 3000, perks: "For students · debit card · app" },
 ];
 const annualCost18 = (a, w) => (a.fee + Math.max(0, w - a.free) * a.wcost) * 12;
 function CostDuel({ existing, onSave, onExit }) {
   const W0 = 3;
-  const [c, setC] = useState({ fee: "", w: "", free: "", cost: "" });
+  const [c, setC] = useState({ fee: "", free: "", cost: "", w: "" });
+  const [loaded, setLoaded] = useState(null);
   const [ans, setAns] = useState({});
   const [chk, setChk] = useState(false);
+  const [tries, setTries] = useState(0);
   const [w, setW] = useState(W0);
   const [pick, setPick] = useState(existing?.pick || null);
   const [txt, setTxt] = useState(existing?.text || "");
   const [st, finish] = useFinish(onSave);
-  const calc = (num(c.fee) + Math.max(0, num(c.w) - num(c.free)) * num(c.cost)) * 12;
-  const okAll = ACC18.every((a) => Math.abs(num(ans[a.id]) - annualCost18(a, W0)) <= 100);
+  const extra = Math.max(0, num(c.w) - num(c.free));
+  const calc = (num(c.fee) + extra * num(c.cost)) * 12;
+  const okOf = (a) => Math.abs(num(ans[a.id]) - annualCost18(a, W0)) <= 100;
+  const okAll = ACC18.every(okOf);
   const G = [W_NUMBERS(1), W_REASON];
   const P = ACC18.find((a) => a.id === pick);
+  /* Avisos cuando un dato está en la casilla equivocada */
+  const warn = num(c.free) > 31 ? "“Free withdrawals” is a NUMBER of withdrawals (like 1, 2 or 4) — not money. Look at the table again."
+    : num(c.w) > 31 ? "“Withdrawals Valentina makes” is a small number: she withdraws 3 times a month."
+    : c.cost !== "" && num(c.cost) > 0 && num(c.cost) < 100 ? "“Cost of each extra withdrawal” is money (like $2,500)."
+    : null;
+  const load = (a) => { setC({ fee: String(a.fee), free: String(a.free), cost: String(a.wcost), w: c.w }); setLoaded(a.id); };
   if (st.done) return <Reward title="Guide page 01 ready! 🏦" subtitle="You compared accounts by their REAL annual cost." coins={st.coins} saving={st.saving} onExit={onExit} gold />;
   return (
     <ActShell icon={<Wallet size={22} strokeWidth={2.1} />} title="Total Cost Duel 🏦" subtitle="Which account is really cheaper for Valentina? Don't look only at the monthly fee." onExit={onExit}>
       <GBadge n="01" />
       <ClientCard id="valentina" />
-      <Mission e="👩‍🎓" title="Valentina saves $150,000 a month and withdraws cash about 3 times a month.">She found 3 accounts. Calculate the ANNUAL cost of each one and recommend the best for her.</Mission>
+      <Mission e="👩‍🎓" title="Valentina saves $150,000 a month and withdraws cash 3 times a month.">She found 3 accounts. Calculate the ANNUAL cost of each one and recommend the best for her.</Mission>
       <MiniTable head={["Account", "Monthly fee", "Free withdrawals / month", "Each extra withdrawal", "Perks"]} rows={ACC18.map((a) => [`${a.e} ${a.n}`, cop(a.fee), `${a.free}`, cop(a.wcost), a.perks])} />
+      <HowTo title="How to calculate">1) Extra withdrawals = <b>3 − free withdrawals</b> (never below 0). 2) Monthly cost = <b>fee + extra × cost of each extra</b>. 3) Annual cost = monthly cost <b>× 12</b>.</HowTo>
       <div className="g82-calc open">
-        <div className="g82-calc-head"><b>🧮 Annual cost calculator</b><span>Type the numbers · read the result</span></div>
+        <div className="g82-calc-head"><b>🧮 Annual cost calculator</b><span>One account at a time · same order as the table</span></div>
         <div className="g82-calc-body four">
-          <NumBox label="Monthly fee" value={c.fee} set={(v) => setC({ ...c, fee: v })} unit="$" />
-          <NumBox label="Withdrawals / month" value={c.w} set={(v) => setC({ ...c, w: v })} unit="#" step="1" />
-          <NumBox label="Free withdrawals" value={c.free} set={(v) => setC({ ...c, free: v })} unit="#" step="1" />
-          <NumBox label="Cost of each extra" value={c.cost} set={(v) => setC({ ...c, cost: v })} unit="$" />
-          <div className="g82-formula"><small>FORMULA</small><code>(fee + extra withdrawals × cost) × 12</code><small>WITH YOUR NUMBERS</small><code>({cop(num(c.fee))} + {Math.max(0, num(c.w) - num(c.free))} × {cop(num(c.cost))}) × 12</code></div>
-          <div className="g82-result"><small>Annual cost</small><b>{cop(calc)}</b><span>Extra withdrawals = withdrawals − free ones (never below 0)</span></div>
+          <NumBox label="1 · Monthly fee ($)" value={c.fee} set={(v) => { setC({ ...c, fee: v }); setLoaded(null); }} unit="$" />
+          <NumBox label="2 · Free withdrawals (#)" value={c.free} set={(v) => { setC({ ...c, free: v }); setLoaded(null); }} unit="#" step="1" />
+          <NumBox label="3 · Cost of each extra ($)" value={c.cost} set={(v) => { setC({ ...c, cost: v }); setLoaded(null); }} unit="$" />
+          <NumBox label="4 · Withdrawals Valentina makes" value={c.w} set={(v) => setC({ ...c, w: v })} unit="#" step="1" />
+          {warn && <div className="p1-hint g83-span">⚠️ {warn}</div>}
+          <div className="g82-formula"><small>FORMULA</small><code>(fee + extra withdrawals × cost) × 12</code><small>WITH YOUR NUMBERS</small><code>extra = {num(c.w)} − {num(c.free)} = {extra}{num(c.w) - num(c.free) < 0 ? " (never below 0)" : ""}</code><code>({cop(num(c.fee))} + {extra} × {cop(num(c.cost))}) × 12 = {cop(calc)}</code></div>
+          <div className="g82-result"><small>Annual cost{loaded ? ` · ${ACC18.find((a) => a.id === loaded).n}` : ""}</small><b>{cop(calc)}</b><span>Now type this result in the account's box below.</span></div>
         </div>
       </div>
       <div className="start-block">
         <h3><span className="step-n">1</span> Annual cost for Valentina (3 withdrawals a month)</h3>
-        {ACC18.map((a) => { const ok = Math.abs(num(ans[a.id]) - annualCost18(a, W0)) <= 100; return (
-          <div key={a.id} className={`g82-calcrow ${chk ? (ok ? "ok" : "no") : ""}`}><span>{a.e} {a.n}</span><MoneyInput value={ans[a.id] || ""} onChange={(v) => { setAns({ ...ans, [a.id]: v }); setChk(false); }} />{chk && <b>{ok ? "✅" : "❌ try again"}</b>}</div>
+        {ACC18.map((a) => { const ok = okOf(a); return (
+          <div key={a.id}>
+            <div className={`g82-calcrow ${chk ? (ok ? "ok" : "no") : ""}`}><span>{a.e} {a.n}</span><MoneyInput value={ans[a.id] || ""} onChange={(v) => { setAns({ ...ans, [a.id]: v }); setChk(false); }} />{chk && <b>{ok ? "✅" : "❌ try again"}</b>}</div>
+            {chk && !ok && tries >= 2 && <p className="g83-why">💡 {a.n}: fee {cop(a.fee)} · {a.free} free · {cop(a.wcost)} each extra → extra = 3 − {a.free} = {Math.max(0, W0 - a.free)} → ({cop(a.fee)} + {Math.max(0, W0 - a.free)} × {cop(a.wcost)}) × 12</p>}
+          </div>
         ); })}
-        {!okAll && <div className="start-foot"><button className="s1-btn ghost" onClick={() => setChk(true)}><Check size={15} /> Check my numbers</button></div>}
+        {!okAll && <div className="start-foot"><button className="s1-btn ghost" onClick={() => { setChk(true); setTries(tries + 1); }}><Check size={15} /> Check my numbers</button></div>}
       </div>
       {okAll && (
         <>
@@ -1901,12 +1916,12 @@ const RUSH_19 = {
 /* ---------- RATE READER · 6 anuncios para Andrés ($6,000,000) ---------- */
 const LOAN19 = 6000000;
 const OFFERS19 = [
-  { id: "moto", e: "🛵", n: "Moto Fácil", ad: "Your first motorcycle! Only 1.9%!", main: "1.9%", fine: ["1.9% per MONTH", "Term: 24 months", "Study fee: $150,000 at the start"], type: "monthly", m: 1.9, months: 24, fee0: 150000, flag: "ask", why: "The ad hides that 1.9% is MONTHLY (≈ 25.3% EA) and there is a study fee." },
-  { id: "ruta", e: "🚀", n: "Ruta Joven", ad: "21.6% a year — clear and simple.", main: "21.6% a year", fine: ["21.6% NOMINAL annual, paid monthly", "Term: 36 months", "No extra fees · fixed rate"], type: "nominal", m: 1.8, months: 36, flag: "ok", why: "Everything is written: rate type, term and no extra fees." },
-  { id: "seguro", e: "🛡️", n: "Plan Seguro", ad: "22% EA — the honest rate!", main: "22% EA", fine: ["22% EA, fixed", "Term: 24 months", "Mandatory insurance: $30,000 EVERY month"], type: "ea", ea: 22, months: 24, feeM: 30000, flag: "ask", why: "Good EA, but the insurance adds $720,000. Ask if you can choose your own insurance." },
-  { id: "pequena", e: "🪙", n: "Cuota Pequeña", ad: "Pay only $153,000 a month!", main: "1.5%", fine: ["1.5% per month", "Term: 60 months (5 years!)", "No extra fees"], type: "monthly", m: 1.5, months: 60, flag: "ask", why: "A small payment… for 5 years. The total cost is the highest of the clear offers." },
-  { id: "flex", e: "🔁", n: "Crédito Flexible", ad: "From 17% EA!", main: "17% EA (starting)", fine: ["17% EA for the first 6 months", "VARIABLE rate: it can change every 6 months", "Term: 24 months"], type: "ea", ea: 17, months: 24, flag: "ask", why: "“From” 17%: the rate is variable, so the payment can go up. Ask the maximum." },
-  { id: "misterio", e: "❓", n: "Oferta Misteriosa", ad: "Approved in 5 minutes! Tiny payments!", main: "Not shown", fine: ["Rate: “ask the agent”", "“Fees may apply”", "In the contract: 3.2% per month"], type: "none", m: 3.2, months: 24, flag: "red", why: "No EA in the ad, unclear fees and 3.2% monthly ≈ 45.9% EA — far above the usury limit." },
+  { id: "moto", e: "🛵", n: "Easy Ride", ad: "Your first motorcycle! Only 1.9%!", main: "1.9%", fine: ["1.9% per MONTH", "Term: 24 months", "Study fee: $150,000 at the start"], type: "monthly", m: 1.9, months: 24, fee0: 150000, flag: "ask", why: "The ad hides that 1.9% is MONTHLY (≈ 25.3% EA) and there is a study fee." },
+  { id: "ruta", e: "🚀", n: "Young Route", ad: "21.6% a year — clear and simple.", main: "21.6% a year", fine: ["21.6% NOMINAL annual, paid monthly", "Term: 36 months", "No extra fees · fixed rate"], type: "nominal", m: 1.8, months: 36, flag: "ok", why: "Everything is written: rate type, term and no extra fees." },
+  { id: "seguro", e: "🛡️", n: "Safe Plan", ad: "22% EA — the honest rate!", main: "22% EA", fine: ["22% EA, fixed", "Term: 24 months", "Mandatory insurance: $30,000 EVERY month"], type: "ea", ea: 22, months: 24, feeM: 30000, flag: "ask", why: "Good EA, but the insurance adds $720,000. Ask if you can choose your own insurance." },
+  { id: "pequena", e: "🪙", n: "Small Payment", ad: "Pay only $153,000 a month!", main: "1.5%", fine: ["1.5% per month", "Term: 60 months (5 years!)", "No extra fees"], type: "monthly", m: 1.5, months: 60, flag: "ask", why: "A small payment… for 5 years. The total cost is the highest of the clear offers." },
+  { id: "flex", e: "🔁", n: "Flex Credit", ad: "From 17% EA!", main: "17% EA (starting)", fine: ["17% EA for the first 6 months", "VARIABLE rate: it can change every 6 months", "Term: 24 months"], type: "ea", ea: 17, months: 24, flag: "ask", why: "“From” 17%: the rate is variable, so the payment can go up. Ask the maximum." },
+  { id: "misterio", e: "❓", n: "Mystery Offer", ad: "Approved in 5 minutes! Tiny payments!", main: "Not shown", fine: ["Rate: “ask the agent”", "“Fees may apply”", "In the contract: 3.2% per month"], type: "none", m: 3.2, months: 24, flag: "red", why: "No EA in the ad, unclear fees and 3.2% monthly ≈ 45.9% EA — far above the usury limit." },
 ];
 const offMonthly = (o) => (o.m != null ? o.m : monthlyEq(o.ea));
 const offEA = (o) => (Math.pow(1 + offMonthly(o) / 100, 12) - 1) * 100;
@@ -1934,15 +1949,15 @@ function RateReader({ onSave, onExit }) {
   const rows = OFFERS19.map((o) => ({ o, ...offRow(o) }));
   const flagsOk = OFFERS19.every((o) => flag[o.id] === o.flag);
   const R19 = [
-    { tag: "CALCULATE 1", q: "🛵 Moto Fácil charges 1.9% MONTHLY. What is the EA? (2 decimals)", visual: <p className="g82-hintline">🧮 Use <b>🗓️➜📆 Monthly → Annual</b> with 1.9. <LoadBtn tab="m2a" v={{ mo: 1.9 }} /></p>, answer: +offEA(OFFERS19[0]).toFixed(2), tol: 0.05, unit: "%", hint: "Monthly → Annual with 1.9. It's MORE than 1.9 × 12 = 22.8.", explain: `≈ ${offEA(OFFERS19[0]).toFixed(2)}% EA — the “1.9%” ad hides a 25% yearly rate.` },
-    { tag: "CALCULATE 2", q: "🚀 Ruta Joven: 21.6% NOMINAL annual paid monthly. What is the EA?", visual: <p className="g82-hintline">🧮 Use <b>🏷️➜📆 Nominal → EA</b> with 21.6. <LoadBtn tab="n2e" v={{ nn: 21.6 }} /></p>, answer: +offEA(OFFERS19[1]).toFixed(2), tol: 0.05, unit: "%", hint: "21.6 ÷ 12 = 1.8% a month → (1.018)^12 − 1.", explain: `≈ ${offEA(OFFERS19[1]).toFixed(2)}% EA.` },
-    { tag: "CALCULATE 3", q: "🛵 Moto Fácil: monthly payment for $6,000,000 in 24 months at 1.9% monthly?", visual: <p className="g82-hintline">🧮 Use <b>🧾 Loan payment</b>. <LoadBtn tab="pmt" v={{ lp: 6000000, lr: 1.9, ln: 24 }} /></p>, answer: Math.round(pmt(LOAN19, 0.019, 24)), tol: 1000, money: true, hint: "Loan payment tab: 6000000 · 1.9 · 24.", explain: `${cop(pmt(LOAN19, 0.019, 24))} a month.` },
-    { tag: "CALCULATE 4", q: "🪙 Cuota Pequeña: 1.5% monthly for 60 months. TOTAL paid (without the $6,000,000 discount)?", visual: <p className="g82-hintline">🧮 Use <b>🧾 Loan payment</b> and read “Total paid”. <LoadBtn tab="pmt" v={{ lp: 6000000, lr: 1.5, ln: 60 }} /></p>, answer: Math.round(pmt(LOAN19, 0.015, 60) * 60), tol: 3000, money: true, hint: "Read the TOTAL under the payment.", explain: `${cop(pmt(LOAN19, 0.015, 60) * 60)} — more than $9 million for a $6 million loan!` },
+    { tag: "CALCULATE 1", q: "🛵 Easy Ride charges 1.9% MONTHLY. What is the EA? (2 decimals)", visual: <p className="g82-hintline">🧮 Use <b>🗓️➜📆 Monthly → Annual</b> with 1.9. <LoadBtn tab="m2a" v={{ mo: 1.9 }} /></p>, answer: +offEA(OFFERS19[0]).toFixed(2), tol: 0.05, unit: "%", hint: "Monthly → Annual with 1.9. It's MORE than 1.9 × 12 = 22.8.", explain: `≈ ${offEA(OFFERS19[0]).toFixed(2)}% EA — the “1.9%” ad hides a 25% yearly rate.` },
+    { tag: "CALCULATE 2", q: "🚀 Young Route: 21.6% NOMINAL annual paid monthly. What is the EA?", visual: <p className="g82-hintline">🧮 Use <b>🏷️➜📆 Nominal → EA</b> with 21.6. <LoadBtn tab="n2e" v={{ nn: 21.6 }} /></p>, answer: +offEA(OFFERS19[1]).toFixed(2), tol: 0.05, unit: "%", hint: "21.6 ÷ 12 = 1.8% a month → (1.018)^12 − 1.", explain: `≈ ${offEA(OFFERS19[1]).toFixed(2)}% EA.` },
+    { tag: "CALCULATE 3", q: "🛵 Easy Ride: monthly payment for $6,000,000 in 24 months at 1.9% monthly?", visual: <p className="g82-hintline">🧮 Use <b>🧾 Loan payment</b>. <LoadBtn tab="pmt" v={{ lp: 6000000, lr: 1.9, ln: 24 }} /></p>, answer: Math.round(pmt(LOAN19, 0.019, 24)), tol: 1000, money: true, hint: "Loan payment tab: 6000000 · 1.9 · 24.", explain: `${cop(pmt(LOAN19, 0.019, 24))} a month.` },
+    { tag: "CALCULATE 4", q: "🪙 Small Payment: 1.5% monthly for 60 months. TOTAL paid (without the $6,000,000 discount)?", visual: <p className="g82-hintline">🧮 Use <b>🧾 Loan payment</b> and read “Total paid”. <LoadBtn tab="pmt" v={{ lp: 6000000, lr: 1.5, ln: 60 }} /></p>, answer: Math.round(pmt(LOAN19, 0.015, 60) * 60), tol: 3000, money: true, hint: "Read the TOTAL under the payment.", explain: `${cop(pmt(LOAN19, 0.015, 60) * 60)} — more than $9 million for a $6 million loan!` },
   ];
   if (st.done) return <Reward title="Rate detective! 🔎" subtitle="You read the fine print, calculated the EA and exposed the trap." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
-    <ActShell icon={<Search size={22} strokeWidth={2.1} />} title="Rate Reader 🔎" subtitle="Six credit ads for Andrés ($6,000,000 motorcycle). Scan · translate · calculate · expose." onExit={onExit}>
-      <Steps83 labels={["1 · Scan & translate", "2 · Calculate", "3 · Compare & expose"]} at={stage} />
+    <ActShell icon={<Search size={22} strokeWidth={2.1} />} title="Rate Reader 🔎" subtitle="Six credit ads for Andrés ($6,000,000 motorcycle). Scan · classify · calculate · expose." onExit={onExit}>
+      <Steps83 labels={["1 · Scan & classify", "2 · Calculate", "3 · Compare & expose"]} at={stage} />
       {stage === 0 && (
         <>
           <HowTo>Open each ad in 3 layers: the <b>ad</b> → the <b>main rate</b> → the <b>fine print</b>. Then say what TYPE of rate it is. ({Object.keys(typ).filter((k) => typ[k] === OFFERS19.find((o) => o.id === k).type).length}/6)</HowTo>
@@ -1983,7 +1998,7 @@ function RateReader({ onSave, onExit }) {
           <p className="start-tip">💡 The cheapest TOTAL isn't always the best: a variable rate can rise, and a tiny payment can mean 5 years of debt.</p>
           {!flagsOk ? <div className="start-foot"><button className="s1-btn primary big" disabled={OFFERS19.some((o) => !flag[o.id])} onClick={() => setFlagChk(true)}>Check my labels <Check size={16} /></button></div> : (
             <>
-              <div className="p1-banner good"><span>✅ Well done! 🚩 Oferta Misteriosa is above the usury limit and hides information. Now you can advise Andrés (Guide page 02).</span></div>
+              <div className="p1-banner good"><span>✅ Well done! 🚩 Mystery Offer is above the usury limit and hides information. Now you can advise Andrés (Guide page 02).</span></div>
               <div className="start-foot"><button className="s1-btn primary big" onClick={() => finish(20 + first * 2 + calcScore * 3, { typeFirst: first, calcFirst: calcScore, table: rows.map(({ o, cu, total, ea }) => ({ id: o.id, n: o.n, ea: +ea.toFixed(2), cu: Math.round(cu), total: Math.round(total) })) })}>Save my investigation <span className="coin-tag"><Coins size={15} /> +{20 + first * 2 + calcScore * 3}</span></button></div>
             </>
           )}
@@ -2417,6 +2432,32 @@ const sim22 = (alloc, monthly, evIds) => {
   evIds.forEach((id) => { const E = EV22.find((e) => e.id === id); AS22.forEach((a) => { v[a.id] = (v[a.id] + (monthly * 3 * (alloc[a.id] || 0)) / 100) * (1 + E.ch[a.id] / 100); }); hist.push(tot(v)); snaps.push({ ...v }); });
   return { hist, snaps, final: tot(v), parts: { ...v } };
 };
+/* Tarjetas de inversión: rendimiento y riesgo bien visibles al elegir */
+const ev22Stats = (id) => { const tot = EV22.reduce((a, e) => a + e.w, 0); const vals = EV22.map((e) => e.ch[id]); return { avg: EV22.reduce((a, e) => a + e.w * e.ch[id], 0) / tot, best: Math.max(...vals), worst: Math.min(...vals) }; };
+const RISK22 = { cdt: ["🟢", "Very low risk", "Guaranteed by the bank"], index: ["🟡", "Medium-low risk", "Many companies together"], stock: ["🟠", "High risk", "Only ONE company"], crypto: ["🔴", "Very high risk", "Nobody guarantees it"] };
+function InvestCards({ alloc, setA, base, info }) {
+  const sum = AS22.reduce((a, x) => a + (alloc[x.id] || 0), 0);
+  return (
+    <>
+      <div className="g83-inv">
+        {AS22.map((a) => { const p = alloc[a.id] || 0; const money = (base * p) / 100; const I = info(a.id, money); const R = RISK22[a.id]; return (
+          <div key={a.id} className={`g83-inv-card ${p > 0 ? "on" : ""}`} style={{ "--lc": a.c }}>
+            <header><em>{a.e}</em><div><b>{a.n}</b><small>{R[0]} {R[1]} · {R[2]}</small></div><strong>{p}%</strong></header>
+            <div className="g83-inv-ctl">
+              <button type="button" onClick={() => setA(a.id, Math.max(0, p - 10))} aria-label="Less"><Minus size={15} /></button>
+              <input type="range" min={0} max={100} step={10} value={p} style={{ "--p": `${p}%` }} onChange={(e) => setA(a.id, Number(e.target.value))} />
+              <button type="button" onClick={() => setA(a.id, Math.min(100, p + 10))} aria-label="More"><Plus size={15} /></button>
+            </div>
+            <div className="g83-inv-money"><small>You put</small><b>{cop(money)}</b></div>
+            <div className="g83-inv-ret">{I.map(([l, v, m, tone]) => <div key={l} className={tone}><small>{l}</small><b>{v}</b>{m && <span>{m}</span>}</div>)}</div>
+          </div>
+        ); })}
+      </div>
+      <div className="g83-alloc g83-inv-sum"><div className={`g83-alloc-sum ${sum === 100 ? "ok" : "no"}`}><b>{sum}%</b><span>{sum === 100 ? "All your money is invested ✅" : sum > 100 ? `Remove ${sum - 100}% — the total must be 100%` : `Add ${100 - sum}% — the total must be 100%`}</span></div></div>
+    </>
+  );
+}
+const pctTxt = (v) => `${v > 0 ? "+" : ""}${Number(v).toFixed(1).replace(/\.0$/, "")}%`;
 const STRATS22 = [{ n: "📜 All CDT", a: { cdt: 100, index: 0, stock: 0, crypto: 0 } }, { n: "🧺 Diversified", a: { cdt: 40, index: 40, stock: 10, crypto: 10 } }, { n: "🪙 All crypto", a: { cdt: 0, index: 0, stock: 0, crypto: 100 } }];
 function MarketStorm({ onSave, onExit }) {
   const [stage, setStage] = useState(0);
@@ -2441,13 +2482,17 @@ function MarketStorm({ onSave, onExit }) {
       {stage === 0 && (
         <>
           <HowTo>Split your money between 4 investments (the total must be <b>100%</b>). Every 3 months a <b>random event</b> hits the market — each student gets different events! Prices in this game are simplified.</HowTo>
-          <div className="g83-alloc">
-            {AS22.map((a) => <div key={a.id} style={{ "--lc": a.c }}>{Ctl({ l: `${a.e} ${a.n}`, v: alloc[a.id], set: (v) => setA(a.id, v), mn: 0, mx: 100, stp: 10, fmt: (x) => `${x}%` })}</div>)}
-            <div className={`g83-alloc-sum ${sum === 100 ? "ok" : "no"}`}><b>{sum}%</b><span>{sum === 100 ? "All your money is invested ✅" : sum > 100 ? `Remove ${sum - 100}%` : `Add ${100 - sum}%`}</span></div>
-          </div>
-          <StackBar parts={AS22.map((a) => ({ label: a.n, value: alloc[a.id], color: a.c }))} />
+          <InvestCards alloc={alloc} setA={setA} base={START22} info={(id, money) => { const S = ev22Stats(id); const m = (r) => `${r < 0 ? "−" : "+"}${cop(Math.abs(money * r / 100))}`; return id === "cdt" ? [
+            ["📈 Every quarter", pctTxt(S.avg), `${m(S.avg)} guaranteed`, "pos"],
+            ["🚀 Best quarter", pctTxt(S.best), m(S.best), "pos"],
+            ["💥 Worst quarter", pctTxt(S.worst), `${m(S.worst)} · never loses`, "pos"],
+          ] : [
+            ["📈 Average quarter", pctTxt(S.avg), m(S.avg), S.avg >= 0 ? "pos" : "neg"],
+            ["🚀 Best quarter", pctTxt(S.best), m(S.best), "pos"],
+            ["💥 Worst quarter", pctTxt(S.worst), m(S.worst), S.worst < 0 ? "neg" : "pos"],
+          ]; }} />
           <div className="g72-machine">{Ctl({ l: "💵 Monthly contribution", v: monthly, set: setMonthly, mn: 0, mx: 200000, stp: 25000, fmt: cop })}</div>
-          <p className="start-tip">💡 In this game: 📜 CDT ≈ +2.4% every quarter (10% EA) · 🌐 the fund moves a little · 🏢 one stock moves a lot · 🪙 crypto can explode — or collapse.</p>
+          <p className="start-tip">💡 Every quarter ONE random event happens. These are the possible returns in this game (simplified): 📜 the CDT always pays +2.4% · 🪙 crypto can go from −65% to +120%.</p>
           <div className="start-foot"><button className="s1-btn primary big" disabled={sum !== 100} onClick={() => setStage(1)}>🎲 Start the storm <ChevronRight size={18} /></button></div>
         </>
       )}
@@ -2519,10 +2564,11 @@ function ValentinaPlan({ existing, onSave, onExit }) {
         <>
           <div className="start-block">
             <h3><span className="step-n">2</span> Her investment mix</h3>
-            <div className="g83-alloc">
-              {AS22.map((a) => <div key={a.id} style={{ "--lc": a.c }}>{Ctl({ l: `${a.e} ${a.n}`, v: alloc[a.id], set: (v) => setAlloc({ ...alloc, [a.id]: v }), mn: 0, mx: 100, stp: 10, fmt: (x) => `${x}%` })}</div>)}
-              <div className={`g83-alloc-sum ${sum === 100 ? "ok" : "no"}`}><b>{sum}%</b><span>{sum === 100 ? "Total 100% ✅" : `Total must be 100%`}</span></div>
-            </div>
+            <InvestCards alloc={alloc} setA={(id, v) => setAlloc({ ...alloc, [id]: v })} base={VAL22.start} info={(id, money) => { const R = RET22[id]; const y5 = money * Math.pow(1 + R.avg / 100, 5); return [
+              ["📈 Average / year", pctTxt(R.avg), `≈ +${cop(money * R.avg / 100)} a year`, "pos"],
+              R.bad < 0 ? ["💥 In a crash", pctTxt(R.bad), `−${cop(Math.abs(money * R.bad / 100))}`, "neg"] : ["💥 In a crash", "No loss", "it keeps its interest", "pos"],
+              ["🎓 After 5 years", cop(y5), "average growth", "pos"],
+            ]; }} />
             {warns.map((w) => <div key={w} className="p1-banner bad"><span>{w}</span></div>)}
           </div>
           <div className="g8-proj"><div><small>She puts in (5 years)</small><b>{cop(put)}</b></div><div><small>😊 Likely result</small><b className="pos">{cop(exp)}</b></div><div><small>😰 Bad scenario (crash in year 5)</small><b className={worst < put ? "neg" : ""}>{cop(worst)}</b></div></div>
@@ -3195,7 +3241,7 @@ const G8P3_WEEKS = [
     A("c19_starter", "Starter: Rate Words 🧱", "Monthly, nominal, EA, fixed, variable, usury.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c19_read", "Reading: The Rate Behind the Ad 📖", "Andrés and the motorcycle · quiz (8 of 12).", <BookOpen size={22} />, 42, "quizzes"),
     A("c19_rush", "Clear or Hidden? Rush 🚩", "12 pieces of loan information.", <Zap size={22} />, 24, "aprendi"),
-    A("c19_reader", "Rate Reader 🔎", "6 ads · scan, translate, calculate, expose.", <Search size={22} />, 38, "aprendi"),
+    A("c19_reader", "Rate Reader 🔎", "6 ads · scan, classify, calculate, expose.", <Search size={22} />, 38, "aprendi"),
     A("c19_page", "The Best Offer for Andrés 🔎 · Page 02", "One offer + the questions he must ask.", <FileText size={22} />, 30, "aprendi"),
   ] },
   { n: 20, g: "20", title: "My First Digital Credit", blurb: "Apply for a simulated loan, read the contract and see where every payment goes.", e: "📲", skills: ["Video", "Simulator"], acts: [
