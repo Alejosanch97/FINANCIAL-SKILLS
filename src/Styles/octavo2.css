@@ -4,8 +4,8 @@
    Misma paleta: bosque, verde, dorado, coral y menta (sin azules).
    ===================================================================== */
 
-.g82 .p1-stamps { grid-template-columns: repeat(8, 1fr); }
-@media (max-width: 760px) { .g82 .p1-stamps { grid-template-columns: repeat(4, 1fr); } }
+.g82 .p1-stamps { grid-template-columns: repeat(9, 1fr); }
+@media (max-width: 760px) { .g82 .p1-stamps { grid-template-columns: repeat(5, 1fr); } }
 .g82 .p1-stamp.jar::after { content: "🫙"; position: absolute; top: -6px; right: -6px; font-size: .8rem; }
 .g82 .p1-stamp { position: relative; }
 .g82 .g8-hero::after { content: "🫙" !important; }
@@ -365,3 +365,12 @@
 .g82-result.bad b { color: var(--coral); }
 .g82-calc-tip { margin: 0; padding: 0 14px 12px; font-size: .8rem; font-weight: 700; color: var(--muted); }
 .g82-hintline { margin: 8px 0 0; padding: 8px 12px; border-radius: 12px; background: #fffaf0; border: 1px solid #f5d27a; font-size: .86rem; font-weight: 600; }
+
+/* ===== v3 · espaciado de botones y contadores ===== */
+.g82 .start-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; }
+.g82 .start-foot .sort-count { margin-right: 6px; font-weight: 800; color: var(--green-deep); white-space: nowrap; }
+.g82 .start-foot .s1-btn + .s1-btn { margin-left: 0; }
+.g82 .g82-load { display: inline-flex; align-items: center; gap: 4px; margin: 6px 0 0; padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--gold); background: #fff; color: var(--forest); font-family: var(--font-body); font-weight: 800; font-size: .8rem; cursor: pointer; }
+.g82 .g82-load:hover { background: #fff1cc; }
+.g82 .g82-calc.loaded { scroll-margin-top: 12px; }
+.g82 .g82-life .g8-row b.neg { color: var(--coral); }
