@@ -114,6 +114,7 @@ function buildStudents(data) {
       const status = done === WEEKS.length ? "finished" : started ? "active" : u.Fecha_Ultimo_Login ? "idle" : "never";
       return {
         key, name: String(u.Nombre_Completo || key), email: String(u.Email || ""),
+        course: String(u.CURSO ?? "").trim(),
         lastLogin: u.Fecha_Ultimo_Login || null, weeks, overall, done, xp, status,
         quizzes: extractQuizzes(weeks),
       };
@@ -180,7 +181,7 @@ function StudentDetail({ s, onBack }) {
         <div className="adm-avatar">{s.name.charAt(0)}</div>
         <div className="adm-student-info">
           <h1>{s.name}</h1>
-          <p>{s.key} · {s.email || "sin email"} · Último ingreso: {fmtDate(s.lastLogin)}</p>
+          <p>{s.key} · Curso {s.course || "—"} · {s.email || "sin email"} · Último ingreso: {fmtDate(s.lastLogin)}</p>
           <span className={`adm-status ${s.status}`}>{STATUS[s.status].label}</span>
         </div>
         <div className="adm-student-kpis">
@@ -272,6 +273,7 @@ export const AdminPanel = ({ userData, API_URL }) => {
   const [updatedAt, setUpdatedAt] = useState(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
+  const [course, setCourse] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [selectedKey, setSelectedKey] = useState(null);
 
@@ -300,24 +302,36 @@ export const AdminPanel = ({ userData, API_URL }) => {
 
   const students = useMemo(() => buildStudents(data), [data]);
 
+  // Cursos que existen en la hoja (10, 11, …), ordenados
+  const courses = useMemo(
+    () => [...new Set(students.map((s) => s.course).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es", { numeric: true })),
+    [students]
+  );
+
+  // Todo el panel (tarjetas, semanas, tabla y CSV) se calcula sobre el curso elegido
+  const scoped = useMemo(
+    () => (course === "all" ? students : course === "none" ? students.filter((s) => !s.course) : students.filter((s) => s.course === course)),
+    [students, course]
+  );
+
   const stats = useMemo(() => {
-    const total = students.length || 1;
+    const total = scoped.length || 1;
     return {
-      total: students.length,
-      never: students.filter((s) => s.status === "never").length,
-      avg: Math.round(students.reduce((a, s) => a + s.overall, 0) / total),
-      finished: students.filter((s) => s.status === "finished").length,
+      total: scoped.length,
+      never: scoped.filter((s) => s.status === "never").length,
+      avg: Math.round(scoped.reduce((a, s) => a + s.overall, 0) / total),
+      finished: scoped.filter((s) => s.status === "finished").length,
       perWeek: WEEKS.map((n) => ({
         n,
-        done: students.filter((s) => isDone(s.weeks[n])).length,
-        started: students.filter((s) => num(s.weeks[n]?.Porcentaje) > 0).length,
+        done: scoped.filter((s) => isDone(s.weeks[n])).length,
+        started: scoped.filter((s) => num(s.weeks[n]?.Porcentaje) > 0).length,
       })),
     };
-  }, [students]);
+  }, [scoped]);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let arr = students.filter((s) => !q || s.name.toLowerCase().includes(q) || s.key.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
+    let arr = scoped.filter((s) => !q || s.name.toLowerCase().includes(q) || s.key.toLowerCase().includes(q) || s.email.toLowerCase().includes(q));
     if (STATUS[filter]) arr = arr.filter((s) => s.status === filter);
     else if (filter.startsWith("done-")) { const n = Number(filter.split("-")[1]); arr = arr.filter((s) => isDone(s.weeks[n])); }
     else if (filter.startsWith("pend-")) { const n = Number(filter.split("-")[1]); arr = arr.filter((s) => !isDone(s.weeks[n])); }
@@ -328,7 +342,7 @@ export const AdminPanel = ({ userData, API_URL }) => {
     if (sortBy === "xp") sorted.sort((a, b) => b.xp - a.xp);
     if (sortBy === "login") sorted.sort((a, b) => (b.lastLogin ? new Date(b.lastLogin) : 0) - (a.lastLogin ? new Date(a.lastLogin) : 0));
     return sorted;
-  }, [students, query, filter, sortBy]);
+  }, [scoped, query, filter, sortBy]);
 
   /* ---------- CSV para subir notas (se abre bien en Excel en español) ---------- */
   const exportCSV = () => {
@@ -341,12 +355,12 @@ export const AdminPanel = ({ userData, API_URL }) => {
     quizCols.sort((a, b) => a.week - b.week);
 
     const header = [
-      "Student_Key", "Nombre", "Email", "Estado", "Último ingreso", "Progreso global %", "Semanas completas", "XP total",
+      "Student_Key", "Nombre", "Email", "Curso", "Estado", "Último ingreso", "Progreso global %", "Semanas completas", "XP total",
       ...WEEKS.flatMap((n) => [`S${n} %`, `S${n} XP`]),
       ...quizCols.map((c) => `S${c.week} ${activityLabel(c.key)} (%)`),
     ];
     const rows = list.map((s) => [
-      s.key, s.name, s.email, STATUS[s.status].label, s.lastLogin ? fmtDate(s.lastLogin) : "Nunca",
+      s.key, s.name, s.email, s.course, STATUS[s.status].label, s.lastLogin ? fmtDate(s.lastLogin) : "Nunca",
       s.overall, s.done, s.xp,
       ...WEEKS.flatMap((n) => [Math.round(num(s.weeks[n]?.Porcentaje)), rowXP(s.weeks[n])]),
       ...quizCols.map((c) => {
@@ -412,6 +426,11 @@ export const AdminPanel = ({ userData, API_URL }) => {
               <Search size={16} strokeWidth={2.4} />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, key o email" />
             </label>
+            <select value={course} onChange={(e) => setCourse(e.target.value)}>
+              <option value="all">Curso: todos</option>
+              {courses.map((c) => <option key={c} value={c}>Curso {c}</option>)}
+              <option value="none">Sin curso</option>
+            </select>
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="all">Todos</option>
               <optgroup label="Estado">
@@ -430,7 +449,7 @@ export const AdminPanel = ({ userData, API_URL }) => {
               <option value="xp">Orden: más XP</option>
               <option value="login">Orden: ingreso reciente</option>
             </select>
-            <span className="adm-count">{list.length} de {students.length}</span>
+            <span className="adm-count">{list.length} de {scoped.length}</span>
           </div>
 
           <div className="adm-table-wrap">
@@ -438,6 +457,7 @@ export const AdminPanel = ({ userData, API_URL }) => {
               <thead>
                 <tr>
                   <th>Estudiante</th>
+                  <th className="c">Curso</th>
                   <th>Estado</th>
                   <th>Último ingreso</th>
                   {WEEKS.map((n) => <th key={n} className="c">S{n}</th>)}
@@ -452,6 +472,7 @@ export const AdminPanel = ({ userData, API_URL }) => {
                     <td>
                       <div className="adm-name"><b>{s.name}</b><small>{s.key}</small></div>
                     </td>
+                    <td className="c adm-num">{s.course || "—"}</td>
                     <td><span className={`adm-status ${s.status}`}>{STATUS[s.status].label}</span></td>
                     <td className="adm-login">{timeAgo(s.lastLogin)}</td>
                     {WEEKS.map((n) => <td key={n} className="c"><PctPill row={s.weeks[n]} /></td>)}
@@ -463,7 +484,7 @@ export const AdminPanel = ({ userData, API_URL }) => {
                   </tr>
                 ))}
                 {!list.length && (
-                  <tr className="no-hover"><td colSpan={12} className="adm-empty-row">Ningún estudiante coincide con el filtro.</td></tr>
+                  <tr className="no-hover"><td colSpan={13} className="adm-empty-row">Ningún estudiante coincide con el filtro.</td></tr>
                 )}
               </tbody>
             </table>
