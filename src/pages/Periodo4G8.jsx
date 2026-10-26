@@ -1152,26 +1152,25 @@ const SECTORS5 = [
   { id: "quaternary", e: "💡", l: "Quaternary", d: "Knowledge, information, technology" },
   { id: "quinary", e: "🏛️", l: "Quinary", d: "High-level decisions for many people" },
 ];
-/* Ideas de startup · números ficticios para el juego */
+/* Los MISMOS 3 negocios del Periodo 2 (Bootstrap Challenge) · ahora se vuelven digitales.
+   Números ficticios para el juego. */
 const STARTUPS = [
-  { id: "huerta", e: "🌱", n: "Huerta Viva", what: "grows and sells organic vegetables from a school garden", sector: "primary", ship: 3000, fixed: 120000, launch: 3000000,
-    products: [{ n: "Vegetable basket", cost: 8000, price: 18000 }, { n: "Herb pot", cost: 4000, price: 12000 }, { n: "Seed kit", cost: 6000, price: 15000 }] },
-  { id: "bottle", e: "🧴", n: "EcoBottle", what: "makes reusable bottles from recycled plastic", sector: "secondary", ship: 5000, fixed: 170000, launch: 5000000,
-    products: [{ n: "Reusable bottle", cost: 25000, price: 50000 }, { n: "Steel straw kit", cost: 6000, price: 18000 }, { n: "Lunch box", cost: 18000, price: 40000 }] },
-  { id: "arepa", e: "🫓", n: "ArepaGo", what: "delivers homemade arepas in the neighborhood", sector: "tertiary", ship: 2000, fixed: 150000, launch: 2500000,
-    products: [{ n: "Arepa combo", cost: 5000, price: 12000 }, { n: "Family pack", cost: 14000, price: 30000 }, { n: "Breakfast box", cost: 9000, price: 20000 }] },
-  { id: "rewear", e: "👕", n: "ReWear", what: "sells second-hand clothes online", sector: "tertiary", ship: 5000, fixed: 140000, launch: 3500000,
-    products: [{ n: "Second-hand jacket", cost: 15000, price: 45000 }, { n: "T-shirt", cost: 5000, price: 18000 }, { n: "Jeans", cost: 12000, price: 38000 }] },
-  { id: "tutor", e: "📚", n: "TutorLink", what: "is an app that connects students with tutors", sector: "quaternary", ship: 0, fixed: 300000, launch: 6000000,
-    products: [{ n: "1 tutoring class", cost: 22000, price: 40000 }, { n: "4-class pack", cost: 80000, price: 140000 }, { n: "Exam prep session", cost: 35000, price: 60000 }] },
-  { id: "pixel", e: "🎨", n: "PixelCraft", what: "designs logos and digital art for small businesses", sector: "quaternary", ship: 0, fixed: 250000, launch: 4000000,
-    products: [{ n: "Logo design", cost: 50000, price: 120000 }, { n: "Social media pack", cost: 30000, price: 80000 }, { n: "Sticker design", cost: 8000, price: 25000 }] },
+  { id: "juice", p2: "Juice stand", e: "🧃", n: "Juice stand", what: "sells fresh juices and smoothies with online orders and delivery", sector: "tertiary", ship: 2000, fixed: 150000, launch: 2500000,
+    digital: ["Online menu + orders", "QR and wallet payments", "Weekly juice plans"],
+    products: [{ n: "Fresh juice", cost: 3500, price: 8000 }, { n: "Smoothie", cost: 5000, price: 12000 }, { n: "Weekly juice pack (6)", cost: 20000, price: 45000 }] },
+  { id: "tees", p2: "T-shirt printing", e: "👕", n: "T-shirt printing", what: "prints custom T-shirts and sells them online", sector: "secondary", ship: 5000, fixed: 180000, launch: 4000000,
+    digital: ["Online store with a design tool", "Card and PSE payments", "Delivery to the whole city"],
+    products: [{ n: "Custom T-shirt", cost: 18000, price: 45000 }, { n: "Custom hoodie", cost: 45000, price: 95000 }, { n: "Team pack (5 T-shirts)", cost: 85000, price: 190000 }] },
+  { id: "cookie", p2: "Cookie delivery", e: "🍪", n: "Cookie delivery", what: "bakes cookies and delivers online orders in the neighborhood", sector: "secondary", ship: 3000, fixed: 140000, launch: 3000000,
+    digital: ["Order by WhatsApp link or website", "Wallet and QR payments", "Party boxes by pre-order"],
+    products: [{ n: "Mini cookie bag", cost: 3000, price: 8000 }, { n: "Box of 6 cookies", cost: 7000, price: 18000 }, { n: "Party box (24)", cost: 25000, price: 60000 }] },
 ];
+const p2Idea = (bizName) => STARTUPS.find((x) => x.p2 === bizName) || null;
 const FEE_PCT = 4, RESERVE_PCT = 2; // comisión de pago y reserva para devoluciones (ficticias)
 const unitCosts = (price, cost, ship) => { const fee = Math.round(price * FEE_PCT / 100), res = Math.round(price * RESERVE_PCT / 100); return { fee, res, ship, cost, margin: price - cost - fee - ship - res }; };
 
 const MODULES = [
-  { n: "01", key: "c26_page", t: "Idea & sector", e: "💡" },
+  { n: "01", key: "c26_page", t: "My business goes digital", e: "💡" },
   { n: "02", key: "c27_page", t: "Payments & prices", e: "💳" },
   { n: "03", key: "c28_page", t: "Store policies", e: "⚖️" },
   { n: "04", key: "c29_page", t: "Anti-fraud plan", e: "🔐" },
@@ -1187,16 +1186,16 @@ const PAY_METHODS = [
 ];
 
 /* ---------- Datos de la startup y de los periodos anteriores ---------- */
-const ideaOf = (r) => STARTUPS.find((s) => s.id === r?.c26_page?.idea) || null;
+const ideaOf = (r) => STARTUPS.find((s) => s.id === r?.c26_page?.idea) || p2Idea(r?.__p2?.c18_page?.biz || r?.__p2?.c18_boot?.biz) || null;
 const storeOf = (r) => { const p = r?.c26_page; const idea = ideaOf(r); return { name: p?.name || "My Startup", logo: p?.logo || idea?.e || "🚀", idea, sector: SECTORS5.find((s) => s.id === p?.sector) }; };
 const jarSaved84 = (p2) => (p2?.c12_goal ? (num(p2.c12_goal.start) || 0) + Object.values(p2.jarLogs || {}).reduce((a, v) => a + (num(v) || 0), 0) : 0);
 function pastOf(r) {
   const p1 = r?.__p1 || {}, p2 = r?.__p2 || {}, p3 = r?.__p3 || {};
-  const inc = p1.c2_income, goal = p2.c12_goal, cap = p2.c18_page;
+  const inc = p1.c2_income, goal = p2.c12_goal, cap = p2.c18_page || p2.c18_boot;
   return {
     dream: inc?.dreamJob || null, dreamSector: inc?.sector || null, income: inc?.total || null, radar: p1.c1_radar || null, blueprint: !!p1.c10_blueprint,
     goal: goal ? { what: goal.what, target: num(goal.target), saved: jarSaved84(p2) } : null,
-    biz: cap ? { n: cap.biz, e: cap.e, capital: num(cap.capital), route: cap.route } : null,
+    biz: cap ? { n: cap.biz, e: cap.e, capital: num(cap.capital), route: cap.route, id: p2Idea(cap.biz)?.id || null } : null,
     fmSavings: p3.c25_later?.savings ?? p3.c21_life?.savings ?? null, score: p3.c25_later?.score ?? p3.c21_life?.score ?? null, loan: p3.c20_app || null, inv: p3.c22_storm || null,
   };
 }
@@ -1218,7 +1217,7 @@ function StartupDash({ resp, compact, studentName }) {
     <div className={`g84-dash ${compact ? "compact" : ""}`}>
       <header>
         <em className="g84-logo">{S.logo}</em>
-        <div><small>🚀 STARTUP DASHBOARD{studentName && !compact ? ` · ${studentName.split(" ")[0]}` : ""}</small><b>{S.name}</b><span>{S.idea ? `${S.idea.what}${S.sector ? ` · ${S.sector.e} ${S.sector.l} sector` : ""}` : "Class 26 · choose your idea"}</span></div>
+        <div><small>🚀 STARTUP DASHBOARD{studentName && !compact ? ` · ${studentName.split(" ")[0]}` : ""}</small><b>{S.name}</b><span>{S.idea ? `${S.idea.what}${S.sector ? ` · ${S.sector.e} ${S.sector.l} sector` : ""}` : "Class 26 · your Period 2 business goes digital"}</span></div>
         <i>{done}/{MODULES.length} modules{r.c32_showcase ? " · 🏆 launched" : ""}</i>
       </header>
       <div className="g84-tiles">
@@ -1265,7 +1264,7 @@ function PickOne({ q, options, correct, onRight, explain, tag }) {
   const [wrong, setWrong] = useState([]);
   const [ok, setOk] = useState(false);
   return (
-    <div className="g84-pick">
+    <div className="start-block g84-pick">
       {tag && <span className="diag-dim">{tag}</span>}
       <p className="quiz-q">{q}</p>
       <div className="quiz-options">{order.map((k, pos) => <button key={k} type="button" disabled={ok || wrong.includes(k)} className={`quiz-opt ${ok && k === correct ? "correct" : ""} ${wrong.includes(k) ? "wrong" : ""}`} onClick={() => { if (k === correct) { setOk(true); onRight && onRight(wrong.length); } else setWrong([...wrong, k]); }}><span className="opt-key">{"ABCD"[pos]}</span><span className="opt-text">{options[k]}</span></button>)}</div>
@@ -1773,13 +1772,14 @@ function PaymentJourney({ onSave, onExit }) {
 }
 
 /* ---------- MÓDULO 01 · MY STARTUP IDEA ---------- */
-const LOGOS26 = ["🚀", "🌱", "🧴", "🫓", "👕", "📚", "🎨", "⚡", "🌎", "💚", "🦊", "⭐"];
+const LOGOS26 = ["🚀", "🧃", "🍓", "🍪", "🧁", "👕", "🎨", "⚡", "🌎", "💚", "🦊", "⭐"];
 const CUST26 = ["Teenagers", "Families", "Students", "Small businesses", "Neighbors", "Young workers"];
 function IdeaModule({ resp, existing, onSave, onExit }) {
   const P = pastOf(resp);
-  const [idea, setIdea] = useState(existing?.idea || null);
+  const fromP2 = P.biz?.id || null;
+  const [idea, setIdea] = useState(existing?.idea || fromP2);
   const [name, setName] = useState(existing?.name || "");
-  const [logo, setLogo] = useState(existing?.logo || "");
+  const [logo, setLogo] = useState(existing?.logo || (fromP2 ? STARTUPS.find((x) => x.id === fromP2).e : ""));
   const [sector, setSector] = useState(existing?.sector || null);
   const [cust, setCust] = useState(existing?.customer || null);
   const [txt, setTxt] = useState(existing?.text || "");
@@ -1791,7 +1791,7 @@ function IdeaModule({ resp, existing, onSave, onExit }) {
   const ready = I && nameOk && logo && secOk && cust && goalsOk(txt, 20, 70, G);
   if (st.done) return <Reward title="Module 01 unlocked! 💡" subtitle={`${logo} ${name} is born.`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
-    <ActShell icon={<Lightbulb size={22} strokeWidth={2.1} />} title="My Startup Idea 💡 · Module 01" subtitle="Choose your business, name it and explain the problem it solves." onExit={onExit}>
+    <ActShell icon={<Lightbulb size={22} strokeWidth={2.1} />} title="My Business Goes Digital 💡 · Module 01" subtitle="The business you planned in Period 2 becomes an online startup." onExit={onExit}>
       <MBadge n="01" />
       <div className="start-block">
         <h3><span className="step-n">1</span> Your story so far</h3>
@@ -1800,16 +1800,18 @@ function IdeaModule({ resp, existing, onSave, onExit }) {
           <div><small>PERIOD 2</small><b>{P.biz ? `${P.biz.e || "🚀"} ${P.biz.n}` : "🚀 Business capital plan"}</b><span>{P.biz ? `Capital: ${cop(P.biz.capital)}` : "Savings Portfolio"}</span></div>
           <div><small>PERIOD 3</small><b>🐷 {cop(P.fmSavings ?? 2000000)}</b><span>Future Me savings</span></div>
         </div>
-        <p className="start-tip">💡 This period you become a founder. Everything you learned — income, saving, credit — goes into your startup.</p>
+        <p className="start-tip">💡 In Period 2 you planned a small business and its capital. Now you take THAT business online: payments, prices, policies, safety and funding.</p>
       </div>
       <div className="start-block">
-        <h3><span className="step-n">2</span> Choose your startup</h3>
-        <div className="g84-ideas">{STARTUPS.map((s) => <button key={s.id} type="button" className={idea === s.id ? "on" : ""} onClick={() => { setIdea(s.id); setSector(null); if (!logo) setLogo(s.e); }}><em>{s.e}</em><b>{s.n}</b><span>It {s.what}.</span><small>Launch: {cop(s.launch)}</small></button>)}</div>
+        <h3><span className="step-n">2</span> {fromP2 ? "Your business from Period 2" : "Choose your business (the same 3 from Period 2)"}</h3>
+        {fromP2 && <div className="g84-p2"><em>{P.biz.e || I?.e}</em><div><small>PERIOD 2 · BOOTSTRAP CHALLENGE</small><b>{P.biz.n}</b><span>Starting capital {cop(P.biz.capital)} · you chose to {P.biz.route === "loan" ? "borrow and launch now" : "save first and launch later"}.</span></div></div>}
+        <div className="g84-ideas">{STARTUPS.map((s) => <button key={s.id} type="button" disabled={!!fromP2 && s.id !== fromP2} className={idea === s.id ? "on" : ""} onClick={() => { setIdea(s.id); setSector(null); if (!logo) setLogo(s.e); }}><em>{s.e}</em><b>{s.n} → online</b><span>It {s.what}.</span><small>Going digital: {cop(s.launch)}</small></button>)}</div>
+        {I && <div className="g84-digital"><b>🌐 What changes when it goes online?</b>{I.digital.map((d) => <span key={d}>✓ {d}</span>)}</div>}
       </div>
       {I && (
         <div className="start-block">
           <h3><span className="step-n">3</span> Name & logo</h3>
-          <input className="start-input" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your store's name (2–24 letters)" />
+          <input className="start-input" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your online store's name (2–24 letters)" />
           <div className="g74-chips g84-logos">{LOGOS26.map((l) => <button key={l} type="button" className={logo === l ? "on" : ""} onClick={() => setLogo(l)}>{l}</button>)}</div>
         </div>
       )}
@@ -2030,7 +2032,7 @@ function CheckoutLab({ resp, onSave, onExit }) {
       <div className="g84-formula">Margin per sale = selling price − variable costs</div>
       {stage === 0 && (
         <>
-          <Mission e="🧴" title="A reusable bottle sells for $50,000. What REALLY stays?">Tap every cost you pay <b>for each sale</b>. Careful: one card is a monthly cost and one is not a cost at all.</Mission>
+          <Mission e="🧴" title="Practice first: Lina's reusable bottle sells for $50,000. What REALLY stays?">Tap every cost you pay <b>for each sale</b>. Careful: one card is a monthly cost and one is not a cost at all.</Mission>
           <div className="g84-slicer">
             <div className="g84-price"><small>SELLING PRICE</small><b>$50,000</b>{sel.map((id) => { const c = COSTS28.find((x) => x.id === id); return <span key={id}>− {c.t} <i>{cop(c.v)}</i></span>; })}<em>= {allVar ? "?" : cop(left)}</em></div>
             <div className="g84-costcards">{order.map((id) => { const c = COSTS28.find((x) => x.id === id); return <button key={id} type="button" className={sel.includes(id) ? "on" : ""} onClick={() => tap(c)}><b>{c.t}</b><span>{cop(c.v)}</span></button>; })}</div>
@@ -2051,7 +2053,7 @@ function CheckoutLab({ resp, onSave, onExit }) {
         <>
           <Mission e="🎚️" title="Find the price with the BIGGEST monthly profit.">Higher price = bigger margin, but fewer customers. Lower price = more customers, but maybe no margin. (Fictional demand — a game assumption.)</Mission>
           <Ctl l="Price" v={price} set={(v) => { setPrice(v); setLocked(null); }} mn={30000} mx={90000} stp={5000} fmt={cop} />
-          <div className="g84-tiles light">
+          <div className="g84-results">
             <div><small>🛍️ Sales / month</small><b>{units28(price)}</b></div>
             <div><small>📈 Margin per sale</small><b className={margin28(price) < 0 ? "neg" : ""}>{cop(margin28(price))}</b></div>
             <div><small>🏠 Fixed costs</small><b>{cop(170000)}</b></div>
@@ -2101,7 +2103,7 @@ function CheckoutLab({ resp, onSave, onExit }) {
               </div>
             ))}
           </div>
-          <div className="g84-tiles light">
+          <div className="g84-results">
             <div><small>🏆 Best margin</small><b>{bestMine.n}</b><span>{cop(bestMine.margin)} per sale</span></div>
             <div><small>🏠 Fixed costs</small><b>{cop(idea.fixed)}</b><span>per month</span></div>
             <div><small>⚖️ Break-even</small><b>{beMine ? `${beMine} sales` : "—"}</b><span>of your best product</span></div>
@@ -2465,7 +2467,7 @@ function EscapeRoom({ onSave, onExit }) {
           </>)}
           {R.id === "receipt" && (<>
             <div className="g84-two">
-              <div className="g84-shot"><small>📱 Screenshot sent by “buyer”</small><b>✅ Transferencia exitosa</b><span>$180,000 · To: your store</span><span>Today 10:41 a.m.</span></div>
+              <div className="g84-shot"><small>📱 Screenshot sent by “buyer”</small><b>✅ Transfer successful</b><span>$180,000 · To: your store</span><span>Today 10:41 a.m.</span></div>
               <div className="g84-panel"><small>🏦 Your OFFICIAL payments panel · today</small>{[["09:15", "Order #311", 45000], ["10:02", "Order #312", 12000], ["11:30", "Order #313", 30000]].map(([h, o, v]) => <span key={o}>{h} · {o} · <b>{cop(v)}</b></span>)}</div>
             </div>
             <PickOne q="The buyer wants the product shipped NOW. What do you do?" options={["Don't ship: no $180,000 payment appears in the official panel", "Ship it, because the screenshot shows a green check, the amount and the exact time of the transfer", "Ship half", "Ask for another screenshot"]} correct={0} onRight={(w) => { setErrs((e) => e + w); win("receipt"); }} explain="Screenshots are easy to edit. Only your official panel proves a payment." />
@@ -2751,7 +2753,7 @@ function FundingPanel({ need, own, setOwn, ownMax, loan, setLoan, term, setTerm,
   const confirmed = loan + inv + (granted ? grant : 0);
   return (
     <>
-      <div className="g84-tiles light">
+      <div className="g84-results">
         <div><small>🚀 Launch cost</small><b>{cop(need)}</b></div>
         <div><small>🐷 My savings in</small><b>{cop(own)}</b></div>
         <div><small>🕳️ Funding gap</small><b className={confirmed >= gap ? "pos" : "neg"}>{cop(Math.max(0, gap - confirmed))}</b><span>{confirmed >= gap ? "covered ✅" : "still missing"}</span></div>
@@ -2772,7 +2774,7 @@ function FundingPanel({ need, own, setOwn, ownMax, loan, setLoan, term, setTerm,
   );
 }
 function FundingRound({ resp, onSave, onExit }) {
-  const idea = ideaOf(resp) || STARTUPS[4];
+  const idea = ideaOf(resp) || STARTUPS[0];
   const P = pastOf(resp);
   const ck = resp?.c27_checkout;
   const S = storeOf(resp);
@@ -2813,7 +2815,7 @@ function FundingRound({ resp, onSave, onExit }) {
         </>)}
       </>)}
       {part === 1 && (<>
-        <Mission e={S.logo} title={`${S.name} needs ${cop(idea.launch)} to launch.`}>Your money from past periods: Future Me savings (P3) {cop(P.fmSavings ?? 2000000)}{P.goal ? ` + Goal Jar (P2) ${cop(P.goal.saved)}` : ""} = <b>{cop(avail)}</b>. Don't put in everything — keep an emergency reserve!</Mission>
+        <Mission e={S.logo} title={`${S.name} needs ${cop(idea.launch)} to go digital.`}>{P.biz ? `In Period 2 your ${P.biz.n.toLowerCase()} needed ${cop(P.biz.capital)} to start. Going online costs more: store, payments, branding, marketing and a reserve. ` : ""}Your money from past periods: Future Me savings (P3) {cop(P.fmSavings ?? 2000000)}{P.goal ? ` + Goal Jar (P2) ${cop(P.goal.saved)}` : ""} = <b>{cop(avail)}</b>. Don't put in everything — keep an emergency reserve!</Mission>
         <FundingPanel need={idea.launch} own={own} setOwn={(v) => { setOwn(v); setRun(null); }} ownMax={Math.min(avail, idea.launch)} loan={loan} setLoan={(v) => { setLoan(v); setRun(null); }} term={term} setTerm={(v) => { setTerm(v); setRun(null); }} inv={inv} setInv={(v) => { setInv(v); setRun(null); }} grant={grant} setGrant={(v) => { if (!app) setGrant(v); }} granted={app && luck2} applied={app} onApply={() => setApp(true)} />
         {keep < avail * 0.3 && <div className="p1-hint">⚠️ You are keeping only {cop(keep)} for emergencies. Remember Period 2: an emergency fund protects you.</div>}
         <MiniTable head={["My monthly numbers", ""]} rows={[["Expected profit (sales goal × margin − fixed)", cop(monthly)], ["Starting reserve (15% of launch)", cop(reserve)], ["Loan installment", cop(cuota)]]} />
@@ -3020,13 +3022,13 @@ function LaunchSim({ resp, onSave, onExit }) {
         </>
       ); })() : (
         <>
-          <div className="g84-tiles">
+          <div className="g84-results">
             <div><small>🛍️ Orders</small><b>{res.ord}</b><span>goal: {orders}</span></div>
             <div><small>💰 Profit this month</small><b className={res.profit >= 0 ? "pos" : "neg"}>{cop(res.profit)}</b><span>margins − fixed − losses</span></div>
             <div><small>⭐ Rating</small><b>{res.rating}</b><span>trust {res.trust}%</span></div>
             <div><small>🚨 Losses</small><b>{cop(res.loss)}</b><span>from mistakes</span></div>
           </div>
-          <div className="g84-learned">{res.log.map(([e, ok, prot]) => <div key={e.id}><em>{ok ? "✅" : "❌"}</em><b>{e.t}</b><span>{ok ? e.good : e.bad}{!prot ? " (No module protected you.)" : ""}</span></div>)}</div>
+          <div className="g84-learned">{res.log.map(([e, ok, prot]) => <div key={e.id} className={ok ? "ok" : "no"}><em>{ok ? "✅" : "❌"}</em><b>{e.t}</b><span>{ok ? e.good : e.bad}{!prot ? " (No module protected you.)" : ""}</span></div>)}</div>
           <div className="start-foot"><button className="s1-btn primary big" disabled={!allDone} onClick={() => finish(30, { trust: res.trust, orders: res.ord, cash: res.profit, rating: +res.rating, loss: res.loss, events: res.log.map(([e, ok]) => ({ id: e.id, t: e.t, ok })) })}>Save my launch <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
         </>
       )}
@@ -3043,6 +3045,7 @@ function buildPitch(r, studentName, closing) {
   const parts = [
     { k: "idea", e: "💡", t: "My idea", lines: m1 ? [
       `Let me introduce ${S.name}: it ${S.idea?.what || "sells products online"}.`,
+      P.biz ? `In Period 2, I planned my ${P.biz.n.toLowerCase()} with ${cop(P.biz.capital)} of starting capital. Now it is a digital business.` : "",
       `It helps ${lowFirst(m1.customer)}${S.sector ? `, and it is in the ${S.sector.l.toLowerCase()} sector` : ""}.`,
       dot(m1.text),
       P.dream ? `It connects with my dream job: I want to be ${/^[aeiou]/i.test(P.dream) ? "an" : "a"} ${P.dream.toLowerCase()}.` : "",
@@ -3301,9 +3304,9 @@ function YearWrapped8({ resp, rows, pointsNow, actsNow, studentName, existing, o
     { k: "coins", c: "gold", node: <><small>THIS YEAR YOU EARNED</small><h2 className="g74-mega">{D.coins.toLocaleString("en-US")}</h2><p>FinFluent coins 🪙</p><div className="g74-wbars">{D.pts.map((v, k) => <div key={k}><i style={{ height: `${Math.max(6, (v / maxPts) * 100)}%` }} /><span>P{k + 1}</span><b>{v}</b></div>)}</div></> },
     { k: "acts", c: "green", node: <><small>YOU COMPLETED</small><h2 className="g74-mega">{totalActs}</h2><p>activities: readings, videos, games, simulators, writing and presentations.</p><div className="g74-wchips">{["📐 Money Planner", "🫙 Smart Saver", "🧭 Financial Advisor", "🚀 Startup Founder"].map((x, k) => <span key={x} className={(k < 3 ? D.acts[k] : actsNow) > 0 ? "on" : ""}>{x}</span>)}</div></> },
     { k: "p1", c: "coral", node: <><small>PERIOD 1 · MY MONEY BLUEPRINT</small><h2>You built your financial plan 📐</h2><p>{D.P.dream ? `Your dream job: ${D.P.dream} (${String(D.P.dreamSector || "").toLowerCase()} sector).` : "Income, budgets, receipts and your first money rules."}{D.P.income ? ` Your monthly income map: ${cop(D.P.income)}.` : ""}</p>{D.P.radar && <p className="g74-quote">Your first radar: <b>{D.P.radar.profile}</b></p>}</> },
-    { k: "p2", c: "mint", node: <><small>PERIOD 2 · MY SAVINGS PORTFOLIO</small><h2>You saved for real 🫙</h2><p>{D.P.goal ? `Your Goal Jar: ${D.P.goal.what} · ${cop(D.P.goal.saved)} of ${cop(D.P.goal.target)}.` : "SMART goals, saving methods, emergencies and interest."}{D.P.biz ? ` Your first business plan: ${D.P.biz.e || "🚀"} ${D.P.biz.n}.` : ""}</p></> },
+    { k: "p2", c: "mint", node: <><small>PERIOD 2 · MY SAVINGS PORTFOLIO</small><h2>You saved for real 🫙</h2><p>{D.P.goal ? `Your Goal Jar: ${D.P.goal.what} · ${cop(D.P.goal.saved)} of ${cop(D.P.goal.target)}.` : "SMART goals, saving methods, emergencies and interest."}{D.P.biz ? ` You planned your first business: ${D.P.biz.e || "🚀"} ${D.P.biz.n} (${cop(D.P.biz.capital)}).` : ""}</p></> },
     { k: "p3", c: "gold", node: <><small>PERIOD 3 · MY MONEY LIFE</small><h2>You advised 4 clients and lived “Future Me” 🧭</h2><p>{D.P.loan ? `Your simulated loan: ${cop(D.P.loan.amount)}.` : "Banks, credit, scores and investments."}{D.P.score ? ` Credit score: ${D.P.score}.` : ""}{D.P.inv ? ` Market Storm: ${cop(D.P.inv.final)}.` : ""}</p></> },
-    { k: "p4", c: "forest", node: <><small>PERIOD 4 · CREAR STARTUP STUDIO</small><h2>You launched {S.logo} {S.name}</h2><div className="g74-wlist">
+    { k: "p4", c: "forest", node: <><small>PERIOD 4 · CREAR STARTUP STUDIO</small><h2>{D.P.biz ? `Your ${D.P.biz.n.toLowerCase()} went online: ${S.logo} ${S.name}` : `You launched ${S.logo} ${S.name}`}</h2><div className="g74-wlist">
       {best && <span>📈 Best margin: <b>{best.n} · {cop(best.margin)}</b></span>}
       {fu && <span>💰 Funding: <b>{cop(fu.own)} savings{fu.loan ? ` + ${cop(fu.loan)} loan` : ""}{fu.inv ? ` + investor ${fu.equity}%` : ""}</b></span>}
       {secEv && <span>🛡️ Security event solved: <b>{secEv.t}</b></span>}
@@ -3365,12 +3368,12 @@ function BossYear({ onSave, onExit }) {
    ===================================================================== */
 const A = (key, title, desc, icon, coins, bucket) => ({ key, title, desc, icon, coins, bucket });
 const G8P4_WEEKS = [
-  { n: 26, g: "26", title: "Follow the Payment", blurb: "From “Pay” to the merchant account — then choose your startup idea.", e: "💳", skills: ["Video", "Game"], acts: [
+  { n: 26, g: "26", title: "Follow the Payment", blurb: "From “Pay” to the merchant account — then your Period 2 business goes digital.", e: "💳", skills: ["Video", "Game"], acts: [
     A("c26_starter", "Starter: Payment Words 🧱", "Merchant, gateway, network, authorization, refund, chargeback.", <Lightbulb size={22} />, 20, "quizzes"),
     A("c26_video", "Video: How Online Payments Work 🎬", "8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A("c26_rush", "Who Does It? Rush ⚡", "Customer · gateway · bank · merchant.", <Zap size={22} />, 24, "aprendi"),
     A("c26_journey", "Payment Journey 💳", "Build the route + 5 rounds: approved, declined, blocked, refund, chargeback.", <Route size={22} />, 36, "aprendi"),
-    A("c26_page", "My Startup Idea 💡 · Module 01", "Name, logo, sector, customer and the problem you solve.", <Rocket size={22} />, 26, "aprendi"),
+    A("c26_page", "My Business Goes Digital 💡 · Module 01", "Your Period 2 business goes online: name, logo, sector, customer.", <Rocket size={22} />, 26, "aprendi"),
   ] },
   { n: 27, g: "27", title: "Get Paid: Wallets & Prices", blurb: "Survive a week with a digital wallet — then price your products and find your break-even.", e: "👛", skills: ["Reading", "Calculator"], acts: [
     A("c27_starter", "Starter: Wallets & Margins 🧱", "Fees, limits, variable and fixed costs, break-even.", <Lightbulb size={22} />, 20, "quizzes"),
@@ -3551,7 +3554,7 @@ export const Periodo4G8 = ({ userData, API_URL, existingRow, onBack }) => {
           <p>{w.blurb}</p>
           <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / w.acts.length) * 100}%` }} /></div><span className="pill">{wDone}/{w.acts.length}</span></div>
         </div>
-        <StartupDash resp={respRef.current} compact />
+        <StartupDash resp={full()} compact />
         <div className="s1-quest">
           {w.acts.map((a) => (
             <div key={a.key} className={`act-card ${checklist[a.key] ? "done" : ""} ${PAGE_ACTS4.includes(a.key) ? "g8-page-act" : ""} ${a.title.startsWith("Starter") ? "g8-starter-act" : ""} ${a.key.endsWith("_rush") ? "g8-rush-act" : ""} ${a.key.endsWith("_read") || a.key.endsWith("_video") ? "g73-learn-act" : ""}`}>
@@ -3576,8 +3579,8 @@ export const Periodo4G8 = ({ userData, API_URL, existingRow, onBack }) => {
         <div className="s1-progress"><div className="bar"><i style={{ width: `${pctDone}%` }} /></div><span className="pill">{pctDone}%</span></div>
         <div className="p1-hero-chips"><span><Coins size={14} /> {coinsTotal} coins</span><span><Check size={14} /> {doneCount}/{TOTAL_ACTS4} activities</span><span>🚀 Startup Dashboard</span><span>🛡️ Customer Safety Center</span><span>🎯 SDG 9 · SDG 12</span></div>
       </div>
-      <div className="g8-howyear"><b>🧭 This period:</b><span>You become a founder. In 7 classes you build a digital store: how it gets paid, its prices, its policies, its anti-fraud plan, its privacy notice and its funding. On Launch Day you open it, present it to investors — and close your year with your Radar 4.0 and your Year Wrapped.</span></div>
-      <StartupDash resp={respRef.current} studentName={name} />
+      <div className="g8-howyear"><b>🧭 This period:</b><span>You become a founder. The small business you planned in Period 2 (juice stand, T-shirt printing or cookie delivery) goes online. In 7 classes you build its digital store: how it gets paid, its prices, its policies, its anti-fraud plan, its privacy notice and its funding. On Launch Day you open it, present it to investors — and close your year with your Radar 4.0 and your Year Wrapped.</span></div>
+      <StartupDash resp={full()} studentName={name} />
       {checklist.c32_showcase && <button type="button" className="p3-card-link" onClick={() => setAct("c32_showcase")}><Award size={18} /> See my Startup Showcase <ChevronRight size={16} /></button>}
       <div className="p1-passport">
         <div className="p1-passport-head"><b>🚀 Founder Pass</b><span>Finish a class to get its stamp</span></div>

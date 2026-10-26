@@ -10,6 +10,7 @@ import "../Styles/semana2.css"; // word-count, sim…
 import "../Styles/semana3.css"; // teach, formula, step-solver…
 import "../Styles/semana5.css"; // estilos propios de la semana 5
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu hook está en otro lado
+import { queueSave } from "../progressSync";
 
 /* =====================================================================
    SEMANA 5 · PROJECT EVALUATION & INVESTMENTS
@@ -902,17 +903,23 @@ export const Semana5 = ({ userData, API_URL, existingRow, onBack }) => {
         aprendi: parseFloat(existingRow?.Puntos_Aprendi || 0),
     });
 
-    const hydrated = useRef(!!existingRow);
-    useEffect(() => {
-        if (hydrated.current || !existingRow) return;
-        hydrated.current = true;
-        setChecklist(initChecklist); respRef.current = initResp;
-        setPoints({
-            comportamiento: parseFloat(existingRow.Puntos_Comportamiento || 0),
-            quizzes: parseFloat(existingRow.Puntos_Quizzes || 0),
-            aprendi: parseFloat(existingRow.Puntos_Aprendi || 0),
-        });
-    }, [existingRow]); // eslint-disable-line
+  // Cada vez que el store trae una versión más completa de la semana, la adoptamos.
+  // Antes: si entraba con la fila "light" (sin JSON) quedaba hidratado VACÍO y luego
+  // el primer guardado sobrescribía todo lo anterior en la hoja.
+  useEffect(() => {
+    if (!existingRow || !existingRow.Checklist_JSON) return; // fila light: no toca nada
+    setChecklist((prev) => {
+      const next = { ...prev };
+      Object.entries(initChecklist).forEach(([k, v]) => { next[k] = !!(prev[k] || v); });
+      return next;
+    });
+    respRef.current = { ...respRef.current, ...initResp };
+    setPoints((p) => ({
+      comportamiento: Math.max(p.comportamiento, parseFloat(existingRow.Puntos_Comportamiento || 0)),
+      quizzes: Math.max(p.quizzes, parseFloat(existingRow.Puntos_Quizzes || 0)),
+      aprendi: Math.max(p.aprendi, parseFloat(existingRow.Puntos_Aprendi || 0)),
+    }));
+  }, [existingRow]); // eslint-disable-line
 
     const [open, setOpen] = useState(null);
     useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); }, [open]);
@@ -934,10 +941,7 @@ export const Semana5 = ({ userData, API_URL, existingRow, onBack }) => {
             Checklist_JSON: JSON.stringify(nextChecklist),
             Respuestas_JSON: JSON.stringify(respRef.current),
         };
-        const prev = store.semanas?.[5];
-        dispatch({ type: "save_progreso", payload: row });
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "save_progreso", data: row }) })
-            .catch((e) => { console.error("Error guardando Semana 5:", e); dispatch({ type: "rollback_progreso", payload: { Semana: 5, prev } }); });
+    queueSave(API_URL, row, dispatch);
     };
 
     const complete = (key, addPoints, respPatch, pass = true) => {

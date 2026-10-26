@@ -5,7 +5,9 @@ import {
   Rocket, Lock, Check, Flame, Coins, CalendarCheck, Zap, LogOut,
   Menu, X, RefreshCw, Lightbulb, ChevronLeft, ChevronRight,
   LayoutDashboard, Sun, Plane, CalendarDays, Trophy, Award, Download, ShieldCheck,
+  CloudUpload, CloudOff,
 } from "lucide-react";
+import { loadCache, saveCache, flushPending, hasPending, mergeRows } from "../progressSync";
 import "../Styles/dashboard.css";
 import { Semana1 } from "./Semana1";
 import { Semana2 } from "./Semana2";
@@ -549,6 +551,38 @@ function Certificate({ name, onDownload, downloading }) {
 }
 
 /* =====================================================================
+   SYNC BADGE · le dice al estudiante si su progreso ya está a salvo
+   ===================================================================== */
+function SyncBadge({ sync }) {
+  const vals = Object.values(sync || {});
+  const status = vals.includes("offline") ? "offline" : vals.includes("saving") ? "saving" : vals.length ? "saved" : null;
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!status) return;
+    setVisible(true);
+    if (status === "saved") {
+      const t = setTimeout(() => setVisible(false), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [status]);
+
+  if (!status || !visible) return null;
+  const cfg = {
+    saving: { Icon: CloudUpload, text: "Uploading your progress to the database…" },
+    saved: { Icon: ShieldCheck, text: "Progress saved ✓ It won't be lost." },
+    offline: { Icon: CloudOff, text: "Saved on this device. Uploading as soon as you're online…" },
+  }[status];
+  const Icon = cfg.Icon;
+  return (
+    <div className={`sync-badge ${status}`} role="status" aria-live="polite">
+      <Icon size={16} strokeWidth={2.4} className={status === "saving" ? "sync-pulse" : ""} />
+      <span>{cfg.text}</span>
+    </div>
+  );
+}
+
+/* =====================================================================
    DASHBOARD
    ===================================================================== */
 export const Dashboard = ({ onLogout }) => {
@@ -596,9 +630,25 @@ export const Dashboard = ({ onLogout }) => {
     if (!saved) { navigate("/"); return; }
     let data;
     try { data = JSON.parse(saved); } catch { localStorage.removeItem("userFIN"); navigate("/"); return; }
-    setUserData(data);                 // pinta el dashboard YA
-    loadProgreso(data.Student_Key);    // los progresos llegan por detrás (no bloquea)
-  }, [navigate]);
+    setUserData(data);                                                     // pinta el dashboard YA
+    dispatch({ type: "set_semanas", payload: loadCache(data.Student_Key) }); // 1) lo guardado en este equipo
+    flushPending(API_URL, data.Student_Key, dispatch);                     // 2) sube lo que quedó pendiente
+    loadProgreso(data.Student_Key);                                        // 3) lo del servidor (se une, no pisa)
+  }, [navigate]); // eslint-disable-line
+
+  // Copia local de TODO el progreso cada vez que cambia
+  useEffect(() => {
+    if (userData?.Student_Key) saveCache(userData.Student_Key, store.semanas);
+  }, [store.semanas, userData]);
+
+  // Avisa si intentan cerrar con datos sin subir
+  useEffect(() => {
+    const h = (e) => {
+      if (userData?.Student_Key && hasPending(userData.Student_Key)) { e.preventDefault(); e.returnValue = ""; }
+    };
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, [userData]);
 
   const loadProgreso = async (key) => {
     if (!key) { setIsLoading(false); return; }
@@ -611,7 +661,7 @@ export const Dashboard = ({ onLogout }) => {
       const bySemana = {};
       rows.forEach((row) => {
         const sem = row && (row.Semana ?? row.semana);
-        if (sem != null && sem !== "") bySemana[sem] = row;
+        if (sem != null && sem !== "") bySemana[sem] = mergeRows(bySemana[sem], row);
       });
       dispatch({ type: "set_semanas", payload: bySemana });
       console.log("Progreso cargado:", Object.keys(bySemana).length, "semanas");
@@ -631,7 +681,9 @@ export const Dashboard = ({ onLogout }) => {
       const res = await fetch(url);
       const data = await res.json();
       const rows = Array.isArray(data) ? data : [];
-      const row = rows.find((r) => r && String(r.Semana) === String(n));
+      const row = rows
+        .filter((r) => r && String(r.Semana) === String(n))
+        .reduce((acc, r) => mergeRows(acc, r), null);
       if (row) dispatch({ type: "save_progreso", payload: row });
     } catch (e) { console.error("Error cargando semana completa:", e); }
   };
@@ -732,6 +784,7 @@ export const Dashboard = ({ onLogout }) => {
 
   return (
     <div className={`fin-dash ${navOpen ? "nav-open" : ""}`}>
+      <SyncBadge sync={store.sync} />
       {/* barra superior móvil */}
       <div className="fin-mobile-top">
         <div className="fin-brand-min">

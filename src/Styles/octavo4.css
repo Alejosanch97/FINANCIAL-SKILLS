@@ -272,3 +272,52 @@
 
 /* ---------- Impresión ---------- */
 @media print { .g84-dash, .g84-investor { display: none !important; } }
+
+/* ---------- Ajustes de legibilidad y espacios ---------- */
+.g84 .quiz-opt { background: #fff; border: 2px solid var(--line); }
+.g84 .quiz-opt:hover:not(:disabled) { border-color: var(--green); }
+.g84 .quiz-opt.correct { background: #eafaf2; border-color: var(--green); }
+.g84 .quiz-opt.wrong { background: #fff1ee; border-color: var(--coral); }
+.g84 .quiz-options { margin-bottom: 4px; }
+.g84 .g83-event { align-items: flex-start; }
+.g84 .g83-event > em { flex: none; width: 60px; height: 60px; display: grid; place-items: center; font-size: 2rem; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+.g84 .g83-event > div { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.g84 .g83-event small { display: block; font-size: .66rem; font-weight: 900; letter-spacing: .12em; color: var(--muted); }
+.g84 .g83-event p { margin: 0; }
+.g84 .g83-event span { display: block; margin-top: 4px; }
+.g84 .g84-pick { margin-bottom: 14px; }
+.g84 .g84-pick .quiz-q { margin-top: 6px; }
+.g84 .g84-pick .p1-banner, .g84 .g84-pick .p1-hint { margin-top: 12px; margin-bottom: 0; }
+.g84 .g83-app-main > * + * { margin-top: 0; }
+.g84 .start-foot { margin-top: 14px; }
+.g84 .p1-banner { margin-bottom: 12px; }
+.g84 .p1-hint { margin: 10px 0; }
+.g84 .g84-learned { margin-top: 12px; }
+.g84 .g84-tiles.light { margin-top: 4px; }
+.g84 .g8-mission { margin-top: 4px; }
+.g84 .g72-steps { margin-bottom: 14px; flex-wrap: wrap; }
+.g84 .g83-missions { margin-bottom: 14px; }
+.g84-learned > div.no { border-left-color: var(--coral); background: #fffaf9; }
+.g84-learned > div.ok { border-left-color: var(--green); }
+
+/* ---------- Resultados (tarjetas blancas, siempre legibles) ---------- */
+.g84-results { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 12px 0 14px; }
+.g84-results:has(> div:nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 760px) { .g84-results, .g84-results:has(> div:nth-child(3):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.g84-results > div { background: #ffffff !important; border: 1px solid var(--line); border-radius: 16px; padding: 11px 13px; box-shadow: var(--shadow-sm); min-width: 0; opacity: 1 !important; }
+.g84-results small { display: block; font-size: .76rem; font-weight: 800; color: #5d6f66 !important; }
+.g84-results b { display: block; font-family: var(--font-display); font-size: 1.25rem; color: #10231a !important; margin: 2px 0; overflow-wrap: anywhere; }
+.g84-results span { display: block; font-size: .76rem; font-weight: 700; color: #5d6f66 !important; }
+.g84-results b.pos { color: #0b7a50 !important; }
+.g84-results b.neg { color: #c2412d !important; }
+
+/* ---------- Módulo 01 · el negocio del Periodo 2 ---------- */
+.g84-p2 { display: flex; align-items: center; gap: 12px; background: linear-gradient(150deg, #fffaf0, #fff); border: 2px solid var(--gold); border-radius: 18px; padding: 12px 14px; margin-bottom: 12px; }
+.g84-p2 > em { font-style: normal; font-size: 2.2rem; width: 58px; height: 58px; flex: none; display: grid; place-items: center; background: #fff; border-radius: 16px; box-shadow: var(--shadow-sm); }
+.g84-p2 small { display: block; font-size: .64rem; font-weight: 900; letter-spacing: .1em; color: #a67a12; }
+.g84-p2 b { display: block; font-family: var(--font-display); font-size: 1.15rem; color: var(--forest); }
+.g84-p2 span { display: block; font-size: .84rem; color: var(--ink-soft); }
+.g84-ideas button:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+.g84-digital { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; background: #f4fbf7; border: 1px dashed #9fd9bb; border-radius: 14px; padding: 10px 12px; }
+.g84-digital b { width: 100%; font-family: var(--font-display); color: var(--forest); }
+.g84-digital span { font-size: .82rem; font-weight: 800; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; color: var(--green-deep); }

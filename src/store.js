@@ -1,20 +1,25 @@
+import { mergeRows } from "./progressSync";
+
 export const initialStore = () => {
   return {
     message: null,
-    semanas: {},   // { [Semana]: fila_de_progreso }  ← lo que lee el dashboard / Fluency Meter
+    semanas: {},   // { [Semana]: fila_de_progreso }
+    sync: {},      // { [Semana]: "saving" | "saved" | "offline" }
   };
 };
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    // OPTIMISTA: mete/actualiza la fila de una semana al instante
-    case 'save_progreso':
+    // MERGE: una fila nueva NUNCA borra lo que ya estaba (checklist, respuestas, puntos)
+    case 'save_progreso': {
+      const sem = action.payload.Semana;
       return {
         ...store,
-        semanas: { ...store.semanas, [action.payload.Semana]: action.payload },
+        semanas: { ...store.semanas, [sem]: mergeRows(store.semanas[sem], action.payload) },
       };
+    }
 
-    // ROLLBACK: si el fetch falla, restauramos la fila anterior (o la quitamos si no existía)
+    // Lo usan todavía los Periodos
     case 'rollback_progreso': {
       const next = { ...store.semanas };
       if (action.payload.prev) next[action.payload.Semana] = action.payload.prev;
@@ -22,11 +27,19 @@ export default function storeReducer(store, action = {}) {
       return { ...store, semanas: next };
     }
 
-    // Sembrar todas las semanas de una (al cargar el dashboard la primera vez)
-    case 'set_semanas':
-      return { ...store, semanas: action.payload };
+    // Antes REEMPLAZABA todo con filas "light" (sin JSON) → ahora une
+    case 'set_semanas': {
+      const next = { ...store.semanas };
+      Object.entries(action.payload || {}).forEach(([sem, row]) => {
+        next[sem] = mergeRows(row, next[sem]);
+      });
+      return { ...store, semanas: next };
+    }
+
+    case 'sync_status':
+      return { ...store, sync: { ...store.sync, [action.payload.semana]: action.payload.status } };
 
     default:
-      return store;   // no lanzamos error: en optimistic UI un throw te tumba la pantalla
+      return store;
   }
 }

@@ -522,3 +522,18 @@ a:focus-visible {
 .cert-sig-line { width: 150px; border-top: 2px solid #12332a; margin-bottom: 4px; }
 .cert-date-val { font-weight: 800; color: #12332a; }
 @media (max-width: 560px) { .cert-foot { flex-direction: column; align-items: center; gap: 18px; } }
+
+.sync-badge {
+  position: fixed; bottom: 18px; right: 18px; z-index: 9999;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 999px;
+  font-size: 13px; font-weight: 600; max-width: calc(100vw - 36px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.15); animation: syncIn .25s ease-out;
+}
+.sync-badge.saving  { background: #fff7e6; color: #8a5a00; border: 1px solid #f5b23e; }
+.sync-badge.saved   { background: #e8faf1; color: #0b7a50; border: 1px solid #16b074; }
+.sync-badge.offline { background: #fff0ee; color: #b3261e; border: 1px solid #ff6b57; }
+.sync-pulse { animation: syncPulse 1s ease-in-out infinite; }
+@keyframes syncPulse { 50% { transform: translateY(-2px); opacity: .6; } }
+@keyframes syncIn { from { transform: translateY(10px); opacity: 0; } }
+@media (max-width: 640px) { .sync-badge { left: 16px; right: 16px; bottom: 12px; justify-content: center; } }

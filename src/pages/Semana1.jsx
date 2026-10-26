@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import "../Styles/semana1.css";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu archivo del hook está en otro lado
+import { queueSave } from "../progressSync";
 
 /* =====================================================================
    SEMANA 1 · MONEY MINDSET & YOUR STARTING POINT
@@ -776,18 +777,23 @@ export const Semana1 = ({ userData, API_URL, existingRow, onBack, onSaved }) => 
 
   // Red de seguridad: si el store llega DESPUÉS del montaje (fetch inicial
   // lento y el usuario ya entró a la semana), nos re-hidratamos una vez.
-  const hydrated = useRef(!!existingRow);
+  // Cada vez que el store trae una versión más completa de la semana, la adoptamos.
+  // Antes: si entraba con la fila "light" (sin JSON) quedaba hidratado VACÍO y luego
+  // el primer guardado sobrescribía todo lo anterior en la hoja.
   useEffect(() => {
-    if (hydrated.current || !existingRow) return;
-    hydrated.current = true;
-    setChecklist(initChecklist);
-    respRef.current = initResp;
-    setPoints({
-      comportamiento: parseFloat(existingRow.Puntos_Comportamiento || 0),
-      quizzes: parseFloat(existingRow.Puntos_Quizzes || 0),
-      aprendi: parseFloat(existingRow.Puntos_Aprendi || 0),
+    if (!existingRow || !existingRow.Checklist_JSON) return; // fila light: no toca nada
+    setChecklist((prev) => {
+      const next = { ...prev };
+      Object.entries(initChecklist).forEach(([k, v]) => { next[k] = !!(prev[k] || v); });
+      return next;
     });
-  }, [existingRow]);
+    respRef.current = { ...respRef.current, ...initResp };
+    setPoints((p) => ({
+      comportamiento: Math.max(p.comportamiento, parseFloat(existingRow.Puntos_Comportamiento || 0)),
+      quizzes: Math.max(p.quizzes, parseFloat(existingRow.Puntos_Quizzes || 0)),
+      aprendi: Math.max(p.aprendi, parseFloat(existingRow.Puntos_Aprendi || 0)),
+    }));
+  }, [existingRow]); // eslint-disable-line
   const [open, setOpen] = useState(null);
 
   // Cada vez que cambia la sección abierta (o vuelves al menú), subimos al inicio
@@ -812,20 +818,8 @@ export const Semana1 = ({ userData, API_URL, existingRow, onBack, onSaved }) => 
       Respuestas_JSON: JSON.stringify(respRef.current),
     };
 
-    // 1) Guardamos la fila anterior por si toca revertir
-    const prev = store.semanas?.[1];
-
-    // 2) OPTIMISTA: el dashboard/Fluency Meter se mueve YA, sin esperar red
-    dispatch({ type: "save_progreso", payload: row });
-
-    // 3) Por detrás mandamos a la hoja; si falla, revertimos
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "save_progreso", data: row }),
-    }).catch((e) => {
-      console.error("Error guardando Semana 1:", e);
-      dispatch({ type: "rollback_progreso", payload: { Semana: 1, prev } });
-    });
+    // Store + localStorage al instante, y cola de subida con reintentos (sin rollback)
+    queueSave(API_URL, row, dispatch);
   };
 
   const complete = async (key, addPoints, respPatch, pass = true) => {
