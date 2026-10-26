@@ -513,7 +513,7 @@ function TipNote({ index, onPrev, onNext, onPause }) {
    ===================================================================== */
 const CREST_URL = ESCUDO; // src/assets/img/ESCUDO.jpg
 const SCHOOL_NAME = "Colegio Bilingüe Integral CREAR";
-const SIGNER_NAME = "Luis Alejandro Sánchez";
+const SIGNER_NAME = "Alejandro Sánchez";
 const SIGNER_ROLE = "Vicerrector";
 
 function Certificate({ name, onDownload, downloading }) {
