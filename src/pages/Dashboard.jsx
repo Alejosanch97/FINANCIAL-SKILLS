@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { loadCache, saveCache, flushPending, hasPending, mergeRows } from "../progressSync";
 import "../Styles/dashboard.css";
+import ESCUDO from "../assets/img/ESCUDO.jpg";
 import { Semana1 } from "./Semana1";
 import { Semana2 } from "./Semana2";
 import { Semana3 } from "./Semana3";
@@ -510,7 +511,10 @@ function TipNote({ index, onPrev, onNext, onPause }) {
 /* =====================================================================
    CERTIFICADO · aparece al completar las 6 semanas, descargable
    ===================================================================== */
-const CREST_URL = "https://i.pinimg.com/736x/db/1e/03/db1e03964f0c50df7b69c3aa10bba738.jpg";
+const CREST_URL = ESCUDO; // src/assets/img/ESCUDO.jpg
+const SCHOOL_NAME = "Colegio Bilingüe Integral CREAR";
+const SIGNER_NAME = "Luis Alejandro Sánchez";
+const SIGNER_ROLE = "Vicerrector";
 
 function Certificate({ name, onDownload, downloading }) {
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
@@ -526,7 +530,8 @@ function Certificate({ name, onDownload, downloading }) {
       {/* Este nodo es EXACTAMENTE lo que se exporta a imagen */}
       <div className="cert" id="fin-certificate">
         <div className="cert-inner">
-          <img className="cert-crest" src={CREST_URL} alt="" crossOrigin="anonymous" />
+          <img className="cert-crest" src={CREST_URL} alt={`Escudo ${SCHOOL_NAME}`} />
+          <p className="cert-school">{SCHOOL_NAME}</p>
           <p className="cert-eyebrow">FinFluent · Financial English for Teens</p>
           <h1 className="cert-title">Certificate of Completion</h1>
           <p className="cert-pre">This certifies that</p>
@@ -539,8 +544,10 @@ function Certificate({ name, onDownload, downloading }) {
           </p>
           <div className="cert-foot">
             <div className="cert-sig">
+              <span className="cert-sig-name">{SIGNER_NAME}</span>
               <span className="cert-sig-line" />
-              <span>Instituto · FinFluent</span>
+              <span className="cert-sig-who">{SIGNER_NAME}</span>
+              <span>{SIGNER_ROLE} · {SCHOOL_NAME}</span>
             </div>
             <div className="cert-date"><span className="cert-date-val">{today}</span><span>Date</span></div>
           </div>
@@ -610,6 +617,7 @@ export const Dashboard = ({ onLogout }) => {
           document.body.appendChild(s);
         });
       }
+      if (document.fonts?.ready) await document.fonts.ready; // espera la letra cursiva de la firma
       const node = document.getElementById("fin-certificate");
       const canvas = await window.html2canvas(node, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
       const link = document.createElement("a");

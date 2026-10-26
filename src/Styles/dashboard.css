@@ -4,6 +4,7 @@
    Los nombres de variables (--bg, --green, --r-md...) se mantienen para
    que Semana1 siga funcionando; solo cambiaron sus valores.
    ===================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400;500;600;700&display=swap');
 
 :root {
@@ -537,3 +538,40 @@ a:focus-visible {
 @keyframes syncPulse { 50% { transform: translateY(-2px); opacity: .6; } }
 @keyframes syncIn { from { transform: translateY(10px); opacity: 0; } }
 @media (max-width: 640px) { .sync-badge { left: 16px; right: 16px; bottom: 12px; justify-content: center; } }
+
+/* ---------- Certificado: escudo, colegio y firma ---------- */
+.cert-crest {
+  width: 220px;
+  height: auto;
+  border: none;
+  display: block;
+  margin: -16px auto -10px;
+  mix-blend-mode: multiply;
+}
+.cert-school {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #1d3a2e;
+  text-align: center;
+}
+.cert-sig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.cert-sig-name {
+  font-family: "Great Vibes", "Brush Script MT", cursive;
+  font-size: 40px;
+  line-height: 1;
+  color: #1d3a2e;
+  margin-bottom: -6px;
+  white-space: nowrap;
+}
+.cert-sig-who {
+  font-weight: 700;
+  color: #1d3a2e;
+}
