@@ -5,7 +5,7 @@ import {
   Rocket, Lock, Check, Flame, Coins, CalendarCheck, Zap, LogOut,
   Menu, X, RefreshCw, Lightbulb, ChevronLeft, ChevronRight,
   LayoutDashboard, Sun, Plane, CalendarDays, Trophy, Award, Download, ShieldCheck,
-  CloudUpload, CloudOff,
+  CloudUpload, CloudOff, 
 } from "lucide-react";
 import { loadCache, saveCache, flushPending, hasPending, mergeRows } from "../progressSync";
 import "../Styles/dashboard.css";
@@ -29,6 +29,10 @@ import { Periodo1G8 } from "./Periodo1G8";
 import { Periodo2G8 } from "./Periodo2G8";
 import { Periodo3G8 } from "./Periodo3G8";
 import { Periodo4G8 } from "./Periodo4G8";
+import { Periodo1G9 } from "./Periodo1G9";
+import { Periodo2G9 } from "./Periodo2G9";
+import { Periodo3G9 } from "./Periodo3G9";
+import { Periodo4G9 } from "./Periodo4G9";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -961,6 +965,46 @@ export const Dashboard = ({ onLogout }) => {
             Periodo 4 · Grado 8
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g9p1" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g9p1"); setNavOpen(false); loadSemanaFull("9P1"); }}
+            aria-current={activeTab === "g9p1" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Award size={18} strokeWidth={2.2} /></span>
+            Periodo 1 · Grado 9
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g9p2" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g9p2"); setNavOpen(false); loadSemanaFull("9P2"); loadSemanaFull("9P1"); }}
+            aria-current={activeTab === "g9p2" ? "page" : undefined}
+          >
+            <span className="nav-ico"><CreditCard size={18} strokeWidth={2.2} /></span>
+            Periodo 2 · Grado 9
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g9p3" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g9p3"); setNavOpen(false); loadSemanaFull("9P3"); loadSemanaFull("9P2"); loadSemanaFull("9P1"); }}
+            aria-current={activeTab === "g9p3" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Rocket size={18} strokeWidth={2.2} /></span>
+            Periodo 3 · Grado 9
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g9p4" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g9p4"); setNavOpen(false); loadSemanaFull("9P4"); loadSemanaFull("9P3"); loadSemanaFull("9P2"); loadSemanaFull("9P1"); }}
+            aria-current={activeTab === "g9p4" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Rocket size={18} strokeWidth={2.2} /></span>
+            Periodo 4 · Grado 9
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -1102,6 +1146,26 @@ export const Dashboard = ({ onLogout }) => {
           <Periodo3G8 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["8P3"]} onBack={() => setActiveTab("overview")} />
         )}
 
+        {/* ===== PERIODO 4 · GRADO 9 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g9p4" && isAdmin && (
+          <Periodo4G9 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["9P4"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 3 · GRADO 9(solo admin, vista de prueba) ===== */}
+        {activeTab === "g9p3" && isAdmin && (
+          <Periodo3G9 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["9P3"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 2 · GRADO 9 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g9p2" && isAdmin && (
+          <Periodo2G9 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["9P2"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== PERIODO 1 · GRADO 9 (solo admin, vista de prueba) ===== */}
+        {activeTab === "g9p1" && isAdmin && (
+          <Periodo1G9 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["9P1"]} onBack={() => setActiveTab("overview")} />
+        )}
+
         {/* ===== PERIODO 2 · GRADO 8 (solo admin, vista de prueba) ===== */}
         {activeTab === "g8p2" && isAdmin && (
           <Periodo2G8 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["8P2"]} onBack={() => setActiveTab("overview")} />
@@ -1160,6 +1224,10 @@ export const Dashboard = ({ onLogout }) => {
     </div>
   );
 };
+
+
+
+
 
 
 
