@@ -853,7 +853,7 @@ function LineChart({ series, labels, height = 220, money = true, yMin, yMax, uni
   const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
   const ticks = [];
   for (let t = Math.ceil(lo / step - 1e-9) * step; t <= hi + 1e-9; t += step) ticks.push(t);
-  const fmt = (v) => (money ? cop(Math.round(v / 10) * 10) : `${Math.round(v)}${unit}`);
+  const fmt = (v) => { if (!money) return `${Math.round(v)}${unit}`; const a = Math.abs(v), sg = v < 0 ? "−" : ""; if (a >= 1e6) return `${sg}$${+(a / 1e6).toFixed(a >= 1e7 ? 0 : 1)}M`; if (a >= 1e4) return `${sg}$${Math.round(a / 1e3)}k`; return cop(Math.round(v / 10) * 10); };
   const exact = (v) => (money ? cop(v) : `${v}${unit}`);
   const show = (p, si, i) => setTip({ x: p[0], y: p[1], c: series[si].color || COLORS[si], t: `${labels[i]}: ${exact(series[si].values[i])}`, k: `${si}-${i}` });
   const tw = tip ? tip.t.length * 7.4 + 20 : 0;
@@ -1479,7 +1479,7 @@ function seasonOf(r) {
   const w = r?.c6_tower;
   if (w) { s.cash -= (w.myFees || 0) * 3; s.wallet = w.walletName; }
   const p7 = r?.c4_page, m = r?.c4_market;
-  if (p7 && m) { const put = Math.round(s.cash * (p7.pct || 0) / 100); s.cash -= put; s.invPut = put; s.inv = Math.round(put * (1 + (m.ret || 0) / 100)); }
+  if (p7 && (m || p7.ret != null)) { const put = Math.round(s.cash * (p7.pct || 0) / 100); s.cash -= put; s.invPut = put; s.inv = Math.round(put * (1 + ((p7.ret ?? m?.ret) || 0) / 100)); }
   const cr = r?.c7_crypto;
   if (cr) { const put = Math.round(s.cash * (cr.pct || 0) / 100); s.cash -= put; s.cryptoPut = put; s.crypto = Math.round(put * (cr.mult ?? 1)); }
   const sh = r?.c8_shield;

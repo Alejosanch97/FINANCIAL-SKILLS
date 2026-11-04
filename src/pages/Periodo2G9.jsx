@@ -854,7 +854,7 @@ function LineChart({ series, labels, height = 220, money = true, yMin, yMax, uni
   const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
   const ticks = [];
   for (let t = Math.ceil(lo / step - 1e-9) * step; t <= hi + 1e-9; t += step) ticks.push(t);
-  const fmt = (v) => (money ? cop(Math.round(v / 10) * 10) : `${Math.round(v)}${unit}`);
+  const fmt = (v) => { if (!money) return `${Math.round(v)}${unit}`; const a = Math.abs(v), sg = v < 0 ? "−" : ""; if (a >= 1e6) return `${sg}$${+(a / 1e6).toFixed(a >= 1e7 ? 0 : 1)}M`; if (a >= 1e4) return `${sg}$${Math.round(a / 1e3)}k`; return cop(Math.round(v / 10) * 10); };
   const exact = (v) => (money ? cop(v) : `${v}${unit}`);
   const show = (p, si, i) => setTip({ x: p[0], y: p[1], c: series[si].color || COLORS[si], t: `${labels[i]}: ${exact(series[si].values[i])}`, k: `${si}-${i}` });
   const tw = tip ? tip.t.length * 7.4 + 20 : 0;
@@ -1480,7 +1480,7 @@ function seasonOf(r) {
   const w = r?.c6_tower;
   if (w) { s.cash -= (w.myFees || 0) * 3; s.wallet = w.walletName; }
   const p7 = r?.c4_page, m = r?.c4_market;
-  if (p7 && m) { const put = Math.round(s.cash * (p7.pct || 0) / 100); s.cash -= put; s.invPut = put; s.inv = Math.round(put * (1 + (m.ret || 0) / 100)); }
+  if (p7 && (m || p7.ret != null)) { const put = Math.round(s.cash * (p7.pct || 0) / 100); s.cash -= put; s.invPut = put; s.inv = Math.round(put * (1 + ((p7.ret ?? m?.ret) || 0) / 100)); }
   const cr = r?.c7_crypto;
   if (cr) { const put = Math.round(s.cash * (cr.pct || 0) / 100); s.cash -= put; s.cryptoPut = put; s.crypto = Math.round(put * (cr.mult ?? 1)); }
   const sh = r?.c8_shield;
@@ -2196,6 +2196,7 @@ const FEE_P4 = [
   { tag: "FEE DETECTIVE · 1/2", q: "Fund Alpha and Fund Beta both earn 8% before fees on $10,000,000. Alpha charges 0.5%; Beta charges 3%. How much do you have after one year with ALPHA?", answer: 10750000, money: true, hint: "8% − 0.5% = 7.5% of 10,000,000, plus the 10,000,000.", explain: "$10,750,000." },
   { tag: "FEE DETECTIVE · 2/2", q: "With BETA (8% − 3% = 5%) you have $10,500,000. How much do you LOSE to the higher fee in one year?", answer: 250000, money: true, hint: "10,750,000 − 10,500,000", explain: "$250,000 in ONE year — fees matter!" },
 ];
+const feeLine = (fee, years) => Array.from({ length: years + 1 }, (_, i) => Math.round(10000000 * Math.pow(1 + (8 - fee) / 100, i)));
 function FundMarket({ onSave, onExit }) {
   const [stage, setStage] = useState(0);
   const [prof, setProf] = useState({});
@@ -2204,6 +2205,7 @@ function FundMarket({ onSave, onExit }) {
   const [sold, setSold] = useState(null);
   const [crashPick, setCrashPick] = useState(null);
   const [fee, setFee] = useState(null);
+  const [feeYears, setFeeYears] = useState(1);
   const [st, finish] = useFinish(onSave);
   const sum = mix.safe + mix.bal + mix.grow;
   const pScore = Object.values(prof).reduce((a, v) => a + v, 0);
@@ -2256,43 +2258,136 @@ function FundMarket({ onSave, onExit }) {
       )}
       {stage === 3 && (
         <>
-          {!fee && <RoundsRunner rounds={FEE_P4} doneLabel="See my results" onDone={setFee} />}
-          {fee && <div className="start-foot"><button className="s1-btn primary big" onClick={() => finish(coins, { mix, final, ret, sold: sold !== null, crash: crashPick, profile: profName4(pScore), feeFirst: fee.firstTry })}>Save my portfolio <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>}
+          <Mission e="🔎" title="Fee detective · the hidden cost">Two funds earn the SAME 8% a year before fees. Fund Alpha charges 0.5% a year; Fund Beta charges 3%. Move the years and watch how a “small” fee grows.</Mission>
+          <div className="start-block">
+            <Ctl l="⏳ Years invested" v={feeYears} set={setFeeYears} mn={1} mx={20} stp={1} fmt={(v) => `${v} ${v === 1 ? "year" : "years"}`} />
+            <LineChart series={[{ name: "Alpha · 0.5% fee", color: "#16b074", values: feeLine(0.5, feeYears) }, { name: "Beta · 3% fee", color: "#ff6b57", values: feeLine(3, feeYears) }]} labels={Array.from({ length: feeYears + 1 }, (_, i) => (i === 0 ? "Start" : feeYears > 10 && i % 5 !== 0 ? "" : `Y${i}`))} />
+            <ChartLegend series={[{ name: "Alpha · 0.5% fee", color: "#16b074" }, { name: "Beta · 3% fee", color: "#ff6b57" }]} />
+            <div className="g84-results g91-results"><div><small>ALPHA AFTER {feeYears} Y</small><b>{cop(feeLine(0.5, feeYears)[feeYears])}</b></div><div><small>BETA AFTER {feeYears} Y</small><b>{cop(feeLine(3, feeYears)[feeYears])}</b></div><div><small>LOST TO THE FEE</small><b className="neg">{cop(feeLine(0.5, feeYears)[feeYears] - feeLine(3, feeYears)[feeYears])}</b></div></div>
+            <p className="g91-note">{feeYears < 10 ? "Move the bar to 10 and 20 years… 👀" : `In ${feeYears} years the 3% fee takes ${cop(feeLine(0.5, feeYears)[feeYears] - feeLine(3, feeYears)[feeYears])} from you — for the SAME investment.`}</p>
+          </div>
+          {!fee ? (
+            <div className="start-block"><h3>🧮 Now calculate it yourself</h3><RoundsRunner rounds={FEE_P4} doneLabel="See my Fund Market report" onDone={setFee} /></div>
+          ) : (
+            <>
+              <div className="g92-report">
+                <header><em>📈</em><div><small>MY FUND MARKET REPORT</small><b>{profName4(pScore)} investor · mix {mix.safe}/{mix.bal}/{mix.grow}</b></div></header>
+                <div><p><span>💰 Start</span><b>{cop(10000000)}</b></p><p><span>📅 After 5 years</span><b className={ret >= 0 ? "pos" : "neg"}>{cop(final)} ({ret >= 0 ? "+" : ""}{ret}%)</b></p><p><span>🌩️ In the crash</span><b>{crashPick === "sell" ? "Sold 😱" : crashPick === "rebal" ? "Rebalanced ⚖️" : "Stayed 🧘"}</b></p><p><span>🔎 Fee lesson (20 years)</span><b className="neg">−{cop(feeLine(0.5, 20)[20] - feeLine(3, 20)[20])}</b></p></div>
+                <ul><li>{sold === null ? "✅ You didn't sell in the crash: +4 🪙" : "❌ You sold in the crash: the loss became real."}</li><li>{mix.safe < 100 && mix.grow < 100 ? "✅ Diversified mix: +2 🪙" : "❌ 100% in one fund: no diversification."}</li><li>✅ Fee calculations right on the first try: {fee.firstTry}/2 (+{fee.firstTry * 3} 🪙)</li></ul>
+              </div>
+              <div className="start-foot"><button className="s1-btn primary big" onClick={() => finish(coins, { mix, final, ret, sold: sold !== null, crash: crashPick, profile: profName4(pScore), feeFirst: fee.firstTry })}>Save my portfolio <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
+            </>
+          )}
         </>
       )}
     </ActShell>
   );
 }
 
-/* ---------- ADVISOR PAGE 07 · My Investment Portfolio ---------- */
+/* ---------- ADVISOR PAGE 07 · Portfolio Lab (juego con TU dinero del distrito) ---------- */
+const LAB_P4 = [
+  { id: "save", e: "🏦", n: "Savings account", d: "No risk · fee 0%", c: "#9fc9b3", fee: 0 },
+  { id: "safe", e: "🛡️", n: "Safe Fund", d: "Bonds · fee 0.8%", c: "#0b7a50", fee: 0.8 },
+  { id: "bal", e: "⚖️", n: "Balanced Fund", d: "Bonds + stocks · fee 1.2%", c: "#f5b23e", fee: 1.2 },
+  { id: "grow", e: "🚀", n: "Growth Fund", d: "Stocks · fee 1.5%", c: "#ff6b57", fee: 1.5 },
+];
+/* Años posibles del mercado (rendimiento ANTES de comisiones): ahorro, seguro, balanceado, crecimiento */
+const YEARS_P4 = [
+  { e: "🌞", t: "Boom year", d: "Companies sell a lot.", r: { save: 3, safe: 5, bal: 12, grow: 24 } },
+  { e: "🙂", t: "Normal year", d: "Nothing special.", r: { save: 3, safe: 4, bal: 7, grow: 10 } },
+  { e: "🌩️", t: "Market crash", d: "Stocks fall all over the world.", r: { save: 3, safe: 2, bal: -9, grow: -25 } },
+  { e: "🎈", t: "High inflation", d: "Rates go up, bonds and stocks fall.", r: { save: 3, safe: -2, bal: -4, grow: -8 } },
+  { e: "💻", t: "Tech rally", d: "Technology companies fly.", r: { save: 3, safe: 3, bal: 9, grow: 20 } },
+  { e: "😐", t: "Flat year", d: "Markets move sideways.", r: { save: 3, safe: 3, bal: 2, grow: -1 } },
+  { e: "🌈", t: "Recovery", d: "Markets come back after a bad year.", r: { save: 3, safe: 5, bal: 11, grow: 18 } },
+];
+const labDeck = () => { const d = Array.from({ length: 5 }, () => YEARS_P4[Math.floor(Math.random() * YEARS_P4.length)]); if (!d.some((y) => y.r.grow < 0)) d[1 + Math.floor(Math.random() * 3)] = YEARS_P4[Math.random() < 0.5 ? 2 : 3]; let bad = 0; return d.map((y, i) => { if (y.r.grow < 0) { bad++; if (bad > 2) return YEARS_P4[6]; } if (i > 0 && d[i - 1].r.grow < -10 && y.r.grow < 0) return YEARS_P4[6]; return y; }); }; /* 1–2 años malos máximo, como en la vida real a veces hay rebote */
+const labYear = (alloc, y) => LAB_P4.reduce((a, f) => a + (alloc[f.id] / 100) * (y.r[f.id] - f.fee), 0);
+const labRun = (alloc, deck, start) => { let v = start; const out = [v]; deck.forEach((y) => { v = Math.round(v * (1 + labYear(alloc, y) / 100)); out.push(v); }); return out; };
 function PortfolioPage({ resp, existing, onSave, onExit }) {
   const m = resp?.c4_market;
   const S = seasonOf({ ...resp, c4_page: null, c7_crypto: null, c8_shield: null });
-  const [pct, setPct] = useState(existing?.pct ?? null);
+  const [stage, setStage] = useState(existing?.alloc ? 3 : 0);
+  const [pct, setPct] = useState(existing?.pct ?? 30);
+  const [alloc, setAlloc] = useState(existing?.alloc || { save: 25, safe: 25, bal: 25, grow: 25 });
+  const [deck, setDeck] = useState(existing?.deck ? existing.deck.map((i) => YEARS_P4[i]) : labDeck());
+  const [yr, setYr] = useState(existing?.alloc ? 5 : 0);
+  const [playing, setPlaying] = useState(false);
+  const [runs, setRuns] = useState(existing?.runs || []);
   const [text, setText] = useState(existing?.text || "");
   const [st, finish] = useFinish(onSave);
   const G = [W_REASON, W_RISK, W_NUMBERS(1)];
-  const put = Math.round(S.cash * (pct || 0) / 100);
-  if (st.done) return <Reward title="Advisor page 07 saved! 🧾" subtitle={`You invest ${pct}% of your cash (${cop(put)})`} coins={st.coins} saving={st.saving} onExit={onExit} />;
+  const put = Math.round(S.cash * pct / 100);
+  const sum = LAB_P4.reduce((a, f) => a + alloc[f.id], 0);
+  const expRet = +LAB_P4.reduce((a, f) => a + (alloc[f.id] / 100) * ((YEARS_P4.reduce((s, y) => s + y.r[f.id], 0) / YEARS_P4.length) - f.fee), 0).toFixed(1);
+  const worst = +LAB_P4.reduce((a, f) => a + (alloc[f.id] / 100) * (Math.min(...YEARS_P4.map((y) => y.r[f.id])) - f.fee), 0).toFixed(1);
+  const risk = Math.round(LAB_P4.reduce((a, f) => a + (alloc[f.id] / 100) * { save: 0, safe: 15, bal: 50, grow: 100 }[f.id], 0));
+  const maxOne = Math.max(...LAB_P4.map((f) => alloc[f.id]));
+  const vals = labRun(alloc, deck, put);
+  const savOnly = labRun({ save: 100, safe: 0, bal: 0, grow: 0 }, deck, put);
+  const growOnly = labRun({ save: 0, safe: 0, bal: 0, grow: 100 }, deck, put);
+  const final = vals[5], ret = put ? +(((final - put) / put) * 100).toFixed(1) : 0;
+  useEffect(() => { if (!playing) return undefined; if (yr >= 5) { setPlaying(false); return undefined; } const t = setTimeout(() => setYr((v) => v + 1), 1100); return () => clearTimeout(t); }, [playing, yr]);
+  useEffect(() => { if (yr === 5 && stage === 2 && !playing) setRuns((r) => (r.length && r[r.length - 1].key === deck.map((y) => y.t).join() ? r : [...r, { key: deck.map((y) => y.t).join(), ret, final }].slice(-3))); }, [yr, playing]); // eslint-disable-line react-hooks/exhaustive-deps
+  const bonusDiv = maxOne <= 60 ? 3 : 0, bonusRes = pct <= 50 ? 3 : 0;
+  const coins = 26 + bonusDiv + bonusRes;
+  const setA = (id, v) => setAlloc({ ...alloc, [id]: v });
+  const replay = () => { setDeck(labDeck()); setYr(0); setPlaying(true); };
+  if (st.done) return <Reward title="Advisor page 07 saved! 🧾" subtitle={`You invested ${cop(put)} → ${cop(final)} after 5 simulated years (${ret >= 0 ? "+" : ""}${ret}%)`} coins={st.coins} saving={st.saving} onExit={onExit} />;
+  const cur = yr > 0 ? deck[yr - 1] : null;
   return (
-    <ActShell icon={<TrendingUp size={22} strokeWidth={2.1} />} title="My Investment Portfolio 📈" subtitle="Advisor Page 07 · Your mix, your result — and a real decision with YOUR district money." onExit={onExit}>
+    <ActShell icon={<TrendingUp size={22} strokeWidth={2.1} />} title="Portfolio Lab · My Investment Portfolio 📈" subtitle="Advisor Page 07 · Invest part of YOUR district money in different funds — then live 5 market years." onExit={onExit}>
       <Brief91 k="c4_page" />
       <PBadge n="07" />
-      {!m ? <div className="p1-banner bad"><span>Play the Fund Market first.</span></div> : (
-        <>
-          <div className="g84-results g91-results"><div><small>PROFILE</small><b>{m.profile}</b></div><div><small>MIX</small><b>{m.mix.safe}/{m.mix.bal}/{m.mix.grow}</b></div><div><small>5 YEARS</small><b>{m.ret >= 0 ? "+" : ""}{m.ret}%</b></div><div><small>IN THE CRASH</small><b>{m.sold ? "Sold 😱" : "Stayed 🧘"}</b></div></div>
-          <div className="start-block">
-            <h3>💰 How much of YOUR cash ({cop(S.cash)}) do you put in this mix?</h3>
-            <Tri value={pct} onPick={setPct} opts={[[0, "0%"], [10, "10%"], [25, "25%"], [50, "50%"]]} />
-            {pct !== null && <p className="g91-note">You invest {cop(put)}. If your mix repeats its 5 years, it could become {cop(Math.round(put * (1 + m.ret / 100)))} — hypothetical, not guaranteed. {pct === 50 && m.profile.includes("Conservative") ? "⚠️ That's a lot for a conservative profile!" : ""}</p>}
-          </div>
-          <div className="start-block">
-            <h3>✍️ Explain your portfolio</h3>
-            <WordField value={text} onChange={setText} min={20} max={70} rows={4} placeholder="I chose … because … One risk is … If the market falls, I will …" goals={G} />
-          </div>
-        </>
+      {m && <div className="g92-carry"><em>📊</em><div><small>FROM THE FUND MARKET</small><b>Your profile: {m.profile} · mix {m.mix.safe}/{m.mix.bal}/{m.mix.grow} · {m.ret >= 0 ? "+" : ""}{m.ret}%</b><span>{m.sold ? "You sold in the crash — this time, try to stay calm." : "You stayed calm in the crash. Use that lesson with YOUR money."}</span></div></div>}
+      <Steps91 labels={["1 · How much", "2 · Where", "3 · 5 market years", "4 · Explain"]} at={stage} />
+      {stage === 0 && (
+        <div className="start-block">
+          <h3>💰 Step 1 · How much of YOUR cash do you invest?</h3>
+          <p className="start-tip">You have {cop(S.cash)} in your district account. Money you invest can go down — keep some cash for emergencies.</p>
+          <Ctl l="📈 Invest" v={pct} set={setPct} mn={0} mx={80} stp={5} fmt={(v) => `${v}%`} />
+          <div className="g84-results g91-results"><div><small>YOU INVEST</small><b>{cop(put)}</b></div><div><small>STAYS IN CASH</small><b>{cop(S.cash - put)}</b></div><div><small>EMERGENCY RESERVE</small><b className={pct <= 50 ? "pos" : "neg"}>{pct <= 50 ? "✅ Healthy" : "⚠️ Too small"}</b></div></div>
+          <div className="start-foot"><button className="s1-btn primary big" disabled={pct === 0} onClick={() => setStage(1)}>{pct === 0 ? "Invest at least 5%" : "Step 2: where do I put it?"} <ChevronRight size={18} /></button></div>
+        </div>
       )}
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!m || pct === null || !goalsOk(text, 20, 70, G)} onClick={() => finish(26, { pct, text, put })}>Save Advisor Page 07 <span className="coin-tag"><Coins size={15} /> +26</span></button></div>
+      {stage === 1 && (
+        <div className="start-block">
+          <h3>🧺 Step 2 · Split {cop(put)} between 4 options</h3>
+          <p className="start-tip">Move each bar. The total must be 100%. Watch the meters: more growth = more possible return AND bigger falls. Fees are taken every year.</p>
+          <div className="g92-lab">{LAB_P4.map((f) => <div key={f.id} style={{ borderTopColor: f.c }}><header><em>{f.e}</em><div><b>{f.n}</b><small>{f.d}</small></div><strong>{alloc[f.id]}%</strong></header><Ctl l="" v={alloc[f.id]} set={(v) => setA(f.id, v)} mn={0} mx={100} stp={5} fmt={(v) => `${v}%`} /><span>{cop(Math.round(put * alloc[f.id] / 100))}</span></div>)}</div>
+          <PctBar parts={LAB_P4.map((f) => ({ label: f.n, value: alloc[f.id], color: f.c }))} />
+          <div className="g91-meters">
+            <Bar91 label="🎢 Risk level" value={risk} color={risk > 65 ? "#ff6b57" : risk > 35 ? "#f5b23e" : "#16b074"} suffix="/100" />
+            <div className="g91-mini"><span>📈 Average year (after fees) <b>{expRet >= 0 ? "+" : ""}{expRet}%</b></span><span className={worst < -10 ? "neg" : ""}>🌩️ Worst possible year <b>{worst}%</b></span><span className={maxOne <= 60 ? "pos" : "neg"}>🥚 Biggest option <b>{maxOne}%</b></span></div>
+          </div>
+          <p className={`g91-note ${sum === 100 ? "pos" : "neg"}`}>{sum === 100 ? "✅ 100% placed." : `Total: ${sum}% — it must be exactly 100% (${sum > 100 ? "remove" : "add"} ${Math.abs(100 - sum)}%).`}</p>
+          <div className="start-foot"><button className="s1-btn ghost" onClick={() => setStage(0)}>Back</button><button className="s1-btn primary big" disabled={sum !== 100} onClick={() => { setStage(2); setYr(0); setPlaying(true); }}><Play size={17} /> Play 5 market years</button></div>
+        </div>
+      )}
+      {stage >= 2 && (
+        <div className="start-block">
+          <h3>🎢 Step 3 · Five market years{playing ? " — playing…" : ""}</h3>
+          <div className="g92-years">{deck.map((y, i) => <div key={i} className={i < yr ? "on" : i === yr && playing ? "next" : ""}><small>Year {i + 1}</small><em>{i < yr ? y.e : "❔"}</em><b>{i < yr ? y.t : "?"}</b>{i < yr && <span className={labYear(alloc, y) >= 0 ? "pos" : "neg"}>{labYear(alloc, y) >= 0 ? "+" : ""}{labYear(alloc, y).toFixed(1)}%</span>}</div>)}</div>
+          <LineChart series={[{ name: "My portfolio", color: "#16b074", values: vals.slice(0, yr + 1) }, { name: "Only savings", color: "#9fc9b3", values: savOnly.slice(0, yr + 1) }, { name: "Only growth", color: "#ff6b57", values: growOnly.slice(0, yr + 1) }]} labels={["Start", "Y1", "Y2", "Y3", "Y4", "Y5"].slice(0, yr + 1)} yMin={Math.round(put * 0.55)} yMax={Math.round(put * 1.7)} />
+          <ChartLegend series={[{ name: "My portfolio", color: "#16b074" }, { name: "Only savings", color: "#9fc9b3" }, { name: "Only growth", color: "#ff6b57" }]} />
+          {cur && <div className="g83-event"><em>{cur.e}</em><div><b>Year {yr} · {cur.t}</b><span>{cur.d} Your portfolio: {cop(vals[yr])} ({labYear(alloc, cur) >= 0 ? "+" : ""}{labYear(alloc, cur).toFixed(1)}% after fees)</span></div></div>}
+          {yr === 5 && !playing && (
+            <>
+              <div className="g84-results g91-results"><div><small>YOU INVESTED</small><b>{cop(put)}</b></div><div><small>AFTER 5 YEARS</small><b className={ret >= 0 ? "pos" : "neg"}>{cop(final)}</b></div><div><small>RETURN</small><b className={ret >= 0 ? "pos" : "neg"}>{ret >= 0 ? "+" : ""}{ret}%</b></div><div><small>ONLY SAVINGS</small><b>{cop(savOnly[5])}</b></div></div>
+              {runs.length > 1 && <div className="g92-runs"><b>🎲 Your simulations:</b>{runs.map((r, i) => <span key={i} className={r.ret >= 0 ? "pos" : "neg"}>#{i + 1}: {r.ret >= 0 ? "+" : ""}{r.ret}%</span>)}<small>Same portfolio, different years → different results. That is RISK.</small></div>}
+              {stage === 2 && <div className="start-foot"><button className="s1-btn ghost" onClick={() => setStage(1)}>Change my mix</button>{runs.length < 3 && <button className="s1-btn ghost" onClick={replay}>🎲 Play 5 new years ({3 - runs.length} left)</button>}<button className="s1-btn primary big" onClick={() => setStage(3)}>Step 4: explain my portfolio <ChevronRight size={18} /></button></div>}
+            </>
+          )}
+        </div>
+      )}
+      {stage === 3 && (
+        <div className="start-block">
+          <h3>✍️ Step 4 · Explain your portfolio</h3>
+          <ul className="g92-checks"><li className={bonusRes ? "ok" : ""}>{bonusRes ? "✅" : "⬜"} Emergency reserve: you invested 50% or less (+3 🪙)</li><li className={bonusDiv ? "ok" : ""}>{bonusDiv ? "✅" : "⬜"} Diversified: no option above 60% (+3 🪙)</li></ul>
+          <WordField value={text} onChange={setText} min={20} max={70} rows={4} placeholder="I put … in … because … One risk is … If the market falls, I will …" goals={G} />
+        </div>
+      )}
+      <div className="start-foot">{stage === 3 && <button className="s1-btn ghost" onClick={() => setStage(1)}>Change my mix</button>}<button className="s1-btn primary big" disabled={stage !== 3 || !goalsOk(text, 20, 70, G)} onClick={() => finish(coins, { pct, put, alloc, deck: deck.map((y) => YEARS_P4.indexOf(y)), final, ret, runs, text })}>Save Advisor Page 07 <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
     </ActShell>
   );
 }
@@ -2982,7 +3077,7 @@ const GUIDE = {
   c4_starter: B_STARTER("diversification, stocks, bonds, risk, return, fees"),
   c4_video: B_VIDEO("Learn how a fund puts many people's money together — and why risk and return travel together.", "Next: the Fund Market — five years in one class."),
   c4_market: { goal: "Manage a fictional $10,000,000 portfolio for five years. No mix wins every year — learn to stay calm and watch the fees.", steps: ["Discover your risk profile.", "Choose your mix of funds.", "A crash arrives: hold or sell?", "Fee detective: find the real cost of each fund."], win: [["Don't sell in the crash", "+4 🪙"], ["A diversified mix (not 100% in one fund)", "+2 🪙"], ["Each fee answer right on the first try", "+3 🪙"], ["Finishing", "+18 🪙"]] },
-  c4_page: { goal: "Decide how much of YOUR district money you invest — it changes your net worth. This is Advisor Page 07.", steps: ["Check the result of your mix.", "Choose the % of your money you invest.", "Explain your decision (20–70 words)."], win: PAGE_RULE("07", "20–70", "a reason, a risk and a number", 26), tip: "Only invest money you won't need soon." },
+  c4_page: { goal: "Portfolio Lab: invest part of YOUR district money in different funds and live 5 market years. Your result changes your net worth. This is Advisor Page 07.", steps: ["Choose how much of your cash you invest (keep an emergency reserve!).", "Split it between 4 options: watch the risk meter and the fees.", "Press Play: 5 random market years — watch your line move.", "Play up to 3 times: same mix, different years = RISK.", "Explain your portfolio (20–70 words)."], win: [["Text: 20–70 words with a reason, a risk and a number", "required"], ["Emergency reserve (invest 50% or less)", "+3 🪙"], ["Diversified (no option above 60%)", "+3 🪙"], ["Advisor Page 07 saved", "+26 🪙"]], tip: "Only invest money you won't need soon." },
   c5_starter: B_STARTER("retirement, contribution, compound interest, inflation"),
   c5_read: B_READ("Two grandmothers, two stories: see how starting to save early changes everything.", "Next: the Retirement Time Machine."),
   c5_time: { goal: "Travel through a whole life of saving and see the power of TIME and compound interest.", steps: ["Time jumper: compare starting at 25 vs. 35.", "Life journey: make decisions at each age.", "Fight the inflation monster.", "See your result at age 65."], win: [["Each good life decision", "+3 🪙"], ["“Why” question right", "+3 🪙"], ["Each inflation answer right on the first try", "+2 🪙"], ["Finishing", "+18 🪙"]] },
