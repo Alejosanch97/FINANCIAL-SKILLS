@@ -33,6 +33,10 @@ import { Periodo1G9 } from "./Periodo1G9";
 import { Periodo2G9 } from "./Periodo2G9";
 import { Periodo3G9 } from "./Periodo3G9";
 import { Periodo4G9 } from "./Periodo4G9";
+import { Periodo1G10 } from "./Periodo1G10";
+import { Periodo2G10 } from "./Periodo2G10";
+import { Periodo3G10 } from "./Periodo3G10";
+import { Periodo4G10 } from "./Periodo4G10";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -1005,6 +1009,46 @@ export const Dashboard = ({ onLogout }) => {
             Periodo 4 · Grado 9
           </button>
         )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g10p1" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g10p1"); setNavOpen(false); loadSemanaFull("10P1"); }}
+            aria-current={activeTab === "g10p1" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Flame size={18} strokeWidth={2.2} /></span>
+            Periodo 1 · Grado 10
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g10p2" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g10p2"); setNavOpen(false); loadSemanaFull("10P2"); loadSemanaFull("10P1"); }}
+            aria-current={activeTab === "g10p2" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Coins size={18} strokeWidth={2.2} /></span>
+            Periodo 2 · Grado 10
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g10p3" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g10p3"); setNavOpen(false); loadSemanaFull("10P3"); loadSemanaFull("10P2"); loadSemanaFull("10P1"); }}
+            aria-current={activeTab === "g10p3" ? "page" : undefined}
+          >
+            <span className="nav-ico"><TrendingUp size={18} strokeWidth={2.2} /></span>
+            Periodo 3 · Grado 10
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g10p4" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g10p4"); setNavOpen(false); loadSemanaFull("10P4"); loadSemanaFull("10P3"); loadSemanaFull("10P2"); loadSemanaFull("10P1"); }}
+            aria-current={activeTab === "g10p4" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Compass size={18} strokeWidth={2.2} /></span>
+            Periodo 4 · Grado 10
+          </button>
+        )}
 
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
@@ -1144,6 +1188,20 @@ export const Dashboard = ({ onLogout }) => {
         {/* ===== PERIODO 3 · GRADO 8 (solo admin, vista de prueba) ===== */}
         {activeTab === "g8p3" && isAdmin && (
           <Periodo3G8 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["8P3"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== GRADO 10 · FUTURE ME (solo admin, vista de prueba) ===== */}
+        {activeTab === "g10p1" && isAdmin && (
+          <Periodo1G10 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["10P1"]} onBack={() => setActiveTab("overview")} />
+        )}
+        {activeTab === "g10p2" && isAdmin && (
+          <Periodo2G10 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["10P2"]} onBack={() => setActiveTab("overview")} />
+        )}
+        {activeTab === "g10p3" && isAdmin && (
+          <Periodo3G10 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["10P3"]} onBack={() => setActiveTab("overview")} />
+        )}
+        {activeTab === "g10p4" && isAdmin && (
+          <Periodo4G10 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["10P4"]} onBack={() => setActiveTab("overview")} />
         )}
 
         {/* ===== PERIODO 4 · GRADO 9 (solo admin, vista de prueba) ===== */}

@@ -1,0 +1,21 @@
+/* =====================================================================
+   DÉCIMO · PERIODO 3 · Global Investor 🌍
+   Usa decimo1.css (base de 10°) + la base de 6°–9°.
+   ===================================================================== */
+.g10-dna { display: flex; gap: 14px; align-items: center; background: linear-gradient(140deg, #0f2a1e, #1b4a33); color: #fff; border-radius: 20px; padding: 16px; margin: 10px 0; }
+.g10-dna em { font-style: normal; font-size: 2.6rem; width: 70px; height: 70px; flex: 0 0 70px; display: grid; place-items: center; background: rgba(255,255,255,.12); border: 2px solid #f5b23e; border-radius: 50%; }
+.g10-dna small { font-size: .64rem; font-weight: 900; letter-spacing: .12em; color: #f5d27a; }
+.g10-dna b { display: block; font-family: var(--font-display); font-size: 1.3rem; }
+.g10-dna p { margin: 4px 0 0; opacity: .9; }
+.g10-dna.small { padding: 10px 14px; } .g10-dna.small em { width: 50px; height: 50px; flex-basis: 50px; font-size: 1.8rem; } .g10-dna.small b { font-size: 1.05rem; }
+.g10-scale { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0; }
+.g10-scale span { text-align: center; font-weight: 800; font-size: .84rem; padding: 8px; border-radius: 12px; background: #f1f5f3; color: var(--muted); }
+.g10-scale span.on { background: var(--gold); color: var(--forest); }
+.g10-hold { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; }
+.g10-hold > div { display: flex; flex-direction: column; gap: 2px; background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 14px; padding: 9px 10px; min-width: 0; }
+.g10-hold em { font-style: normal; font-size: 1.3rem; }
+.g10-hold span { font-size: .78rem; font-weight: 800; color: var(--ink-soft); }
+.g10-hold span i { font-style: normal; font-weight: 900; color: var(--c); margin-left: 4px; }
+.g10-hold b { font-family: var(--font-display); color: var(--forest); }
+.g10-flags { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; margin: 12px 0; }
+.g10-flags span { background: #fff0ec; border: 1px solid #ffc9bd; color: #a23a28; border-radius: 12px; padding: 8px 10px; font-weight: 800; font-size: .84rem; }

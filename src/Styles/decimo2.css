@@ -1,0 +1,47 @@
+/* =====================================================================
+   DÉCIMO · PERIODO 2 · Money Math Lab 🧮
+   Usa decimo1.css (base de 10°) + la base de 6°–9°.
+   ===================================================================== */
+.g10-budget { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 10px 12px; margin: 10px 0; }
+.g10-503020 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
+@media (max-width: 760px) { .g10-503020 { grid-template-columns: 1fr; } }
+.g10-503020 .g91-gauge { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin: 0; }
+.g10-smart { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+@media (max-width: 900px) { .g10-smart { grid-template-columns: 1fr; } }
+.g10-smart label { display: flex; flex-direction: column; gap: 4px; background: #fff; border: 2px dashed var(--line); border-radius: 16px; padding: 10px; }
+.g10-smart label.on { border: 2px solid var(--green); background: #f4faf7; }
+.g10-smart b { font-family: var(--font-display); color: var(--forest); }
+.g10-smart small { font-size: .74rem; font-weight: 700; color: var(--muted); }
+.g10-smart input { font-size: .86rem; padding: 8px 10px; }
+.g10-vsbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.g10-vsbar > div { border-radius: 14px; padding: 10px; background: #fff4d6; border: 1px solid #f3dca0; min-width: 0; }
+.g10-vsbar > div.b { background: #eafaf2; border-color: #bde9d3; }
+.g10-vsbar small { display: block; font-size: .72rem; font-weight: 900; color: var(--muted); }
+.g10-vsbar b { font-family: var(--font-display); color: var(--forest); font-size: 1.05rem; overflow-wrap: anywhere; }
+.g10-amort { display: flex; align-items: flex-end; gap: 2px; height: 170px; padding: 6px 0; }
+.g10-amort > div { flex: 1; height: 100%; display: flex; flex-direction: column-reverse; border-radius: 3px; overflow: hidden; background: #f4f7f5; min-width: 2px; }
+.g10-amort i { display: block; width: 100%; }
+.g10-amort i.it { background: #ff6b57; } .g10-amort i.cp { background: #16b074; }
+.g10-basket { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+@media (max-width: 760px) { .g10-basket { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.g10-basket span { display: flex; flex-direction: column; align-items: center; gap: 2px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 8px; font-size: .78rem; font-weight: 700; text-align: center; }
+.g10-basket em { font-style: normal; font-size: 1.5rem; }
+.g10-basket b { font-family: var(--font-display); color: var(--coral); transition: all .3s ease; }
+.g10-ptm { display: grid; gap: 8px; margin: 12px 0; }
+.g10-ptm > div { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 80px; gap: 8px; align-items: center; }
+@media (max-width: 640px) { .g10-ptm > div { grid-template-columns: 1fr 1fr; } }
+.g10-ptm b { text-align: center; font-family: var(--font-display); color: var(--muted); }
+.g10-ptm b.pos { color: var(--coral); }
+.g10-sheet { background: #fff; border: 2px solid #1b4a33; border-radius: 14px; overflow: hidden; margin: 12px 0; font-size: .86rem; overflow-x: auto; }
+.g10-sheet > div { display: grid; grid-template-columns: 38px minmax(150px, 1.5fr) minmax(110px, 1fr) minmax(150px, 1.2fr); border-bottom: 1px solid #e3ece7; min-width: 480px; }
+.g10-sheet > div > span { padding: 7px 9px; border-right: 1px solid #e3ece7; overflow-wrap: anywhere; }
+.g10-sheet > div > span:first-child { background: #f1f5f3; color: var(--muted); font-weight: 900; text-align: center; }
+.g10-sheet > div > span:nth-child(3) { text-align: right; font-weight: 800; font-family: var(--font-display); color: var(--forest); }
+.g10-sheet .h { background: #1b4a33; color: #fff; font-weight: 900; font-size: .74rem; letter-spacing: .04em; }
+.g10-sheet .h span { color: #fff !important; background: #1b4a33 !important; text-align: left !important; font-family: var(--font-body) !important; }
+.g10-sheet .hl { background: #f4faf7; }
+.g10-sheet code { font-size: .78rem; color: #0b7a50; background: #eafaf2; border-radius: 6px; padding: 2px 5px; }
+.g10-paper-mast { text-align: center; border-top: 4px double var(--forest); border-bottom: 4px double var(--forest); padding: 10px 0; margin: 0 0 14px; }
+.g10-paper-mast small { font-size: .64rem; font-weight: 900; letter-spacing: .14em; color: var(--muted); }
+.g10-paper-mast h2 { font-family: Georgia, serif; font-size: 2rem; margin: 4px 0; color: var(--forest); }
+.g10-paper-mast span { font-style: italic; color: var(--ink-soft); }

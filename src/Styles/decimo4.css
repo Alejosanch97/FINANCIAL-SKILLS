@@ -1,0 +1,101 @@
+/* =====================================================================
+   DÉCIMO · PERIODO 4 · Future Me 🧭
+   Usa decimo1.css (base de 10°) + la base de 6°–9°.
+   ===================================================================== */
+.g10-linkcard { display: flex; gap: 12px; align-items: center; background: #fff; border: 2px solid var(--green); border-radius: 18px; padding: 12px 14px; margin: 10px 0; flex-wrap: wrap; }
+.g10-linkcard em { font-style: normal; font-size: 2rem; }
+.g10-linkcard > div { flex: 1; min-width: 200px; }
+.g10-linkcard b { display: block; font-family: var(--font-display); color: var(--forest); }
+.g10-linkcard span { font-size: .86rem; color: var(--ink-soft); }
+.g10-linkcard a { text-decoration: none; }
+.g10-values { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.g10-values button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 12px 8px; cursor: pointer; font-family: var(--font-body); font-weight: 800; color: var(--ink); }
+.g10-values button.on { border-color: var(--green); background: #eafaf2; }
+.g10-values em { font-style: normal; font-size: 1.7rem; }
+.g10-values i { position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%; background: var(--forest); color: #fff; font-style: normal; font-size: .74rem; display: grid; place-items: center; }
+.g10-style { display: grid; grid-template-columns: minmax(80px, 120px) minmax(0, 1fr) minmax(80px, 120px); gap: 10px; align-items: center; margin: 8px 0; font-weight: 800; font-size: .86rem; color: var(--ink-soft); }
+.g10-style span:last-child { text-align: right; }
+.g10-style input { width: 100%; accent-color: var(--green-deep); }
+.g10-dofa { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; background: #fff; padding: 10px; border-radius: 18px; }
+@media (max-width: 640px) { .g10-dofa { grid-template-columns: 1fr; } }
+.g10-dofa > div { border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.g10-dofa b { font-family: var(--font-display); color: var(--forest); }
+.g10-dofa small { font-size: .72rem; font-weight: 800; color: var(--muted); }
+.g10-dofa input { font-size: .88rem; padding: 8px 10px; background: rgba(255,255,255,.85); }
+.g10-dofa .q-s { background: #eafaf2; border: 2px solid #bde9d3; } .g10-dofa .q-w { background: #fff4d6; border: 2px solid #f3dca0; }
+.g10-dofa .q-o { background: #e9f1ee; border: 2px solid #c9dcd3; } .g10-dofa .q-t { background: #fff0ec; border: 2px solid #ffc9bd; }
+.g10-iki { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 820px) { .g10-iki { grid-template-columns: 1fr; } }
+.g10-iki-svg { width: 100%; max-width: 300px; position: sticky; top: 10px; display: block; margin: 0 auto; }
+.g10-iki-svg circle { fill-opacity: .28; stroke-width: 2; }
+.g10-iki-svg .c-love { fill: #ff6b57; stroke: #ff6b57; } .g10-iki-svg .c-good { fill: #f5b23e; stroke: #f5b23e; }
+.g10-iki-svg .c-paid { fill: #16b074; stroke: #16b074; } .g10-iki-svg .c-need { fill: #1b4a33; stroke: #1b4a33; }
+.g10-iki-svg text { font-size: 15px; font-weight: 900; fill: #0f2a1e; }
+.g10-iki-svg text.mid { font-size: 34px; }
+.g10-ikiblk { margin: 0 0 8px; padding: 10px 12px; }
+.g10-ikiblk > b { font-family: var(--font-display); color: var(--forest); }
+.g10-ikiblk small { color: var(--muted); }
+.g10-careers { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin: 10px 0; }
+.g10-careers > div, .g10-careers button { position: relative; display: flex; flex-direction: column; gap: 3px; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 12px; text-align: left; font-family: var(--font-body); color: var(--ink); }
+.g10-careers button { cursor: pointer; }
+.g10-careers .iki { border-color: var(--gold); background: linear-gradient(150deg, #fff4d6, #fff 70%); }
+.g10-careers button.on { border-color: var(--green); background: #eafaf2; }
+.g10-careers em { font-style: normal; font-size: 1.8rem; }
+.g10-careers b { font-family: var(--font-display); color: var(--forest); }
+.g10-careers span { color: var(--green-deep); font-weight: 900; letter-spacing: 2px; font-size: .8rem; }
+.g10-careers small { font-weight: 800; font-size: .74rem; color: #9a6b00; }
+.g10-careers > div i { font-style: normal; font-size: .74rem; color: var(--muted); font-weight: 700; }
+.g10-careers i.n { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; background: var(--forest); color: #fff; font-style: normal; display: grid; place-items: center; font-weight: 900; }
+.g10-detect h3 { margin-top: 0; }
+.g10-cvfix { display: grid; gap: 6px; margin: 10px 0; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 10px; }
+.g10-cvfix button { display: flex; gap: 10px; align-items: flex-start; text-align: left; background: #fafcfb; border: 2px solid transparent; border-radius: 12px; padding: 9px 10px; cursor: pointer; font-family: var(--font-body); color: var(--ink); }
+.g10-cvfix button.on { border-color: var(--coral); background: #fff0ec; }
+.g10-cvfix button.good { border-color: #bde9d3; background: #f4faf7; }
+.g10-cvfix button.bad { border-color: var(--coral); }
+.g10-cvfix p { margin: 0; font-weight: 700; font-size: .9rem; }
+.g10-cvfix small { display: block; color: var(--green-deep); font-weight: 800; margin-top: 4px; }
+.g10-cvgrid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .g10-cvgrid { grid-template-columns: 1fr; } }
+.g10-cvgrid textarea.start-input { resize: vertical; }
+.g10-cv, .g10-cvmodel { background: #fff; border: 1px solid #d9e2dd; border-top: 8px solid var(--forest); border-radius: 10px; padding: 18px 18px 14px; box-shadow: 0 10px 24px rgba(15,42,30,.1); font-size: .86rem; color: #1b2a23; position: sticky; top: 10px; }
+.g10-cvmodel { position: static; margin: 10px 0; }
+.g10-cv > b, .g10-cvmodel > b { display: block; font-family: Georgia, serif; font-size: 1.3rem; letter-spacing: .04em; color: var(--forest); overflow-wrap: anywhere; }
+.g10-cv > span, .g10-cvmodel > span { display: block; color: var(--muted); font-size: .8rem; margin-bottom: 6px; overflow-wrap: anywhere; }
+.g10-cv h5, .g10-cvmodel h5 { margin: 10px 0 3px; font-size: .7rem; letter-spacing: .14em; color: var(--green-deep); border-bottom: 1px solid #e3ece7; padding-bottom: 2px; }
+.g10-cv p, .g10-cvmodel p { margin: 0; line-height: 1.45; overflow-wrap: anywhere; }
+.g10-cv .pre, .g10-model .pre { white-space: pre-wrap; }
+.g10-sugg { display: grid; gap: 6px; margin: 6px 0 10px; }
+.g10-sugg button { text-align: left; background: var(--g10-gold-soft); border: 1px dashed #e6c46f; border-radius: 12px; padding: 7px 10px; cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: .82rem; color: #6b4b00; }
+.g10-star { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+@media (max-width: 640px) { .g10-star { grid-template-columns: 1fr; } }
+.g10-star label { display: flex; flex-direction: column; gap: 4px; background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 10px; }
+.g10-star b { font-family: var(--font-display); color: var(--forest); }
+.g10-star small { color: var(--muted); font-weight: 700; font-size: .76rem; }
+.g10-rules { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #f4faf7; border: 1px solid #bde9d3; border-radius: 14px; padding: 10px; margin: 10px 0; }
+.g10-rules b { width: 100%; color: var(--forest); }
+.g10-rules span { background: #fff; border: 1px solid #bde9d3; border-radius: 99px; padding: 4px 10px; font-size: .78rem; font-weight: 700; }
+.g10-lifeblk { margin: 0 0 8px; padding: 10px 12px; }
+.g10-lifeblk > b { font-family: var(--font-display); color: var(--forest); }
+.g10-lifeblk .g10-chips button { font-size: .78rem; }
+.g10-bp { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 10px 0; }
+.g10-bp > div { position: relative; display: flex; flex-direction: column; gap: 2px; background: #fff; border: 2px dashed var(--line); border-radius: 16px; padding: 12px; opacity: .65; }
+.g10-bp > div.on { opacity: 1; border: 2px solid var(--green); background: #f4faf7; }
+.g10-bp i { position: absolute; top: 8px; right: 10px; font-style: normal; font-weight: 900; color: var(--muted); }
+.g10-bp em { font-style: normal; font-size: 1.5rem; }
+.g10-bp b { font-family: var(--font-display); color: var(--forest); font-size: .9rem; }
+.g10-bp small { font-weight: 800; font-size: .74rem; color: var(--muted); }
+.g10-bigtimer { font-family: var(--font-display); font-size: 3rem; text-align: center; color: var(--forest); margin: 6px 0; }
+.g10-bigtimer.low { color: var(--coral); }
+.g10-model { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; margin: 10px 0; }
+.g10-model summary { cursor: pointer; font-weight: 900; color: var(--forest); }
+.g10-model p { font-family: Georgia, serif; line-height: 1.6; color: #2a3a33; margin: 10px 0 0; }
+.g10-prompts { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.g10-prompts b { width: 100%; color: var(--forest); }
+.g10-prompts span { background: var(--g10-gold-soft); border-radius: 99px; padding: 5px 11px; font-size: .8rem; font-weight: 700; }
+.g10-capsule { max-width: 420px; margin: 14px auto; text-align: center; background: linear-gradient(160deg, #0f2a1e, #1b4a33 60%, #6b5a1e); color: #fff; border: 4px solid #f5b23e; border-radius: 26px; padding: 22px 18px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 16px 34px rgba(15,42,30,.3); animation: g10-flip .6s ease; }
+.g10-capsule em { font-style: normal; font-size: 3rem; }
+.g10-capsule small { font-size: .62rem; font-weight: 900; letter-spacing: .14em; color: #f5d27a; }
+.g10-capsule b { font-family: var(--font-display); font-size: 1.15rem; }
+.g10-capsule span { opacity: .85; font-size: .84rem; }
+.g10-capsule i { font-style: normal; font-weight: 900; color: #f5d27a; margin-top: 6px; }
+.g74-wlist span.off { opacity: .45; }
