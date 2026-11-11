@@ -1449,24 +1449,6 @@ function FutureMePanel({ id, have, stats, compact, studentName, title }) {
 function FPBadge({ n, t, e = "📄" }) {
   return <div className="g8-bpbadge g91-badge g10-fpbadge"><span>📘 FUTURE PAGE {String(n).padStart(2, "0")}</span><b>{e} {t}</b></div>;
 }
-/* Prove It: repaso rápido al abrir cada clase (no da monedas, no se guarda) */
-function ProveIt({ data }) {
-  const [pick, setPick] = useState(null);
-  const [open, setOpen] = useState(false);
-  if (!data) return null;
-  return (
-    <div className={`g10-prove ${open ? "open" : ""}`}>
-      <button type="button" className="g10-prove-top" onClick={() => setOpen(!open)}><em>⚡</em><div><small>PROVE IT · 1 MINUTE · {data.from}</small><b>{data.q}</b></div><i>{open ? "▲" : "Try ▼"}</i></button>
-      {open && (
-        <div className="g10-prove-body">
-          <div className="quiz-options">{data.options.map((o, k) => <button key={k} type="button" disabled={pick != null} className={`quiz-opt ${pick != null && k === data.correct ? "correct" : ""} ${pick === k && k !== data.correct ? "wrong" : ""}`} onClick={() => setPick(k)}><span className="opt-key">{"ABCD"[k]}</span><span className="opt-text">{o}</span></button>)}</div>
-          {pick != null && <p className={`g91-note ${pick === data.correct ? "pos" : "neg"}`}>{pick === data.correct ? "✅ You remember it! " : "🔁 Not this time. "}{data.why}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* Barras de reparto (suman 100% o un total) */
 function AllocBars({ items, vals, set, step = 5, total = 100, unit = "%", fmt }) {
   const sum = items.reduce((a, it) => a + (vals[it.k] || 0), 0);
@@ -1682,17 +1664,19 @@ const RADAR10_DIMS = [
   { k: "val", l: "Value Creation", short: "Value" }, { k: "mm", l: "Money Management", short: "Money" }, { k: "math", l: "Money Math", short: "Math" },
   { k: "inv", l: "Investing & Risk", short: "Investing" }, { k: "fut", l: "Future Planning", short: "Future" },
 ];
+// Todas las opciones son razonables: cada una vale 0–3 según qué tan completa es la decisión.
+// El orden se baraja en pantalla y las longitudes son parecidas para que no se adivine.
 const RADAR10_Q = [
-  { d: "val", q: "You have an old object you don't use. What is the smartest first step?", o: ["Throw it away.", "Find who needs it and what they would give for it.", "Keep it forever.", "Sell it at the first price anybody says."], s: [0, 3, 0, 1] },
-  { d: "val", q: "Why can the same umbrella cost more on a rainy day?", o: ["Because umbrellas are magic.", "Because demand goes up while supply stays the same.", "Because the government says so.", "Because it is a different umbrella."], s: [0, 3, 1, 0] },
-  { d: "mm", q: "You receive your first salary. What do you do first?", o: ["Spend it on what I wanted for months.", "Make a plan: needs, savings and a part for fun.", "Keep it all in cash at home.", "Lend it all to a friend."], s: [0, 3, 1, 0] },
-  { d: "mm", q: "Inflation is 6% and your money sits in a piggy bank for a year. What happens?", o: ["Nothing.", "It can buy less than before.", "It grows 6%.", "It doubles."], s: [0, 3, 0, 0] },
-  { d: "math", q: "A bank offers 1% per month. A CDT offers 12% E.A. Which pays more in a year?", o: ["They are exactly the same.", "1% per month (it compounds to about 12.7%).", "The CDT, always.", "I can't know and I don't care."], s: [1, 3, 1, 0] },
-  { d: "math", q: "You can pay a $1,200,000 phone in 1 or 36 card installments. What should you check?", o: ["Only the monthly payment.", "The interest rate and the total I will pay.", "The color of the card.", "Nothing — installments are free."], s: [1, 3, 0, 0] },
-  { d: "inv", q: "Your investment falls 15% in one week. What do you do?", o: ["Sell everything immediately.", "Check why it fell and remember my plan and time horizon.", "Borrow money to buy more.", "Ask a stranger online."], s: [0, 3, 0, 0] },
-  { d: "inv", q: "An app promises 20% per month, guaranteed. You…", o: ["Invest everything.", "Suspect a scam and check if it is supervised.", "Invite my family.", "Invest half."], s: [0, 3, 0, 0] },
-  { d: "fut", q: "When should you start saving and investing for your future?", o: ["When I'm 40.", "As soon as I can, even with small amounts.", "Never, it's for rich people.", "Only when I win the lottery."], s: [0, 3, 0, 0] },
-  { d: "fut", q: "You are choosing a career. What do you consider?", o: ["Only what my friends study.", "What I love, what I'm good at, what the world needs and what pays.", "Only the salary.", "Nothing, I'll decide later."], s: [0, 3, 1, 0] },
+  { d: "val", q: "You have an old bike you don't use anymore. What do you do first?", o: ["Find out who needs a bike and what they would give for it.", "Check online what similar used bikes are selling for.", "Clean it and fix the brakes so it looks better.", "Sell it to the first person who makes an offer."], s: [3, 2, 2, 1] },
+  { d: "val", q: "Why can the same umbrella cost more on a rainy day?", o: ["Demand jumps while the supply on the street stays the same.", "Sellers know people need it now, so they raise the price.", "Many people already bought one, so fewer are left.", "Bringing umbrellas to the street costs more when it rains."], s: [3, 2, 1, 1] },
+  { d: "mm", q: "You receive your first salary. What do you do first?", o: ["Pay my needs first and save whatever is left.", "Save a fixed part first, then plan needs and fun.", "Write down every expense this month to see where it goes.", "Buy the thing I wanted for months — I worked for it."], s: [2, 3, 1, 0] },
+  { d: "mm", q: "Inflation is 6% and you keep $1,000,000 at home for a year. What happens?", o: ["It's still $1,000,000, so I don't lose any pesos.", "It buys about 6% less than it did a year ago.", "It's safe from bank fees, so it keeps more value.", "It only loses value if I buy things that went up."], s: [1, 3, 1, 0] },
+  { d: "math", q: "A bank offers 1% per month. A CDT offers 12% E.A. Which pays more in a year?", o: ["They are equal: 1% × 12 months is 12%.", "The CDT: E.A. already includes the compounding.", "1% monthly, because it compounds to about 12.7%.", "I'd convert both to E.A. before I decide."], s: [1, 1, 3, 2] },
+  { d: "math", q: "You can pay a $1,200,000 phone in 1 or 36 card installments. What do you check?", o: ["If the monthly payment fits in my budget.", "The interest rate and the total I'll pay at the end.", "If the store gives a discount for paying at once.", "How many installments people usually choose."], s: [1, 3, 2, 0] },
+  { d: "inv", q: "Your investment falls 15% in one week. What do you do?", o: ["Wait without looking; markets usually recover.", "Sell part of it to reduce the risk I feel.", "Sell everything now before it falls even more.", "Check why it fell and compare it with my plan."], s: [2, 1, 0, 3] },
+  { d: "inv", q: "An app promises 20% per month, guaranteed. You…", o: ["Check if it is supervised by the Superfinanciera.", "Stay away: a guaranteed high return is a red flag.", "Invest a small amount first to test if it pays.", "Ask friends who invested if they really got paid."], s: [3, 2, 1, 0] },
+  { d: "fut", q: "When should you start saving and investing for your future?", o: ["When I have a stable job and a real salary.", "After university, when I know what I want.", "Now, even with small amounts, so time helps.", "When I earn enough to save big amounts."], s: [2, 1, 3, 0] },
+  { d: "fut", q: "You are choosing a career. What do you consider?", o: ["Salaries and job demand for the next ten years.", "What I love, what I'm good at and what pays.", "The subjects where I get my best grades.", "What my family recommends — they know me."], s: [2, 3, 1, 0] },
 ];
 function radarProfile10(avg) {
   if (avg <= 30) return { l: "Starter 🌱", d: "You are building your foundations. Every class this year is a step." };
@@ -1704,6 +1688,7 @@ const radarScores10 = (ans, offset = 0) => { const o = {}; RADAR10_DIMS.forEach(
 function RadarQuiz({ title, qs, intro, onDone, onExit }) {
   const [cur, setCur] = useState(0);
   const [ans, setAns] = useState({});
+  const [orders] = useState(() => qs.map((x) => shuffleArr(x.o.map((_, k) => k))));
   const q = qs[cur]; const answered = ans[cur] != null;
   return (
     <div className="s1-quiz">
@@ -1713,7 +1698,8 @@ function RadarQuiz({ title, qs, intro, onDone, onExit }) {
       {cur === 10 && <p className="start-tip">🆕 5 new situations about this year's topics.</p>}
       <span className="diag-dim">{cur >= 10 ? "🆕 " : ""}{RADAR10_DIMS.find((d) => d.k === q.d).l}</span>
       <p className="quiz-q">{q.q}</p>
-      <div className="quiz-options">{q.o.map((o, k) => <button key={k} type="button" className={`quiz-opt ${ans[cur] === k ? "correct" : ""}`} onClick={() => setAns({ ...ans, [cur]: k })}><span className="opt-key">{"ABCD"[k]}</span><span className="opt-text">{o}</span></button>)}</div>
+      <p className="start-tip">💡 Every option makes sense. Choose what YOU would really do — there is no trick.</p>
+      <div className="quiz-options">{orders[cur].map((k, pos) => <button key={k} type="button" className={`quiz-opt ${ans[cur] === k ? "correct" : ""}`} onClick={() => setAns({ ...ans, [cur]: k })}><span className="opt-key">{"ABCD"[pos]}</span><span className="opt-text">{q.o[k]}</span></button>)}</div>
       <div className="quiz-nav">
         <button className="s1-btn ghost" onClick={() => (cur > 0 ? setCur(cur - 1) : onExit())}>{cur > 0 ? "Back" : "Exit"}</button>
         <button className="s1-btn primary" disabled={!answered} onClick={() => (cur < qs.length - 1 ? setCur(cur + 1) : onDone(ans))}>{cur < qs.length - 1 ? "Next" : "See my radar 🧭"} <ChevronRight size={18} /></button>
@@ -1882,7 +1868,6 @@ function PeriodShell10({ cfg, userData, API_URL, existingRow, onBack }) {
           <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / w.acts.length) * 100}%` }} /></div><span className="pill">{wDone}/{w.acts.length}</span></div>
         </div>
         {cfg.panel(ctxBase, true)}
-        <ProveIt data={w.prove} />
         <div className="s1-quest">
           {w.acts.map((a) => (
             <div key={a.key} className={`act-card ${checklist[a.key] ? "done" : ""} ${(cfg.pageKeys || []).includes(a.key) ? "g8-page-act" : ""} ${a.key.endsWith("_rush") ? "g8-rush-act" : ""} ${LEARN_END.some((s) => a.key.endsWith(s)) ? "g73-learn-act" : ""} ${(cfg.bigKeys || []).includes(a.key) ? "g94-big-act" : ""}`}>
@@ -1956,50 +1941,50 @@ const VID_STABLE10 = "https://res.cloudinary.com/y9r84vgz/video/upload/v17940698
 
 /* ---------- VIDEO · Risk & Return ---------- */
 const VQ_RISK10 = [
-  { q: "What principle connects risk and return?", options: ["Higher expected return requires higher risk.", "Safe assets always beat risky ones in the short term, so you should never take risk.", "Government bonds pay the most.", "Risk and return are not related."], correct: 0, feedback: "To aim for bigger gains, investors must accept more uncertainty." },
-  { q: "Why do fixed deposits pay the lowest returns?", options: ["They are the safest, with almost no volatility.", "Because the law does not allow banks to pay interest on money deposited by clients.", "They have unlimited risk.", "They follow inflation down."], correct: 0, feedback: "Low risk → low return." },
-  { q: "How do shares compare with bonds?", options: ["Shares: more risk and higher expected return.", "Shares are safer than bonds because the government insures every share you buy.", "They are identical.", "Bonds always win in booms."], correct: 0, feedback: "Owning a business is riskier than lending to it." },
-  { q: "Which rule summarizes investing?", options: ["No reward without risk.", "Diversification removes all risk without reducing your expected return at all.", "Safe investments pay the most.", "Central banks guarantee returns."], correct: 0, feedback: "Higher expected returns come with higher risk." },
-  { q: "What measures the volatility (risk) of an investment?", options: ["Standard deviation.", "Gross domestic product of the country where the company has its main office.", "The CPI.", "Amortization."], correct: 0, feedback: "A bigger standard deviation = bigger swings = more risk." },
-  { q: "Two investments both expect 3%. Which has the higher Sharpe ratio?", options: ["The one with lower volatility.", "The one with higher volatility, because it can give you bigger surprises.", "Both equal.", "Neither."], correct: 0, feedback: "Sharpe = return per unit of risk." },
-  { q: "What is the goal of using the Sharpe ratio?", options: ["Best return for each unit of risk.", "To remove all stocks and keep one hundred percent of your money in cash forever.", "Guaranteed profits.", "Avoid regulation."], correct: 0, feedback: "Maximize return for a given risk, or minimize risk for a given return." },
-  { q: "What three things define your risk appetite?", options: ["Need, ability and willingness.", "Your income, your tax bracket and the number of houses that your family owns.", "Age, city, status.", "Credit score only."], correct: 0, feedback: "Need for returns, ability to absorb losses, willingness to tolerate swings." },
-  { q: "How do dependents (people who depend on you) affect your ability to take risk?", options: ["They usually reduce it.", "They increase it a lot, because you need more money to take care of them.", "No effect.", "They force you into crypto."], correct: 0, feedback: "More responsibilities = less capacity to absorb losses." },
-  { q: "What happens if your willingness to take risk is low but you invest aggressively?", options: ["You may panic and make bad decisions.", "You will automatically earn more, because fear makes investors more careful with money.", "Nothing.", "Your risk drops to zero."], correct: 0, feedback: "Anxiety leads to panic selling." },
-  { q: "What analogy does the video use for panic selling?", options: ["Jumping off a roller coaster halfway.", "Driving a car without brakes down a mountain at night with no lights.", "Sailing into a hurricane.", "Climbing without oxygen."], correct: 0, feedback: "Jumping off in the middle locks in your losses." },
-  { q: "What is the key to long-term investing?", options: ["Staying invested through the ups and downs.", "Buying at the lowest point and selling at the highest point of every single cycle.", "Avoiding stocks in election years.", "Putting everything in crypto."], correct: 0, feedback: "Time in the market beats timing the market." },
+  { q: "What principle connects risk and return?", options: ["Higher expected return requires higher risk.", "Safe assets always win in the short term.", "Government bonds pay the highest returns.", "Risk and return aren't related."], correct: 0, feedback: "To aim for bigger gains, investors must accept more uncertainty." },
+  { q: "Why do fixed deposits pay the lowest returns?", options: ["They are the safest, with almost no volatility.", "Banks can't legally pay more on deposits.", "They have the highest risk of all assets.", "Their returns follow inflation down."], correct: 0, feedback: "Low risk → low return." },
+  { q: "How do shares compare with bonds?", options: ["Shares: more risk and higher expected return.", "Shares are safer: the government insures them.", "Bonds: more risk and higher expected return.", "They have the same risk and return."], correct: 0, feedback: "Owning a business is riskier than lending to it." },
+  { q: "Which rule summarizes investing?", options: ["No reward without risk.", "Diversify and risk disappears.", "Safe investments pay the most.", "Central banks guarantee returns."], correct: 0, feedback: "Higher expected returns come with higher risk." },
+  { q: "What measures the volatility (risk) of an investment?", options: ["Standard deviation.", "The country's GDP.", "The CPI.", "The average return."], correct: 0, feedback: "A bigger standard deviation = bigger swings = more risk." },
+  { q: "Two investments both expect 3%. Which has the higher Sharpe ratio?", options: ["The one with lower volatility.", "The one with higher volatility.", "Both have the same Sharpe ratio.", "It depends only on the price."], correct: 0, feedback: "Sharpe = return per unit of risk." },
+  { q: "What is the goal of using the Sharpe ratio?", options: ["The best return for each unit of risk.", "Guaranteed profit with no risk.", "The highest return, whatever the risk.", "The lowest risk, whatever the return."], correct: 0, feedback: "Maximize return for a given risk, or minimize risk for a given return." },
+  { q: "What three things define your risk appetite?", options: ["Need, ability and willingness.", "Income, taxes and houses owned.", "Age, city and education.", "Your credit score only."], correct: 0, feedback: "Need for returns, ability to absorb losses, willingness to tolerate swings." },
+  { q: "How do dependents (people who depend on you) affect your ability to take risk?", options: ["They usually reduce it.", "They increase it a lot.", "They have no effect.", "They only matter after 50."], correct: 0, feedback: "More responsibilities = less capacity to absorb losses." },
+  { q: "What happens if your willingness to take risk is low but you invest aggressively?", options: ["You may panic and make bad decisions.", "You will earn more because fear makes you careful.", "Nothing, your feelings don't affect returns.", "Your risk drops because you watch closely."], correct: 0, feedback: "Anxiety leads to panic selling." },
+  { q: "What analogy does the video use for panic selling?", options: ["Jumping off a roller coaster halfway.", "Driving a car without brakes at night.", "Sailing into a hurricane.", "Leaving a race before the finish line."], correct: 0, feedback: "Jumping off in the middle locks in your losses." },
+  { q: "What is the key to long-term investing?", options: ["Staying invested through the ups and downs.", "Buying at the lowest point of every cycle.", "Avoiding stocks in election years.", "Selling quickly when prices fall."], correct: 0, feedback: "Time in the market beats timing the market." },
 ];
 
 /* ---------- VIDEO · WTF Is an ETF? (Bloomberg) ---------- */
 const VQ_ETF10 = [
-  { q: "How does the video describe the origin of an ETF?", options: ["The child of an index fund and a stock.", "A mix between a central bank reserve and a mutual fund created by the government.", "A type of cryptocurrency.", "An alliance of brokers."], correct: 0, feedback: "It combines the best traits of both 'parents'." },
-  { q: "What do ETFs inherit from index funds?", options: ["Passive, diversified and low cost.", "Active daily trading by professional managers who try to beat the market every day.", "Guaranteed returns.", "High fees."], correct: 0, feedback: "Most ETFs track an index cheaply." },
-  { q: "What do ETFs inherit from stocks?", options: ["They trade on an exchange during the day.", "They can only be bought once a year directly from the central bank of the country.", "Weekly dividends.", "Unlimited liability."], correct: 0, feedback: "You can buy and sell them any time the market is open." },
-  { q: "What is the 'basket' idea?", options: ["An ETF holds many real securities.", "An ETF is a vault full of paper money that the fund keeps in a safe place.", "A derivative bet.", "A savings account."], correct: 0, feedback: "Bonds, stocks or even gold — inside one basket." },
-  { q: "Why is a gold ETF useful with only $1,000?", options: ["No need to buy and store gold bars.", "It guarantees that gold will double in value every year, so you can't lose money.", "No taxes.", "Gold coins arrive home."], correct: 0, feedback: "Small amounts, safe storage, easy to trade." },
-  { q: "What are the two main attractions of ETFs?", options: ["Accessible and simple.", "Tax-free forever and protected against every type of market fall by insurance.", "More leverage.", "Zero volatility."], correct: 0, feedback: "You don't need to be rich, and they're easy to own." },
-  { q: "How are ETFs different from mutual funds on taxes (in the US)?", options: ["They rarely create yearly capital-gains taxes.", "They charge capital-gains taxes every single month automatically from your account.", "Funds pay no taxes.", "No taxes anywhere."], correct: 0, feedback: "You usually pay when YOU sell with a profit." },
-  { q: "How big was the ETF market in the video?", options: ["6,000+ ETFs, 60 exchanges, about $3 trillion.", "Exactly 500 funds managing more than fifty trillion dollars of government debt.", "A tiny niche.", "Disappearing."], correct: 0, feedback: "A huge global market." },
-  { q: "What comparison shows US ETF trading volume?", options: ["About $2 trillion a year — more than US GDP.", "It is the same as the whole petroleum export market of every country together.", "All world trading.", "All retail spending."], correct: 0, feedback: "(The video's figure — volumes change over time.)" },
-  { q: "Why are passive ETFs cheaper than active funds?", options: ["They copy an index instead of paying stock pickers.", "The government pays their costs because they help families save for the future.", "No commissions by law.", "Managers work for free."], correct: 0, feedback: "Tracking an index costs much less." },
-  { q: "What does the creation/redemption mechanism do?", options: ["Keeps the price close to the basket's NAV.", "It guarantees that investors can never lose money, even during a market crash.", "Fixes prices daily.", "Removes broker fees."], correct: 0, feedback: "Trading price stays close to the real value of the basket." },
-  { q: "What is the video's conclusion about ETFs?", options: ["They are here to stay.", "They are a temporary fad that will soon disappear and be replaced by passbooks.", "They will be banned.", "They'll merge with VC."], correct: 0, feedback: "A permanent pillar of investing." },
+  { q: "How does the video describe the origin of an ETF?", options: ["The child of an index fund and a stock.", "A mix of a mutual fund and a bank.", "A new type of cryptocurrency.", "A savings account that trades on an exchange."], correct: 0, feedback: "It combines the best traits of both 'parents'." },
+  { q: "What do ETFs inherit from index funds?", options: ["Passive, diversified and low cost.", "Active trading by expert managers.", "Guaranteed returns every year.", "High fees and fixed prices."], correct: 0, feedback: "Most ETFs track an index cheaply." },
+  { q: "What do ETFs inherit from stocks?", options: ["They trade on an exchange during the day.", "They are bought once a year from the central bank.", "They pay dividends every week.", "Their price is fixed once a day."], correct: 0, feedback: "You can buy and sell them any time the market is open." },
+  { q: "What is the 'basket' idea?", options: ["An ETF holds many real securities.", "An ETF is a vault of paper money.", "An ETF is a bet on one company.", "An ETF is a savings account."], correct: 0, feedback: "Bonds, stocks or even gold — inside one basket." },
+  { q: "Why is a gold ETF useful with only $1,000?", options: ["No need to buy and store gold bars.", "Gold doubles in value every year.", "You don't pay any taxes on it.", "You receive gold coins at home."], correct: 0, feedback: "Small amounts, safe storage, easy to trade." },
+  { q: "What are the two main attractions of ETFs?", options: ["Accessible and simple.", "Tax-free and insured.", "More leverage.", "Zero volatility."], correct: 0, feedback: "You don't need to be rich, and they're easy to own." },
+  { q: "How are ETFs different from mutual funds on taxes (in the US)?", options: ["They rarely create yearly capital-gains taxes.", "They charge capital-gains taxes every month.", "Mutual funds pay no taxes at all.", "ETFs pay no taxes in any country."], correct: 0, feedback: "You usually pay when YOU sell with a profit." },
+  { q: "How big was the ETF market in the video?", options: ["6,000+ ETFs, 60 exchanges, about $3 trillion.", "About 500 ETFs and $50 billion in total.", "A tiny, shrinking niche for experts.", "60,000 ETFs and about $300 trillion."], correct: 0, feedback: "A huge global market." },
+  { q: "What comparison shows US ETF trading volume?", options: ["About $2 trillion a year, more than US GDP.", "About the same as all the world's oil exports.", "Less than the trading of one big company.", "All the retail spending in the US."], correct: 0, feedback: "(The video's figure — volumes change over time.)" },
+  { q: "Why are passive ETFs cheaper than active funds?", options: ["They copy an index instead of paying stock pickers.", "The government pays part of their operating costs.", "Their commissions are forbidden by the law.", "Their managers work for free to get famous."], correct: 0, feedback: "Tracking an index costs much less." },
+  { q: "What does the creation/redemption mechanism do?", options: ["Keeps the price close to the basket's NAV.", "Guarantees that investors never lose money.", "Fixes the price once a day.", "Removes all broker fees."], correct: 0, feedback: "Trading price stays close to the real value of the basket." },
+  { q: "What is the video's conclusion about ETFs?", options: ["They are here to stay.", "They are a temporary fad.", "They will be banned soon.", "They'll replace all stocks."], correct: 0, feedback: "A permanent pillar of investing." },
 ];
 
 /* ---------- VIDEO · Stablecoins (Binance) ---------- */
 const VQ_STABLE10 = [
-  { q: "What is a stablecoin?", options: ["A crypto pegged 1:1 to an asset like the dollar.", "A cryptocurrency whose price moves a lot because of speculation in open markets.", "A central bank coin backed by gold.", "A high-yield token."], correct: 0, feedback: "Designed to keep a stable value." },
-  { q: "Why do traders use stablecoins?", options: ["To hold value without big price swings.", "To avoid paying taxes and to hide their money from the authorities of their country.", "Guaranteed dividends.", "To buy mining stocks."], correct: 0, feedback: "Like digital cash between trades." },
-  { q: "How does the video compare stablecoins with traditional money?", options: ["Digital cash: fast, flexible, 24/7.", "Slow and bureaucratic, limited to the opening hours of banks in each country.", "Only for institutions.", "A paper replacement."], correct: 0, feedback: "Stability of cash + speed of blockchain." },
-  { q: "What role do stablecoins play when entering crypto?", options: ["The bridge between local money and crypto.", "A tax that network validators collect every time a person sends a payment.", "Collateral for margin.", "A bankruptcy asset."], correct: 0, feedback: "Local currency → stablecoin → other assets (and back)." },
-  { q: "Which two big stablecoins are mentioned?", options: ["USDT and USDC.", "Bitcoin and Ethereum, the two biggest cryptocurrencies in the world.", "Ripple and Cardano.", "Solana and Polkadot."], correct: 0, feedback: "USDT and USDC." },
-  { q: "Why is USDC seen as transparent (according to the video)?", options: ["Its issuer, Circle, is a listed US company.", "The Federal Reserve of New York manages and insures it directly for all its users.", "It's anonymous.", "Backed by poor countries' bonds."], correct: 0, feedback: "A regulated, publicly listed issuer adds oversight." },
-  { q: "Why are stablecoins important in high-inflation countries?", options: ["People can hold 'digital dollars' on a phone.", "They force governments to eliminate taxes and fix all their fiscal problems quickly.", "They peg to gold.", "No internet needed."], correct: 0, feedback: "Protection from a weak local currency." },
-  { q: "Besides the dollar, what else can back stablecoins?", options: ["Euros, other currencies and gold.", "Crude oil, coffee harvests and the real estate titles of big companies.", "Municipal taxes.", "Copper only."], correct: 0, feedback: "Many variations exist." },
-  { q: "What US law did the video mention for payment stablecoins?", options: ["The GENIUS Act: 1:1 reserves and audits.", "A law that charges a 50% tax on every transfer of digital money inside the country.", "A ban on private stablecoins.", "A 1% fee cap."], correct: 0, feedback: "It treats payment stablecoins as digital money with full reserves." },
-  { q: "What European framework regulates stablecoins?", options: ["MiCA.", "The European Central Bank Monetary Compliance Act for all digital payments.", "Basel III.", "The Payment Directive."], correct: 0, feedback: "Markets in Crypto-Assets: licensing, backing, transparency." },
-  { q: "How did regulation change stablecoins, according to the video?", options: ["It moved them out of the gray zone.", "It forced every company that issued stablecoins to close in all Western countries.", "It made them speculative.", "It removed fees."], correct: 0, feedback: "Clear rules → more trust." },
-  { q: "IMPORTANT for your portfolio: is a stablecoin risk-free?", options: ["No: it depends on the issuer and its reserves.", "Yes, because a stablecoin is exactly the same as a bank deposit insured by the government.", "Yes, always.", "Only on weekends."], correct: 0, feedback: "Stable ≠ guaranteed. Check reserves, regulation and the platform you use." },
+  { q: "What is a stablecoin?", options: ["A crypto pegged 1:1 to an asset like the dollar.", "A crypto whose price moves a lot with speculation.", "A central bank coin backed by gold.", "A token that pays a high fixed interest."], correct: 0, feedback: "Designed to keep a stable value." },
+  { q: "Why do traders use stablecoins?", options: ["To hold value without big price swings.", "To avoid taxes and hide money.", "To receive guaranteed dividends.", "To win more when bitcoin goes up."], correct: 0, feedback: "Like digital cash between trades." },
+  { q: "How does the video compare stablecoins with traditional money?", options: ["Digital cash: fast, flexible, 24/7.", "Slow and limited to bank hours.", "Only useful for big institutions.", "Exactly like paper money, but online."], correct: 0, feedback: "Stability of cash + speed of blockchain." },
+  { q: "What role do stablecoins play when entering crypto?", options: ["The bridge between local money and crypto.", "A tax that validators collect on payments.", "A guarantee for loans on exchanges.", "The last step to sell bitcoin for cash."], correct: 0, feedback: "Local currency → stablecoin → other assets (and back)." },
+  { q: "Which two big stablecoins are mentioned?", options: ["USDT and USDC.", "Bitcoin and Ethereum.", "Ripple and Cardano.", "Solana and Dogecoin."], correct: 0, feedback: "USDT and USDC." },
+  { q: "Why is USDC seen as transparent (according to the video)?", options: ["Its issuer, Circle, is a listed US company.", "The US Federal Reserve insures it directly.", "It is anonymous, so nobody can change it.", "It is backed by the bonds of many countries."], correct: 0, feedback: "A regulated, publicly listed issuer adds oversight." },
+  { q: "Why are stablecoins important in high-inflation countries?", options: ["People can hold 'digital dollars' on a phone.", "They force governments to cut taxes.", "They are pegged to gold, not to dollars.", "They don't need internet to work."], correct: 0, feedback: "Protection from a weak local currency." },
+  { q: "Besides the dollar, what else can back stablecoins?", options: ["Euros, other currencies and gold.", "Oil, coffee and real estate titles.", "Municipal taxes.", "Only copper."], correct: 0, feedback: "Many variations exist." },
+  { q: "What US law did the video mention for payment stablecoins?", options: ["The GENIUS Act: 1:1 reserves and audits.", "A law that taxes every digital transfer.", "A total ban on private stablecoins.", "A law that caps crypto fees at 1%."], correct: 0, feedback: "It treats payment stablecoins as digital money with full reserves." },
+  { q: "What European framework regulates stablecoins?", options: ["MiCA.", "Basel III.", "GDPR.", "SEPA."], correct: 0, feedback: "Markets in Crypto-Assets: licensing, backing, transparency." },
+  { q: "How did regulation change stablecoins, according to the video?", options: ["It moved them out of the gray zone.", "It closed every stablecoin issuer.", "It made them more speculative.", "It removed all their fees."], correct: 0, feedback: "Clear rules → more trust." },
+  { q: "IMPORTANT for your portfolio: is a stablecoin risk-free?", options: ["No: it depends on the issuer and its reserves.", "Yes: it works exactly like an insured bank deposit.", "Yes, if its price has been stable for a year.", "No, because its price changes as much as bitcoin."], correct: 0, feedback: "Stable ≠ guaranteed. Check reserves, regulation and the platform you use." },
 ];
 
 /* ---------- LISTENING · Dollars for Miami (mp3 · decimo3.mp3) ---------- */
@@ -2024,16 +2009,16 @@ const SCRIPT_MIAMI = [
   { who: "Narrator", t: "Sara compared each price with the T-R-M, calculated the total cost with fees, and checked the spread. Together, they saved 210,000 pesos." },
 ];
 const Q_MIAMI = [
-  { q: "What was the TRM in the story?", options: ["4,000 pesos per dollar.", "4,350 pesos, the price that the airport exchange house was offering that day.", "3,850.", "4,120."], correct: 0, feedback: "The official rate was 4,000." },
-  { q: "Why was 'no commission' misleading?", options: ["The cost was hidden in the price.", "Because the airport charged a fixed fee of 10,000 pesos for every single transaction.", "It was illegal.", "It wasn't misleading."], correct: 0, feedback: "4,350 vs. 4,000: 350 pesos per dollar hidden in the price." },
-  { q: "How much did US$500 cost at the airport?", options: ["2,175,000 pesos.", "2,070,000 pesos including the fixed fee that the house charged.", "2,000,000.", "1,925,000."], correct: 0, feedback: "500 × 4,350." },
-  { q: "What was the airport's spread?", options: ["500 pesos per dollar.", "350 pesos, the difference between the selling price and the official TRM.", "140.", "10,000."], correct: 0, feedback: "Sell 4,350 − buy 3,850 = 500." },
-  { q: "What was the total cost downtown, with the fee?", options: ["2,070,000 pesos.", "2,060,000 pesos, because the fee is included in the price of each dollar.", "2,175,000.", "2,120,000."], correct: 0, feedback: "500 × 4,120 + 10,000." },
-  { q: "How much did BOTH siblings save by buying downtown?", options: ["210,000 pesos.", "105,000 pesos in total for the two of them together.", "10,000.", "500,000."], correct: 0, feedback: "105,000 each × 2." },
-  { q: "Selling US$100 back downtown gives…", options: ["398,000 pesos.", "385,000 pesos, the same as at the airport, because the TRM is the same.", "412,000.", "400,000."], correct: 0, feedback: "100 × 3,980." },
-  { q: "What was Sara's three-step method?", options: ["Compare with the TRM, add fees, check the spread.", "Choose the house with 'no commission' and the nicest office, then buy at the airport.", "Ask Tomás.", "Buy at the airport."], correct: 0, feedback: "TRM → total cost with fees → spread." },
-  { q: "When should they buy dollars, according to Sara?", options: ["Before going to the airport.", "At the airport, because the prices are always the official TRM on the day of the trip.", "In Miami only.", "Never."], correct: 0, feedback: "Airports usually have worse prices." },
-  { q: "Which exchange house had the smaller spread?", options: ["Downtown (140 pesos).", "The airport (500 pesos), because it has more clients every day.", "Both the same.", "Neither."], correct: 0, feedback: "4,120 − 3,980 = 140." },
+  { q: "What was the TRM in the story?", options: ["4,000 pesos per dollar.", "4,350 pesos per dollar.", "4,120 pesos per dollar.", "3,850 pesos per dollar."], correct: 0, feedback: "The official rate was 4,000." },
+  { q: "Why was 'no commission' misleading?", options: ["The cost was hidden in the price.", "There was a fixed fee of $10,000.", "The house used a fake TRM.", "The rate changed after paying."], correct: 0, feedback: "4,350 vs. 4,000: 350 pesos per dollar hidden in the price." },
+  { q: "How much did US$500 cost at the airport?", options: ["2,175,000 pesos.", "2,070,000 pesos.", "2,000,000 pesos.", "2,060,000 pesos."], correct: 0, feedback: "500 × 4,350." },
+  { q: "What was the airport's spread?", options: ["500 pesos per dollar.", "350 pesos per dollar.", "140 pesos per dollar.", "230 pesos per dollar."], correct: 0, feedback: "Sell 4,350 − buy 3,850 = 500." },
+  { q: "What was the total cost downtown, with the fee?", options: ["2,070,000 pesos.", "2,060,000 pesos.", "2,175,000 pesos.", "2,120,000 pesos."], correct: 0, feedback: "500 × 4,120 + 10,000." },
+  { q: "How much did BOTH siblings save by buying downtown?", options: ["210,000 pesos.", "105,000 pesos.", "115,000 pesos.", "500,000 pesos."], correct: 0, feedback: "105,000 each × 2." },
+  { q: "Selling US$100 back downtown gives…", options: ["398,000 pesos.", "385,000 pesos.", "412,000 pesos.", "400,000 pesos."], correct: 0, feedback: "100 × 3,980." },
+  { q: "What was Sara's three-step method?", options: ["Compare with the TRM, add fees, check the spread.", "Find 'no commission', then compare the offices.", "Ask a friend, then buy at the closest house.", "Check the TRM, then buy at the airport."], correct: 0, feedback: "TRM → total cost with fees → spread." },
+  { q: "When should they buy dollars, according to Sara?", options: ["Before going to the airport.", "At the airport, on the day of the trip.", "In Miami, with a US card.", "A month after the trip."], correct: 0, feedback: "Airports usually have worse prices." },
+  { q: "Which exchange house had the smaller spread?", options: ["Downtown (140 pesos).", "The airport (500 pesos).", "Both had the same spread.", "The airport (140 pesos)."], correct: 0, feedback: "4,120 − 3,980 = 140." },
 ];
 
 /* ---------- LECTURA · Where Does Your Money Sleep? (B2) ---------- */
@@ -2059,16 +2044,16 @@ const READ_SLEEP = [
 ];
 const GLOSS_SLEEP = { "liquidity": "how fast you can use your money without losing part of it", "Fogafín": "Colombia's deposit insurance fund", "supervised": "controlled by the Superintendencia Financiera", "investment fund": "a pool of money invested in many assets; its value moves", "cajita": "a digital savings 'pocket' that pays interest", "youth accounts": "bank accounts designed for young people, usually with a guardian" };
 const Q_SLEEP = [
-  { q: "What are the three criteria to choose where money 'sleeps'?", options: ["Safety, liquidity and return.", "The color of the app, the name of the bank and the number of branches in the city.", "Price only.", "Popularity."], correct: 0, feedback: "Safety, liquidity, return." },
-  { q: "What does Fogafín insure?", options: ["Deposits in registered entities.", "Every type of investment, including funds and crypto platforms, in every situation.", "Only crypto.", "Nothing."], correct: 0, feedback: "Savings, checking accounts and CDTs — not funds or crypto." },
-  { q: "Why is a CDT a bad bed for an emergency fund?", options: ["The money is locked.", "Because it pays a very low rate, even lower than a normal savings account.", "It's not supervised.", "It's illegal for minors."], correct: 0, feedback: "Emergencies need liquidity." },
-  { q: "$1,000,000 at 10% E.A. with 5% inflation buys about…", options: ["$1,048,000 of today's things.", "$1,150,000 of today's things, because you add inflation to the return.", "$950,000.", "$1,100,000."], correct: 0, feedback: "1,100,000 ÷ 1.05 ≈ 1,048,000." },
-  { q: "Which product matches a goal in exactly 12 months with no early use?", options: ["A CDT.", "A piggy bank at home, because you can see the money every day and feel good.", "Crypto.", "A loan."], correct: 0, feedback: "Fixed date + higher rate." },
-  { q: "Why can a fund make sense for a 5-year goal?", options: ["Time helps recover from falls.", "Because funds are insured by Fogafín and they can never lose value in five years.", "It's liquid.", "It's guaranteed."], correct: 0, feedback: "Longer horizon → more capacity to wait." },
-  { q: "How do minors usually open an account in Colombia?", options: ["With a parent or guardian.", "Alone, by sending a photo of their school ID card to any bank on social media.", "They can't.", "Only at 21."], correct: 0, feedback: "Youth accounts usually need a guardian." },
-  { q: "Why should you write down the date when you check a rate?", options: ["Rates change over time.", "Because banks only accept new clients on the days when the rate is published.", "It's a law.", "To win a prize."], correct: 0, feedback: "Today's rate may not be next month's." },
-  { q: "A savings account pays 1% E.A. and inflation is 5%. Your purchasing power…", options: ["goes down.", "goes up 6%, because the bank adds the inflation rate to your interest.", "stays the same.", "doubles."], correct: 0, feedback: "Real return ≈ 1% − 5% = −4%." },
-  { q: "Which is NOT covered by Fogafín?", options: ["An investment fund.", "A CDT in a bank that is registered with Fogafín.", "A savings account in a registered bank.", "A checking account in a registered bank."], correct: 0, feedback: "Funds are investments, not deposits." },
+  { q: "What are the three criteria to choose where money 'sleeps'?", options: ["Safety, liquidity and return.", "Brand, app design and branches.", "Price, popularity and color.", "Return, return and return."], correct: 0, feedback: "Safety, liquidity, return." },
+  { q: "What does Fogafín insure?", options: ["Deposits in registered entities.", "Every type of investment, including funds.", "Only crypto platforms.", "Only accounts of adults."], correct: 0, feedback: "Savings, checking accounts and CDTs — not funds or crypto." },
+  { q: "Why is a CDT a bad bed for an emergency fund?", options: ["The money is locked until the end.", "It pays less than a savings account.", "It is not supervised by anyone.", "Minors can't open a CDT."], correct: 0, feedback: "Emergencies need liquidity." },
+  { q: "$1,000,000 at 10% E.A. with 5% inflation buys about…", options: ["About $1,048,000 of today's things.", "About $1,150,000 of today's things.", "About $950,000 of today's things.", "About $1,100,000 of today's things."], correct: 0, feedback: "1,100,000 ÷ 1.05 ≈ 1,048,000." },
+  { q: "Which product matches a goal in exactly 12 months with no early use?", options: ["A CDT.", "A piggy bank.", "A crypto wallet.", "A stock fund."], correct: 0, feedback: "Fixed date + higher rate." },
+  { q: "Why can a fund make sense for a 5-year goal?", options: ["Time helps recover from falls.", "Funds are insured by Fogafín.", "Funds guarantee their returns.", "Funds never lose value in 5 years."], correct: 0, feedback: "Longer horizon → more capacity to wait." },
+  { q: "How do minors usually open an account in Colombia?", options: ["With a parent or guardian.", "Alone, with a photo of their school ID.", "They can't until they are 18.", "Only with a job contract."], correct: 0, feedback: "Youth accounts usually need a guardian." },
+  { q: "Why should you write down the date when you check a rate?", options: ["Rates change over time.", "Banks require it by law.", "The rate expires that day.", "To get a better rate later."], correct: 0, feedback: "Today's rate may not be next month's." },
+  { q: "A savings account pays 1% E.A. and inflation is 5%. Your purchasing power…", options: ["goes down.", "goes up 6%.", "stays the same.", "goes up 1%."], correct: 0, feedback: "Real return ≈ 1% − 5% = −4%." },
+  { q: "Which is NOT covered by Fogafín?", options: ["An investment fund.", "A CDT in a registered bank.", "A savings account in a bank.", "A checking account in a bank."], correct: 0, feedback: "Funds are investments, not deposits." },
 ];
 
 /* ---------- LECTURA · Too Good to Be True: the DMG Case (B2) ---------- */
@@ -2090,16 +2075,16 @@ const READ_DMG = [
 ];
 const GLOSS_DMG = { "Ponzi scheme": "a fraud that pays old investors with new investors' money", "pyramid": "a scheme where you earn mainly by recruiting people", "intervened": "taken under government control", "prosecuted": "taken to court for a crime", "FOMO": "fear of missing out", "red flags": "warning signs" };
 const Q_DMG = [
-  { q: "What did DMG and similar organizations promise?", options: ["Returns that no real business could pay.", "A normal interest rate similar to a CDT in a bank supervised by the government.", "Free houses.", "Jobs abroad."], correct: 0, feedback: "Impossible returns are the first red flag." },
-  { q: "In a Ponzi scheme, where do the 'returns' come from?", options: ["From new investors' money.", "From a real and very profitable business that sells products in many countries.", "From the government.", "From interest."], correct: 0, feedback: "Old investors are paid with new money." },
-  { q: "Why did the first participants trust the scheme?", options: ["They really received money at the beginning.", "Because the Superintendencia Financiera supervised the companies and approved them.", "Banks recommended it.", "It was on TV."], correct: 0, feedback: "Early payments create trust — and new victims." },
-  { q: "When does a Ponzi scheme collapse?", options: ["When new money slows down.", "When the company earns too much money and can't spend it on its business.", "Never.", "After exactly one year."], correct: 0, feedback: "Without new money, it can't pay old investors." },
-  { q: "20% per month is about how much per year?", options: ["About 791%.", "About 240%, because twenty percent multiplied by twelve months gives two hundred forty.", "20%.", "1,000%."], correct: 0, feedback: "(1.20)¹² − 1 ≈ 7.91." },
-  { q: "What did the government do in November 2008?", options: ["It intervened the companies.", "It gave a prize to the founders for creating jobs in the south of the country.", "It invested in them.", "Nothing."], correct: 0, feedback: "It intervened and declared a social emergency." },
-  { q: "According to the text, are cryptocurrencies scams?", options: ["Not automatically — check the promise.", "Yes, every cryptocurrency is a Ponzi scheme created to steal money from people.", "No, they are always safe.", "Only stablecoins."], correct: 0, feedback: "Red flags are about the promise, not the technology." },
-  { q: "Which is a red flag?", options: ["“You earn more if you invite friends.”", "“The company is supervised and you can see where it invests your money every day.”", "“You can withdraw any day.”", "“Returns are not guaranteed.”"], correct: 0, feedback: "Earning by recruiting is typical of pyramids." },
-  { q: "Where can you check if a company is supervised in Colombia?", options: ["superfinanciera.gov.co.", "In the comments of the company's posts on social media, where clients write their opinions.", "On a WhatsApp group.", "Nowhere."], correct: 0, feedback: "Official sources first." },
-  { q: "What does FOMO mean?", options: ["Fear of missing out.", "A type of cryptocurrency that is very popular in Colombia and in other countries.", "A bank.", "A law."], correct: 0, feedback: "Scammers use FOMO to make you rush." },
+  { q: "What did DMG and similar organizations promise?", options: ["Returns that no real business could pay.", "A normal rate, like a CDT in a bank.", "Houses and cars for every investor.", "Jobs in other countries."], correct: 0, feedback: "Impossible returns are the first red flag." },
+  { q: "In a Ponzi scheme, where do the 'returns' come from?", options: ["From new investors' money.", "From a real, very profitable business.", "From government subsidies.", "From interest on bank deposits."], correct: 0, feedback: "Old investors are paid with new money." },
+  { q: "Why did the first participants trust the scheme?", options: ["They really received money at the beginning.", "The Superintendencia approved the companies.", "Banks recommended the companies.", "The returns were guaranteed in a contract."], correct: 0, feedback: "Early payments create trust — and new victims." },
+  { q: "When does a Ponzi scheme collapse?", options: ["When new money slows down.", "When it earns too much money.", "Exactly one year after it starts.", "When interest rates go up."], correct: 0, feedback: "Without new money, it can't pay old investors." },
+  { q: "20% per month is about how much per year?", options: ["About 791%.", "About 240%.", "About 120%.", "About 2,000%."], correct: 0, feedback: "(1.20)¹² − 1 ≈ 7.91." },
+  { q: "What did the government do in November 2008?", options: ["It intervened the companies.", "It gave the founders a prize.", "It invested public money in them.", "It did nothing for many years."], correct: 0, feedback: "It intervened and declared a social emergency." },
+  { q: "According to the text, are cryptocurrencies scams?", options: ["Not automatically — check the promise.", "Yes, every cryptocurrency is a scam.", "No, crypto is always safe.", "Only stablecoins can be scams."], correct: 0, feedback: "Red flags are about the promise, not the technology." },
+  { q: "Which is a red flag?", options: ["“You earn more if you invite friends.”", "“Returns are not guaranteed.”", "“You can withdraw any day.”", "“We are supervised by the Superfinanciera.”"], correct: 0, feedback: "Earning by recruiting is typical of pyramids." },
+  { q: "Where can you check if a company is supervised in Colombia?", options: ["superfinanciera.gov.co.", "The company's Instagram comments.", "A WhatsApp group of investors.", "The company's own website."], correct: 0, feedback: "Official sources first." },
+  { q: "What does FOMO mean?", options: ["Fear of missing out.", "Fund of money offers.", "Free online money order.", "Fast online market operations."], correct: 0, feedback: "Scammers use FOMO to make you rush." },
 ];
 
 /* ---------- LECTURA · Is This Project Worth It? (VPN, TIR, recuperación) ---------- */
@@ -2122,14 +2107,14 @@ const READ_NPV = [
 ];
 const GLOSS_NPV = { "cash flow": "money that goes out (−) or comes in (+) in a period", "net present value": "the sum of all cash flows brought to today (NPV / VPN)", "discount rate": "the rate used to bring future money to today; your opportunity cost", "internal rate of return": "the rate that makes NPV equal to zero (IRR / TIR)", "payback": "the time it takes to recover the investment" };
 const Q_NPV = [
-  { q: "What does a positive NPV mean?", options: ["It creates value above the alternative.", "That the project will never lose money, even if the economy has a very bad year.", "It's illegal.", "It needs a loan."], correct: 0, feedback: "NPV > 0 → better than your opportunity rate." },
-  { q: "Which discount rate did the reading use, and why?", options: ["12%, the CDT's rate (opportunity cost).", "5%, because that is the inflation rate that the central bank wants every year.", "0%.", "The IRR."], correct: 0, feedback: "Your alternative return." },
-  { q: "Why is the CDT's NPV exactly $0?", options: ["It IS the alternative (it pays exactly 12%).", "Because CDTs never give any return to investors after three years in the bank.", "It's a mistake.", "It's negative."], correct: 0, feedback: "Discounting 12% at 12% gives zero." },
-  { q: "What is the IRR?", options: ["The rate that makes NPV = 0.", "The interest rate that the bank charges when you ask for a loan to start a project.", "The payback.", "Inflation."], correct: 0, feedback: "The project's own return." },
-  { q: "The food cart's IRR (~16%) is above 12%. This means…", options: ["It beats the alternative.", "It loses money compared with the CDT, so the uncle should not invest in it.", "It's equal.", "Nothing."], correct: 0, feedback: "IRR > discount rate ↔ NPV > 0." },
-  { q: "What is a weakness of payback?", options: ["It ignores what happens after recovery.", "It is too difficult to calculate, so companies need expensive computers to use it.", "It uses discounting.", "It's illegal."], correct: 0, feedback: "A fast payback can still create less value." },
-  { q: "$4,000,000 in year 1 at 12% is worth today…", options: ["About $3,571,429.", "Exactly $4,480,000, because you add twelve percent to the future money.", "$4,000,000.", "$3,520,000."], correct: 0, feedback: "4,000,000 ÷ 1.12." },
-  { q: "Why can't you just add the cash flows?", options: ["Future money is worth less today.", "Because the bank doesn't allow you to add numbers from different years in a table.", "It's too easy.", "Taxes."], correct: 0, feedback: "Time value of money." },
+  { q: "What does a positive NPV mean?", options: ["It creates value above the alternative.", "The project can never lose money.", "The project needs a loan to start.", "The project pays back in one year."], correct: 0, feedback: "NPV > 0 → better than your opportunity rate." },
+  { q: "Which discount rate did the reading use, and why?", options: ["12%, the CDT's rate (opportunity cost).", "5%, the inflation rate of the year.", "0%, because money keeps its value.", "16%, the IRR of the food cart."], correct: 0, feedback: "Your alternative return." },
+  { q: "Why is the CDT's NPV exactly $0?", options: ["It IS the alternative: it pays exactly 12%.", "CDTs give no return after three years.", "It's a mistake in the calculation.", "Its return equals inflation, so it's zero."], correct: 0, feedback: "Discounting 12% at 12% gives zero." },
+  { q: "What is the IRR?", options: ["The rate that makes NPV = 0.", "The rate a bank charges for a loan.", "The years it takes to recover the money.", "The inflation rate of the project."], correct: 0, feedback: "The project's own return." },
+  { q: "The food cart's IRR (~16%) is above 12%. This means…", options: ["It beats the alternative.", "It loses money vs. the CDT.", "It's equal to the CDT.", "It has no risk at all."], correct: 0, feedback: "IRR > discount rate ↔ NPV > 0." },
+  { q: "What is a weakness of payback?", options: ["It ignores what happens after recovery.", "It is too hard to calculate.", "It uses a discount rate.", "It only works for big companies."], correct: 0, feedback: "A fast payback can still create less value." },
+  { q: "$4,000,000 in year 1 at 12% is worth today…", options: ["About $3,571,429.", "Exactly $4,480,000.", "About $3,520,000.", "Exactly $4,000,000."], correct: 0, feedback: "4,000,000 ÷ 1.12." },
+  { q: "Why can't you just add the cash flows?", options: ["Future money is worth less today.", "Banks don't allow it in a table.", "The numbers are too big to add.", "Taxes change every year."], correct: 0, feedback: "Time value of money." },
 ];
 
 /* ---------- EXPLAINER · NAV, P&L y ROI ---------- */
@@ -2147,12 +2132,12 @@ const BRIEF_PNL = [
 ];
 const GLOSS_PNL = { "NAV": "net asset value: what your portfolio is worth today", "P&L": "profit and loss: NAV − money invested", "ROI": "return on investment: P&L ÷ invested × 100", "unrealized": "a gain or loss on something you haven't sold yet", "realized": "a gain or loss on something you already sold" };
 const Q_PNL = [
-  { q: "2 ETF units at $210 + $300 in bonds. NAV?", options: ["$720.", "$510, because you only count one unit of the ETF and the bonds together.", "$420.", "$630."], correct: 0, feedback: "420 + 300." },
-  { q: "Invested $1,000, NAV $930. P&L?", options: ["−$70.", "+$930, because the NAV is the money that you have now in your portfolio.", "+$70.", "$0."], correct: 0, feedback: "930 − 1,000." },
-  { q: "P&L +$84 on $1,000. ROI?", options: ["+8.4%.", "+84%, because you divide eighty-four by one hundred to calculate the percentage.", "0.84%.", "$84."], correct: 0, feedback: "84 ÷ 1,000 × 100." },
-  { q: "Why compare ROI instead of P&L?", options: ["It considers how much each one invested.", "Because P&L is always a negative number and ROI is always a positive number.", "It's in dollars.", "It's easier to fake."], correct: 0, feedback: "Same $84 on very different investments." },
-  { q: "What is an unrealized gain?", options: ["A gain on something you still hold.", "Money that you already received in your bank account after selling the asset.", "A fee.", "A loss."], correct: 0, feedback: "It can disappear if the price falls." },
-  { q: "How do fees affect NAV?", options: ["They reduce it every year.", "They increase it, because you pay a professional to manage your money.", "No effect.", "Only in good years."], correct: 0, feedback: "Fees are charged in good and bad years." },
+  { q: "2 ETF units at $210 + $300 in bonds. NAV?", options: ["$720.", "$510.", "$630.", "$420."], correct: 0, feedback: "420 + 300." },
+  { q: "Invested $1,000, NAV $930. P&L?", options: ["−$70.", "+$930.", "+$70.", "−$930."], correct: 0, feedback: "930 − 1,000." },
+  { q: "P&L +$84 on $1,000. ROI?", options: ["+8.4%.", "+84%.", "+0.84%.", "+16.8%."], correct: 0, feedback: "84 ÷ 1,000 × 100." },
+  { q: "Why compare ROI instead of P&L?", options: ["It considers how much each one invested.", "P&L is always negative and ROI positive.", "ROI is in dollars and P&L in percent.", "ROI includes all the fees automatically."], correct: 0, feedback: "Same $84 on very different investments." },
+  { q: "What is an unrealized gain?", options: ["A gain on something you still hold.", "Money you received after selling.", "A gain that doesn't count for taxes.", "A gain from a fake investment."], correct: 0, feedback: "It can disappear if the price falls." },
+  { q: "How do fees affect NAV?", options: ["They reduce it every year.", "They increase it every year.", "They have no effect on it.", "They reduce it only in bad years."], correct: 0, feedback: "Fees are charged in good and bad years." },
 ];
 
 /* ---------- BOSS P3 · 5 misiones + 10 preguntas ---------- */
@@ -2161,19 +2146,19 @@ const BOSS3_MISSIONS = [
   { tag: "💵 Spread", q: "A house sells dollars at $4,180 and buys at $4,020. Spread per dollar?", answer: 160, money: true, hint: "4,180 − 4,020", explain: "$160 per dollar." },
   { tag: "🫧 Real return", q: "A CDT pays 10% and inflation is 6%. Real return (approx.)?", answer: 4, unit: "%", tol: 0.2, hint: "rate − inflation", explain: "≈ 4%." },
   { tag: "🧮 NPV", q: "Invest $1,000,000 today, receive $1,210,000 in 2 years. Discount rate 10%. NPV?", answer: 0, money: true, tol: 100, hint: "1,210,000 ÷ 1.21 − 1,000,000", explain: "Exactly $0: the project just equals the alternative." },
-  { tag: "🚩 Scam", q: "Which offer has the most red flags?", options: ["“20% monthly, guaranteed — invite friends!”", "“A diversified ETF; returns are not guaranteed and you can sell any day.”", "“A CDT at 10% E.A. in a supervised bank.”", "“A savings account with no fees.”"], correct: 0, explain: "Guaranteed high returns + recruiting = Ponzi signals." },
+  { tag: "🚩 Scam", q: "Which offer has the most red flags?", options: ["“20% monthly, guaranteed — invite friends!”", "“A diversified ETF; you can sell any day.”", "“A CDT at 10% E.A. in a supervised bank.”", "“A fund with a 2% fee; returns vary.”"], correct: 0, explain: "Guaranteed high returns + recruiting = Ponzi signals." },
 ];
 const BOSS3_Q = [
-  { t: "Risk & profile", q: "Higher expected return usually means…", options: ["higher risk.", "lower risk, because the bank protects investors who choose the best products.", "no risk.", "guaranteed profit."], correct: 0, feedback: "No reward without risk." },
-  { t: "Risk & profile", q: "A conservative investor with a goal in 6 months should prefer…", options: ["safe, liquid products.", "a single tech stock, because it can double in value in a few weeks.", "crypto.", "a loan."], correct: 0, feedback: "Short horizon + low tolerance = safety and liquidity." },
-  { t: "Where money lives", q: "Which product is insured by Fogafín?", options: ["A CDT in a registered bank.", "An investment fund in a company that is very famous in the country.", "Bitcoin.", "A stablecoin."], correct: 0, feedback: "Deposits, not investments." },
-  { t: "Dollar & hedging", q: "You need US$1,000 in a year and fear devaluation. A hedge could be…", options: ["buying part of the dollars now.", "waiting until the last day and buying everything at the airport exchange house.", "buying bitcoin.", "doing nothing."], correct: 0, feedback: "Buying gradually reduces the risk of a big jump." },
-  { t: "Dollar & hedging", q: "The peso devalues. Your Colombian ETF in pesos, measured in USD…", options: ["falls.", "rises, because a weaker peso always makes Colombian companies more valuable.", "stays the same.", "doubles."], correct: 0, feedback: "Same pesos = fewer dollars." },
-  { t: "Stocks & ETFs", q: "Why does an ETF reduce risk?", options: ["It holds many companies.", "Because the government insures every ETF against losses in the stock market.", "It's a deposit.", "It never falls."], correct: 0, feedback: "One bankruptcy hurts a little, not everything." },
-  { t: "Stocks & ETFs", q: "A share costs $500. With $50 you can buy…", options: ["0.1 shares (a fraction).", "Nothing, because you always need the full price to buy at least one share.", "10 shares.", "1 share."], correct: 0, feedback: "Fractional shares: 50 ÷ 500." },
-  { t: "Crypto & scams", q: "A stablecoin…", options: ["tries to keep a 1:1 value with an asset.", "is guaranteed by every government and can never lose its value under any circumstance.", "always goes up.", "is a Ponzi."], correct: 0, feedback: "Stable is the goal, not a guarantee." },
-  { t: "Projects", q: "A project has NPV = −$200,000 at 12%. Decision?", options: ["Reject it: the alternative is better.", "Accept it, because a negative NPV means the project is very safe and stable.", "It's perfect.", "Double it."], correct: 0, feedback: "NPV < 0 destroys value." },
-  { t: "Projects", q: "The IRR of a project is 9% and your alternative pays 12%.", options: ["The project is worse than the alternative.", "The project is better, because it is a real business and the CDT is only paper.", "They're equal.", "Can't know."], correct: 0, feedback: "IRR < discount rate ↔ NPV < 0." },
+  { t: "Risk & profile", q: "Higher expected return usually means…", options: ["higher risk.", "lower risk.", "no risk.", "guaranteed profit."], correct: 0, feedback: "No reward without risk." },
+  { t: "Risk & profile", q: "A conservative investor with a goal in 6 months should prefer…", options: ["safe, liquid products.", "one tech stock that can double.", "a mix of crypto coins.", "a five-year stock fund."], correct: 0, feedback: "Short horizon + low tolerance = safety and liquidity." },
+  { t: "Where money lives", q: "Which product is insured by Fogafín?", options: ["A CDT in a registered bank.", "A famous investment fund.", "Bitcoin in an exchange.", "A stablecoin like USDC."], correct: 0, feedback: "Deposits, not investments." },
+  { t: "Dollar & hedging", q: "You need US$1,000 in a year and fear devaluation. A hedge could be…", options: ["buying part of the dollars now.", "waiting and buying all at the airport.", "buying bitcoin instead of dollars.", "keeping all the money in pesos."], correct: 0, feedback: "Buying gradually reduces the risk of a big jump." },
+  { t: "Dollar & hedging", q: "The peso devalues. Your Colombian ETF in pesos, measured in USD…", options: ["falls.", "rises.", "stays the same.", "doubles."], correct: 0, feedback: "Same pesos = fewer dollars." },
+  { t: "Stocks & ETFs", q: "Why does an ETF reduce risk?", options: ["It holds many companies.", "The government insures it.", "It works like a deposit.", "Its price never falls."], correct: 0, feedback: "One bankruptcy hurts a little, not everything." },
+  { t: "Stocks & ETFs", q: "A share costs $500. With $50 you can buy…", options: ["0.1 shares (a fraction).", "Nothing: you need a full share.", "10 shares.", "1 share, with a discount."], correct: 0, feedback: "Fractional shares: 50 ÷ 500." },
+  { t: "Crypto & scams", q: "A stablecoin…", options: ["tries to keep a 1:1 value with an asset.", "is guaranteed by every government.", "always goes up a little every year.", "is always a Ponzi scheme."], correct: 0, feedback: "Stable is the goal, not a guarantee." },
+  { t: "Projects", q: "A project has NPV = −$200,000 at 12%. Decision?", options: ["Reject it: the alternative is better.", "Accept it: negative NPV means it's safe.", "Accept it if the payback is short.", "Double the investment to fix it."], correct: 0, feedback: "NPV < 0 destroys value." },
+  { t: "Projects", q: "The IRR of a project is 9% and your alternative pays 12%.", options: ["The project is worse than the alternative.", "The project is better: it's a real business.", "They are equal, both are close to 10%.", "You can't know without the payback."], correct: 0, feedback: "IRR < discount rate ↔ NPV < 0." },
 ];
 const BOSS3_TIPS = { "Risk & profile": "Rewatch Risk & Return and check your Investor DNA.", "Where money lives": "Reread Where Does Your Money Sleep? — safety, liquidity, return and Fogafín.", "Dollar & hedging": "Replay the Dollar Storm and the Miami listening.", "Stocks & ETFs": "Rewatch WTF Is an ETF? and replay Wall Street Tycoon.", "Crypto & scams": "Reread the DMG case and replay Scam City.", Projects: "Reread Is This Project Worth It? and replay the Business Judge." };
 
@@ -2195,11 +2180,11 @@ const ASSETS10 = [
 ];
 const SAMPLE_ALLOC = { bond: 30, sp: 30, col: 10, tech: 10, usdc: 10, btc: 10 };
 const MWEEKS = [
-  { n: 1, key: "c2_week1", e: "🌤️", news: "Calm week: US companies report good earnings.", r: { bond: 0.2, sp: 1.5, col: 0.8, tech: 4, usdc: 0, btc: 6 }, q: { q: "Why did most assets go up this week?", options: ["Good company earnings made investors optimistic.", "Because the government printed dollars and gave them to every investor in the world.", "Bitcoin fell.", "Nothing happened."], correct: 0, explain: "Good news about profits → higher prices." } },
-  { n: 2, key: "c3_week2", e: "💱", news: "The Colombian peso devalues 6% against the dollar.", r: { bond: 0.2, sp: 0.5, col: -5, tech: -2, usdc: 0, btc: -3 }, q: { q: "Why did the Colombia ETF fall in DOLLARS?", options: ["Its pesos are now worth fewer dollars.", "Because Colombian companies closed and stopped selling their products this week.", "USDC fell.", "It didn't fall."], correct: 0, explain: "Same pesos ÷ a more expensive dollar = fewer dollars. Holding USD assets is a hedge." } },
-  { n: 3, key: "c4_week3", e: "🚨", news: "Scandal: NovaTech hid losses. Its stock collapses.", r: { bond: 0.3, sp: -1.2, col: 0.5, tech: -38, usdc: 0, btc: 4 }, q: { q: "Why did the S&P 500 ETF fall only a little?", options: ["One company is a tiny part of 500.", "Because ETFs are protected by the government against scandals of any company.", "It went up.", "Luck."], correct: 0, explain: "Diversification: one disaster, a small impact." } },
-  { n: 4, key: "c5_week4", e: "📉", news: "Crypto crash: a big crypto exchange fails.", r: { bond: 0.2, sp: 1, col: 1, tech: 3, usdc: 0, btc: -28 }, q: { q: "What happened to the stablecoin in this scenario?", options: ["It kept its 1:1 value.", "It lost 28%, exactly the same as bitcoin, because both are cryptocurrencies.", "It doubled.", "It disappeared."], correct: 0, explain: "In this scenario USDC held its peg — but stablecoins still carry issuer and platform risk." } },
-  { n: 5, key: "c6_week5", e: "🌪️", news: "Global shock: fear everywhere, markets fall hard.", r: { bond: 1, sp: -9, col: -12, tech: -15, usdc: 0, btc: -10 }, rec: { bond: 0.2, sp: 6, col: 5, tech: 8, usdc: 0, btc: 7 }, q: { q: "What did investors who sold during the panic miss?", options: ["The recovery that came next.", "Nothing, because selling during a panic always protects all your money forever.", "Higher fees.", "A bonus."], correct: 0, explain: "Panic selling locks in losses; the market often recovers (not always!)." } },
+  { n: 1, key: "c2_week1", e: "🌤️", news: "Calm week: US companies report good earnings.", r: { bond: 0.2, sp: 1.5, col: 0.8, tech: 4, usdc: 0, btc: 6 }, q: { q: "Why did most assets go up this week?", options: ["Good company earnings made investors optimistic.", "The government gave dollars to every investor.", "Bitcoin went up, so everything went up.", "Interest rates went up a lot this week."], correct: 0, explain: "Good news about profits → higher prices." } },
+  { n: 2, key: "c3_week2", e: "💱", news: "The Colombian peso devalues 6% against the dollar.", r: { bond: 0.2, sp: 0.5, col: -5, tech: -2, usdc: 0, btc: -3 }, q: { q: "Why did the Colombia ETF fall in DOLLARS?", options: ["Its pesos are now worth fewer dollars.", "Colombian companies closed this week.", "Colombian companies sold less this week.", "The ETF paid a big dividend this week."], correct: 0, explain: "Same pesos ÷ a more expensive dollar = fewer dollars. Holding USD assets is a hedge." } },
+  { n: 3, key: "c4_week3", e: "🚨", news: "Scandal: NovaTech hid losses. Its stock collapses.", r: { bond: 0.3, sp: -1.2, col: 0.5, tech: -38, usdc: 0, btc: 4 }, q: { q: "Why did the S&P 500 ETF fall only a little?", options: ["One company is a tiny part of 500.", "The government protects ETFs from scandals.", "The other companies also hid losses.", "NovaTech isn't part of the S&P 500."], correct: 0, explain: "Diversification: one disaster, a small impact." } },
+  { n: 4, key: "c5_week4", e: "📉", news: "Crypto crash: a big crypto exchange fails.", r: { bond: 0.2, sp: 1, col: 1, tech: 3, usdc: 0, btc: -28 }, q: { q: "What happened to the stablecoin in this scenario?", options: ["It kept its 1:1 value.", "It lost 28%, like bitcoin.", "It went up 28% as people ran to it.", "It lost about half of bitcoin's fall."], correct: 0, explain: "In this scenario USDC held its peg — but stablecoins still carry issuer and platform risk." } },
+  { n: 5, key: "c6_week5", e: "🌪️", news: "Global shock: fear everywhere, markets fall hard.", r: { bond: 1, sp: -9, col: -12, tech: -15, usdc: 0, btc: -10 }, rec: { bond: 0.2, sp: 6, col: 5, tech: 8, usdc: 0, btc: 7 }, q: { q: "What did investors who sold during the panic miss?", options: ["The recovery that came next.", "Nothing, selling protected their money.", "A special bonus for long-term investors.", "Lower fees for buying again later."], correct: 0, explain: "Panic selling locks in losses; the market often recovers (not always!)." } },
 ];
 const applyR = (h, r) => Object.fromEntries(Object.entries(h).map(([k, v]) => [k, r2(v * (1 + (r[k] || 0) / 100))]));
 const sumH = (h) => r2(Object.values(h).reduce((a, v) => a + v, 0));
@@ -2392,7 +2377,7 @@ const REAL_R = [
   { tag: "Real return", q: "A savings account pays 1%. Inflation is 5%. Real return?", answer: -4, unit: "%", tol: 0.2, hint: "1 − 5", explain: "≈ −4%: you lose purchasing power." },
   { tag: "Exact formula", q: "Exact real return: (1.10 ÷ 1.05) − 1 = ?% (1 decimal)", answer: 4.8, unit: "%", tol: 0.1, hint: "1.10 ÷ 1.05", explain: "4.76% ≈ 4.8% (the shortcut said 5%)." },
   { tag: "$", q: "$1,000,000 in a CDT at 10% for 1 year, inflation 5%. In today's money it buys about…", answer: 1047619, money: true, tol: 2000, hint: "1,100,000 ÷ 1.05", explain: "≈ $1,047,619." },
-  { tag: "Decide", q: "Which beats 6% inflation?", options: ["A CDT at 10% E.A.", "A savings account at 1% E.A., because it's insured by Fogafín.", "A piggy bank.", "Cash."], correct: 0, explain: "Only returns above inflation grow purchasing power." },
+  { tag: "Decide", q: "Which beats 6% inflation?", options: ["A CDT at 10% E.A.", "A savings account at 1% E.A.", "A CDT at 5% E.A.", "A piggy bank."], correct: 0, explain: "Only returns above inflation grow purchasing power." },
 ];
 
 /* ---------- C3 · The Dollar Storm (cobertura) ---------- */
@@ -2430,7 +2415,7 @@ const DESK2_R = [
   { tag: "Sell", q: "The house buys at $3,950. You sell US$120. You receive…", answer: 474000, money: true, hint: "120 × 3,950", explain: "$474,000." },
   { tag: "Spread", q: "Sell price $4,150, buy price $3,950. Spread per dollar?", answer: 200, money: true, hint: "4,150 − 3,950", explain: "$200." },
   { tag: "Spread %", q: "That spread as a % of a $4,000 TRM?", answer: 5, unit: "%", tol: 0.1, hint: "200 ÷ 4,000", explain: "5% — a hidden cost every round trip." },
-  { tag: "Compare", q: "A: $4,200 with no fee. B: $4,140 + $15,000 fee. You buy US$400. Cheaper?", options: ["B: $1,671,000 vs. $1,680,000.", "A, because a fixed fee always makes the second option more expensive.", "Same.", "Neither."], correct: 0, explain: "A: 1,680,000. B: 400 × 4,140 + 15,000 = 1,671,000." },
+  { tag: "Compare", q: "A: $4,200 with no fee. B: $4,140 + $15,000 fee. You buy US$400. Cheaper?", options: ["B: $1,671,000 vs. $1,680,000.", "A: $1,680,000 vs. $1,671,000.", "A, a fixed fee always costs more.", "They cost the same."], correct: 0, explain: "A: 1,680,000. B: 400 × 4,140 + 15,000 = 1,671,000." },
 ];
 
 /* ---------- C4 · Wall Street Tycoon · Page 15 ---------- */
@@ -2484,7 +2469,7 @@ const FRAC_R = [
   { tag: "Fraction", q: "One share of a big company costs US$500. With US$50 you buy how many shares?", answer: 0.1, unit: "shares", tol: 0.001, hint: "50 ÷ 500", explain: "0.1 share — a fractional share." },
   { tag: "Fraction", q: "You own 0.25 shares of a US$800 stock. Value?", answer: 200, unit: "US$", hint: "0.25 × 800", explain: "US$200." },
   { tag: "Gain", q: "Your 0.25 shares: the price goes from US$800 to US$880. Gain in US$?", answer: 20, unit: "US$", hint: "0.25 × 80", explain: "US$20 (+10%)." },
-  { tag: "Diversify", q: "With US$100, which gives more diversification?", options: ["Fractions of an ETF with 500 companies.", "One full share of a cheap company, because owning a whole share is always safer.", "100 lottery tickets.", "Keeping it in USDC."], correct: 0, explain: "Fractions of an ETF = hundreds of companies with little money." },
+  { tag: "Diversify", q: "With US$100, which gives more diversification?", options: ["Fractions of an ETF with 500 companies.", "One full share of a cheap company.", "Shares of the 3 biggest tech companies.", "100 dollars in one crypto coin."], correct: 0, explain: "Fractions of an ETF = hundreds of companies with little money." },
 ];
 
 /* ---------- C5 · Scam City (FOMO) · Page 16 ---------- */
@@ -2704,47 +2689,47 @@ const GUIDE = {
    ESTRUCTURA · 10° PERIODO 3 · GLOBAL INVESTOR (8 clases)
    ===================================================================== */
 const G10P3_WEEKS = [
-  { n: 1, title: "Risk vs. Reward", e: "🎢", blurb: "Your investor DNA — and US$1,000 to allocate.", skills: ["Video", "Profile", "Project"], prove: { from: "Period 2", q: "$1,000,000 at 10% compound for 2 years becomes…", options: ["$1,210,000.", "$1,200,000, because you earn exactly ten percent of the first amount each year.", "$1,100,000.", "$2,000,000."], correct: 0, why: "1,000,000 × 1.1²." }, acts: [
+  { n: 1, title: "Risk vs. Reward", e: "🎢", blurb: "Your investor DNA — and US$1,000 to allocate.", skills: ["Video", "Profile", "Project"], acts: [
     A10("c1_video", "Video: Risk & Return 🎬", "8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c1_dna", "Investor DNA 🧬", "6 situations · your profile.", <Brain size={22} />, 25, "comportamiento"),
     A10("c1_ladder", "Risk Ladder 🪜", "From the safest to the riskiest.", <Layers size={22} />, 24, "aprendi"),
     A10("c1_allocate", "Allocate US$1,000 🌍 · Page 13", "THE BIG PROJECT starts.", <PieChart size={22} />, 36, "aprendi"),
   ] },
-  { n: 2, title: "Where My Money Lives", e: "🛏️", blurb: "Safety, liquidity and return — accounts, cajitas, CDTs and Fogafín.", skills: ["Reading", "Builder", "Week 1"], prove: { from: "9th grade", q: "Which product is insured by Fogafín?", options: ["A CDT in a registered bank.", "An investment fund with a famous name in the country.", "Bitcoin.", "Cash at home."], correct: 0, why: "Deposits in registered entities." }, acts: [
+  { n: 2, title: "Where My Money Lives", e: "🛏️", blurb: "Safety, liquidity and return — accounts, cajitas, CDTs and Fogafín.", skills: ["Reading", "Builder", "Week 1"], acts: [
     A10("c2_read", "Reading: Where Does Your Money Sleep? 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c2_bank", "Bank Builder 🏗️ · Page 14", "3 goals · 5 products · 1 emergency.", <Building2 size={22} />, 34, "aprendi"),
     A10("c2_real", "Real Return Rounds 🫧", "Rate − inflation.", <Percent size={22} />, 23, "aprendi"),
     A10("c2_week1", "Market Week 1 🌤️", "Your portfolio meets the market.", <Activity size={22} />, 20, "aprendi"),
   ] },
-  { n: 3, title: "Dollar Hedging & Forex", e: "💱", blurb: "Why people buy dollars — and how to protect a plan from the exchange rate.", skills: ["Listening", "Storm", "Week 2"], prove: { from: "Period 1", q: "What is the spread?", options: ["Selling price − buying price.", "The official exchange rate that the government publishes every single day.", "A tax.", "A fee for cards."], correct: 0, why: "It's how exchange houses earn." }, acts: [
+  { n: 3, title: "Dollar Hedging & Forex", e: "💱", blurb: "Why people buy dollars — and how to protect a plan from the exchange rate.", skills: ["Listening", "Storm", "Week 2"], acts: [
     A10("c3_listen", "Listening: Dollars for Miami 🎧", "8 questions.", <Headphones size={22} />, 42, "quizzes"),
     A10("c3_storm", "The Dollar Storm 🌪️", "3 strategies · 3 futures.", <Umbrella size={22} />, 28, "aprendi"),
     A10("c3_desk", "Exchange Desk 2.0 💵", "5 operations.", <Banknote size={22} />, 23, "aprendi"),
     A10("c3_week2", "Market Week 2 💱", "The peso devalues.", <Activity size={22} />, 20, "aprendi"),
   ] },
-  { n: 4, title: "Stocks, ETFs & Fractional Shares", e: "🧺", blurb: "Own a piece of 500 companies — and survive a bankruptcy.", skills: ["Video", "Tycoon", "Week 3"], prove: { from: "9th grade", q: "Diversification means…", options: ["not putting all your eggs in one basket.", "buying only the company that grew the most last year, because it's the best.", "saving cash.", "paying debts."], correct: 0, why: "Spread risk across many assets." }, acts: [
+  { n: 4, title: "Stocks, ETFs & Fractional Shares", e: "🧺", blurb: "Own a piece of 500 companies — and survive a bankruptcy.", skills: ["Video", "Tycoon", "Week 3"], acts: [
     A10("c4_video", "Video: WTF Is an ETF? 🎬", "Bloomberg · 8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c4_tycoon", "Wall Street Tycoon 🏙️ · Page 15", "Your stocks vs. the ETF.", <Building2 size={22} />, 30, "aprendi"),
     A10("c4_fraction", "Fractional Shares 🍕", "Pieces of expensive shares.", <Calculator size={22} />, 20, "aprendi"),
     A10("c4_week3", "Market Week 3 🚨", "A company collapses.", <Activity size={22} />, 20, "aprendi"),
   ] },
-  { n: 5, title: "Crypto vs. Stablecoins & Scams", e: "🪙", blurb: "Volatility, stablecoins, pyramids — and decisions under pressure.", skills: ["Video", "Case", "Scam City"], prove: { from: "9th grade", q: "What is blockchain?", options: ["A shared digital record that is hard to change.", "A bank account in another country that pays very high interest rates.", "A loan.", "A type of stock."], correct: 0, why: "A distributed ledger." }, acts: [
+  { n: 5, title: "Crypto vs. Stablecoins & Scams", e: "🪙", blurb: "Volatility, stablecoins, pyramids — and decisions under pressure.", skills: ["Video", "Case", "Scam City"], acts: [
     A10("c5_video", "Video: Stablecoins Explained 🎬", "8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c5_read", "Reading: Too Good to Be True — the DMG Case 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c5_scam", "Scam City 🕵️ · Page 16", "FOMO mode · 5 offers.", <ShieldAlert size={22} />, 35, "aprendi"),
     A10("c5_week4", "Market Week 4 📉", "Crypto crash.", <Activity size={22} />, 20, "aprendi"),
   ] },
-  { n: 6, title: "Is It Worth It? NPV, IRR & Payback", e: "⚖️", blurb: "Judge projects like a CFO — and face the market shock.", skills: ["Reading", "Judge", "Week 5"], prove: { from: "Period 2", q: "PV of $1,100,000 in 1 year at 10%?", options: ["$1,000,000.", "$990,000, because you subtract ten percent from the future value.", "$1,210,000.", "$1,100,000."], correct: 0, why: "1,100,000 ÷ 1.1." }, acts: [
+  { n: 6, title: "Is It Worth It? NPV, IRR & Payback", e: "⚖️", blurb: "Judge projects like a CFO — and face the market shock.", skills: ["Reading", "Judge", "Week 5"], acts: [
     A10("c6_read", "Reading: Is This Project Worth It? 📖", "NPV, IRR, payback · 8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c6_judge", "The Business Judge ⚖️ · Page 17", "3 projects + a crisis.", <Gavel size={22} />, 30, "aprendi"),
     A10("c6_week5", "Market Week 5 🌪️", "The shock: hold, sell or rebalance?", <Activity size={22} />, 25, "aprendi"),
   ] },
-  { n: 7, title: "P&L Audit & Dashboard", e: "📊", blurb: "NAV, P&L, ROI — rescue a bad portfolio and build your dashboard.", skills: ["Explainer", "Rescue", "Dashboard"], prove: { from: "Class 6", q: "A project's NPV is negative. Decision?", options: ["Reject it.", "Accept it, because negative NPV means the project is safe.", "Double it.", "Ignore NPV."], correct: 0, why: "It destroys value vs. the alternative." }, acts: [
+  { n: 7, title: "P&L Audit & Dashboard", e: "📊", blurb: "NAV, P&L, ROI — rescue a bad portfolio and build your dashboard.", skills: ["Explainer", "Rescue", "Dashboard"], acts: [
     A10("c7_brief", "Explainer: NAV, P&L & ROI 💡", "6 questions.", <BookOpen size={22} />, 34, "quizzes"),
     A10("c7_rescue", "Portfolio Rescue 🛟", "Audit · 4 mistakes.", <LifeBuoy size={22} />, 30, "aprendi"),
     A10("c7_dashboard", "My Investment Dashboard 📊 · Page 18", "NAV · P&L · ROI · CSV.", <BarChart3 size={22} />, 34, "aprendi"),
   ] },
-  { n: 8, title: "Investor Day", e: "🏆", blurb: "Your Shareholder Pitch, the championship and the boss.", skills: ["Pitch", "Championship", "Boss"], prove: { from: "Class 7", q: "Invested US$1,000, NAV US$1,050. ROI?", options: ["+5%.", "+50%, because fifty divided by one hundred is fifty percent.", "+1,050%.", "−5%."], correct: 0, why: "50 ÷ 1,000." }, acts: [
+  { n: 8, title: "Investor Day", e: "🏆", blurb: "Your Shareholder Pitch, the championship and the boss.", skills: ["Pitch", "Championship", "Boss"], acts: [
     A10("c8_pitch", "Shareholder Pitch 🌍 · THE BIG PROJECT", "Present + jury + certificate.", <Mic size={22} />, 60, "aprendi"),
     A10("c8_walk", "Global Investor Championship 🏆", "Invest in classmates' funds.", <Trophy size={22} />, 40, "aprendi"),
     A10("c8_boss", "Boss P3 + Future Me Card ⚔️", "5 missions + 10 questions (70%).", <Swords size={22} />, 70, "quizzes"),

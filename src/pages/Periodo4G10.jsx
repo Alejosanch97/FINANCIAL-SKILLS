@@ -1448,24 +1448,6 @@ function FutureMePanel({ id, have, stats, compact, studentName, title }) {
 function FPBadge({ n, t, e = "📄" }) {
   return <div className="g8-bpbadge g91-badge g10-fpbadge"><span>📘 FUTURE PAGE {String(n).padStart(2, "0")}</span><b>{e} {t}</b></div>;
 }
-/* Prove It: repaso rápido al abrir cada clase (no da monedas, no se guarda) */
-function ProveIt({ data }) {
-  const [pick, setPick] = useState(null);
-  const [open, setOpen] = useState(false);
-  if (!data) return null;
-  return (
-    <div className={`g10-prove ${open ? "open" : ""}`}>
-      <button type="button" className="g10-prove-top" onClick={() => setOpen(!open)}><em>⚡</em><div><small>PROVE IT · 1 MINUTE · {data.from}</small><b>{data.q}</b></div><i>{open ? "▲" : "Try ▼"}</i></button>
-      {open && (
-        <div className="g10-prove-body">
-          <div className="quiz-options">{data.options.map((o, k) => <button key={k} type="button" disabled={pick != null} className={`quiz-opt ${pick != null && k === data.correct ? "correct" : ""} ${pick === k && k !== data.correct ? "wrong" : ""}`} onClick={() => setPick(k)}><span className="opt-key">{"ABCD"[k]}</span><span className="opt-text">{o}</span></button>)}</div>
-          {pick != null && <p className={`g91-note ${pick === data.correct ? "pos" : "neg"}`}>{pick === data.correct ? "✅ You remember it! " : "🔁 Not this time. "}{data.why}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* Barras de reparto (suman 100% o un total) */
 function AllocBars({ items, vals, set, step = 5, total = 100, unit = "%", fmt }) {
   const sum = items.reduce((a, it) => a + (vals[it.k] || 0), 0);
@@ -1681,17 +1663,19 @@ const RADAR10_DIMS = [
   { k: "val", l: "Value Creation", short: "Value" }, { k: "mm", l: "Money Management", short: "Money" }, { k: "math", l: "Money Math", short: "Math" },
   { k: "inv", l: "Investing & Risk", short: "Investing" }, { k: "fut", l: "Future Planning", short: "Future" },
 ];
+// Todas las opciones son razonables: cada una vale 0–3 según qué tan completa es la decisión.
+// El orden se baraja en pantalla y las longitudes son parecidas para que no se adivine.
 const RADAR10_Q = [
-  { d: "val", q: "You have an old object you don't use. What is the smartest first step?", o: ["Throw it away.", "Find who needs it and what they would give for it.", "Keep it forever.", "Sell it at the first price anybody says."], s: [0, 3, 0, 1] },
-  { d: "val", q: "Why can the same umbrella cost more on a rainy day?", o: ["Because umbrellas are magic.", "Because demand goes up while supply stays the same.", "Because the government says so.", "Because it is a different umbrella."], s: [0, 3, 1, 0] },
-  { d: "mm", q: "You receive your first salary. What do you do first?", o: ["Spend it on what I wanted for months.", "Make a plan: needs, savings and a part for fun.", "Keep it all in cash at home.", "Lend it all to a friend."], s: [0, 3, 1, 0] },
-  { d: "mm", q: "Inflation is 6% and your money sits in a piggy bank for a year. What happens?", o: ["Nothing.", "It can buy less than before.", "It grows 6%.", "It doubles."], s: [0, 3, 0, 0] },
-  { d: "math", q: "A bank offers 1% per month. A CDT offers 12% E.A. Which pays more in a year?", o: ["They are exactly the same.", "1% per month (it compounds to about 12.7%).", "The CDT, always.", "I can't know and I don't care."], s: [1, 3, 1, 0] },
-  { d: "math", q: "You can pay a $1,200,000 phone in 1 or 36 card installments. What should you check?", o: ["Only the monthly payment.", "The interest rate and the total I will pay.", "The color of the card.", "Nothing — installments are free."], s: [1, 3, 0, 0] },
-  { d: "inv", q: "Your investment falls 15% in one week. What do you do?", o: ["Sell everything immediately.", "Check why it fell and remember my plan and time horizon.", "Borrow money to buy more.", "Ask a stranger online."], s: [0, 3, 0, 0] },
-  { d: "inv", q: "An app promises 20% per month, guaranteed. You…", o: ["Invest everything.", "Suspect a scam and check if it is supervised.", "Invite my family.", "Invest half."], s: [0, 3, 0, 0] },
-  { d: "fut", q: "When should you start saving and investing for your future?", o: ["When I'm 40.", "As soon as I can, even with small amounts.", "Never, it's for rich people.", "Only when I win the lottery."], s: [0, 3, 0, 0] },
-  { d: "fut", q: "You are choosing a career. What do you consider?", o: ["Only what my friends study.", "What I love, what I'm good at, what the world needs and what pays.", "Only the salary.", "Nothing, I'll decide later."], s: [0, 3, 1, 0] },
+  { d: "val", q: "You have an old bike you don't use anymore. What do you do first?", o: ["Find out who needs a bike and what they would give for it.", "Check online what similar used bikes are selling for.", "Clean it and fix the brakes so it looks better.", "Sell it to the first person who makes an offer."], s: [3, 2, 2, 1] },
+  { d: "val", q: "Why can the same umbrella cost more on a rainy day?", o: ["Demand jumps while the supply on the street stays the same.", "Sellers know people need it now, so they raise the price.", "Many people already bought one, so fewer are left.", "Bringing umbrellas to the street costs more when it rains."], s: [3, 2, 1, 1] },
+  { d: "mm", q: "You receive your first salary. What do you do first?", o: ["Pay my needs first and save whatever is left.", "Save a fixed part first, then plan needs and fun.", "Write down every expense this month to see where it goes.", "Buy the thing I wanted for months — I worked for it."], s: [2, 3, 1, 0] },
+  { d: "mm", q: "Inflation is 6% and you keep $1,000,000 at home for a year. What happens?", o: ["It's still $1,000,000, so I don't lose any pesos.", "It buys about 6% less than it did a year ago.", "It's safe from bank fees, so it keeps more value.", "It only loses value if I buy things that went up."], s: [1, 3, 1, 0] },
+  { d: "math", q: "A bank offers 1% per month. A CDT offers 12% E.A. Which pays more in a year?", o: ["They are equal: 1% × 12 months is 12%.", "The CDT: E.A. already includes the compounding.", "1% monthly, because it compounds to about 12.7%.", "I'd convert both to E.A. before I decide."], s: [1, 1, 3, 2] },
+  { d: "math", q: "You can pay a $1,200,000 phone in 1 or 36 card installments. What do you check?", o: ["If the monthly payment fits in my budget.", "The interest rate and the total I'll pay at the end.", "If the store gives a discount for paying at once.", "How many installments people usually choose."], s: [1, 3, 2, 0] },
+  { d: "inv", q: "Your investment falls 15% in one week. What do you do?", o: ["Wait without looking; markets usually recover.", "Sell part of it to reduce the risk I feel.", "Sell everything now before it falls even more.", "Check why it fell and compare it with my plan."], s: [2, 1, 0, 3] },
+  { d: "inv", q: "An app promises 20% per month, guaranteed. You…", o: ["Check if it is supervised by the Superfinanciera.", "Stay away: a guaranteed high return is a red flag.", "Invest a small amount first to test if it pays.", "Ask friends who invested if they really got paid."], s: [3, 2, 1, 0] },
+  { d: "fut", q: "When should you start saving and investing for your future?", o: ["When I have a stable job and a real salary.", "After university, when I know what I want.", "Now, even with small amounts, so time helps.", "When I earn enough to save big amounts."], s: [2, 1, 3, 0] },
+  { d: "fut", q: "You are choosing a career. What do you consider?", o: ["Salaries and job demand for the next ten years.", "What I love, what I'm good at and what pays.", "The subjects where I get my best grades.", "What my family recommends — they know me."], s: [2, 3, 1, 0] },
 ];
 function radarProfile10(avg) {
   if (avg <= 30) return { l: "Starter 🌱", d: "You are building your foundations. Every class this year is a step." };
@@ -1703,6 +1687,7 @@ const radarScores10 = (ans, offset = 0) => { const o = {}; RADAR10_DIMS.forEach(
 function RadarQuiz({ title, qs, intro, onDone, onExit }) {
   const [cur, setCur] = useState(0);
   const [ans, setAns] = useState({});
+  const [orders] = useState(() => qs.map((x) => shuffleArr(x.o.map((_, k) => k))));
   const q = qs[cur]; const answered = ans[cur] != null;
   return (
     <div className="s1-quiz">
@@ -1712,7 +1697,8 @@ function RadarQuiz({ title, qs, intro, onDone, onExit }) {
       {cur === 10 && <p className="start-tip">🆕 5 new situations about this year's topics.</p>}
       <span className="diag-dim">{cur >= 10 ? "🆕 " : ""}{RADAR10_DIMS.find((d) => d.k === q.d).l}</span>
       <p className="quiz-q">{q.q}</p>
-      <div className="quiz-options">{q.o.map((o, k) => <button key={k} type="button" className={`quiz-opt ${ans[cur] === k ? "correct" : ""}`} onClick={() => setAns({ ...ans, [cur]: k })}><span className="opt-key">{"ABCD"[k]}</span><span className="opt-text">{o}</span></button>)}</div>
+      <p className="start-tip">💡 Every option makes sense. Choose what YOU would really do — there is no trick.</p>
+      <div className="quiz-options">{orders[cur].map((k, pos) => <button key={k} type="button" className={`quiz-opt ${ans[cur] === k ? "correct" : ""}`} onClick={() => setAns({ ...ans, [cur]: k })}><span className="opt-key">{"ABCD"[pos]}</span><span className="opt-text">{q.o[k]}</span></button>)}</div>
       <div className="quiz-nav">
         <button className="s1-btn ghost" onClick={() => (cur > 0 ? setCur(cur - 1) : onExit())}>{cur > 0 ? "Back" : "Exit"}</button>
         <button className="s1-btn primary" disabled={!answered} onClick={() => (cur < qs.length - 1 ? setCur(cur + 1) : onDone(ans))}>{cur < qs.length - 1 ? "Next" : "See my radar 🧭"} <ChevronRight size={18} /></button>
@@ -1881,7 +1867,6 @@ function PeriodShell10({ cfg, userData, API_URL, existingRow, onBack }) {
           <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / w.acts.length) * 100}%` }} /></div><span className="pill">{wDone}/{w.acts.length}</span></div>
         </div>
         {cfg.panel(ctxBase, true)}
-        <ProveIt data={w.prove} />
         <div className="s1-quest">
           {w.acts.map((a) => (
             <div key={a.key} className={`act-card ${checklist[a.key] ? "done" : ""} ${(cfg.pageKeys || []).includes(a.key) ? "g8-page-act" : ""} ${a.key.endsWith("_rush") ? "g8-rush-act" : ""} ${LEARN_END.some((s) => a.key.endsWith(s)) ? "g73-learn-act" : ""} ${(cfg.bigKeys || []).includes(a.key) ? "g94-big-act" : ""}`}>
@@ -1968,15 +1953,15 @@ const READ_PERS = [
 ];
 const GLOSS_PERS = { "Big Five": "a scientific model that measures five personality traits on a scale", "conscientiousness": "being organized, careful and responsible", "extraversion": "getting energy from people and activity", "hypothesis": "an idea you test to see if it's true", "SWOT": "Strengths, Weaknesses, Opportunities, Threats (DOFA in Spanish)", "diagnosis": "a medical or psychological evaluation by a professional" };
 const Q_PERS = [
-  { q: "According to the text, a personality test is…", options: ["a mirror, not a destiny.", "a scientific way to know exactly which career you must study after school.", "a medical diagnosis.", "a math exam."], correct: 0, feedback: "It helps you see yourself; it doesn't decide for you." },
-  { q: "How is the Big Five different from four-letter types?", options: ["It measures how MUCH of each trait you have.", "It puts every person in one of sixteen boxes with a name and a color.", "It only measures intelligence.", "It's the same."], correct: 0, feedback: "Traits on a scale instead of boxes." },
-  { q: "What does high conscientiousness look like?", options: ["Organized and planning ahead.", "Being the center of attention at every party and talking to everybody.", "Feeling stress strongly.", "Hating rules."], correct: 0, feedback: "Organized, careful, responsible." },
-  { q: "Why did Daniel get two different results?", options: ["Answers change with mood and experiences.", "Because the first test was broken and gave him the result of another student.", "He lied.", "Tests are random."], correct: 0, feedback: "Personality has stable parts and parts that move." },
-  { q: "What CAN'T a personality test tell you?", options: ["What you are able to learn.", "Some preferences about how you like to work and spend your energy.", "How you get energy.", "How you make decisions."], correct: 0, feedback: "It describes preferences, not abilities." },
-  { q: "In a personal DOFA, “Companies need people who understand data” is…", options: ["an opportunity (external).", "a strength, because it is something positive that you have inside you.", "a weakness.", "a threat."], correct: 0, feedback: "It comes from the world outside — opportunity." },
-  { q: "“I get nervous speaking in public” is…", options: ["a weakness I can train.", "a threat from the outside world that I can't control.", "an opportunity.", "a diagnosis."], correct: 0, feedback: "Internal and improvable." },
-  { q: "What is the best way to use your result?", options: ["As a hypothesis to test in real life.", "As a label that explains everything you do and every decision you make.", "As an excuse.", "To ignore feedback."], correct: 0, feedback: "Check it against your real experiences." },
-  { q: "Sofía discovered she is high in extraversion. What did she change?", options: ["She planned group study sessions.", "She stopped studying, because extroverts don't need to study alone ever.", "She changed schools.", "Nothing."], correct: 0, feedback: "She used the result to study in a way that energizes her." },
+  { q: "According to the text, a personality test is…", options: ["a mirror, not a destiny.", "a scientific map of your future career.", "a medical diagnosis.", "a test you can pass or fail."], correct: 0, feedback: "It helps you see yourself; it doesn't decide for you." },
+  { q: "How is the Big Five different from four-letter types?", options: ["It measures how MUCH of each trait you have.", "It puts you in one of sixteen named boxes.", "It only measures intelligence.", "It gives the same result to everyone."], correct: 0, feedback: "Traits on a scale instead of boxes." },
+  { q: "What does high conscientiousness look like?", options: ["Organized and planning ahead.", "Being the center of every party.", "Feeling stress very strongly.", "Being open to new ideas."], correct: 0, feedback: "Organized, careful, responsible." },
+  { q: "Why did Daniel get two different results?", options: ["Answers change with mood and experiences.", "The first test gave him another student's result.", "He chose random answers on purpose.", "The second test was a different test."], correct: 0, feedback: "Personality has stable parts and parts that move." },
+  { q: "What CAN'T a personality test tell you?", options: ["What you are able to learn.", "How you like to work.", "How you get your energy.", "How you make decisions."], correct: 0, feedback: "It describes preferences, not abilities." },
+  { q: "In a personal DOFA, “Companies need people who understand data” is…", options: ["an opportunity (external).", "a strength (internal).", "a weakness (internal).", "a threat (external)."], correct: 0, feedback: "It comes from the world outside — opportunity." },
+  { q: "“I get nervous speaking in public” is…", options: ["a weakness I can train.", "a threat I can't control.", "an opportunity to improve.", "a strength in disguise."], correct: 0, feedback: "Internal and improvable." },
+  { q: "What is the best way to use your result?", options: ["As a hypothesis to test in real life.", "As a label that explains everything you do.", "As an excuse for things you don't like.", "As a final answer about your career."], correct: 0, feedback: "Check it against your real experiences." },
+  { q: "Sofía discovered she is high in extraversion. What did she change?", options: ["She planned group study sessions.", "She stopped studying alone completely.", "She changed to a bigger school.", "She chose a career in sales."], correct: 0, feedback: "She used the result to study in a way that energizes her." },
 ];
 
 /* ---------- LECTURA · Ikigai: Why You Get Up in the Morning ---------- */
@@ -1998,14 +1983,14 @@ const READ_IKIGAI = [
 ];
 const GLOSS_IKIGAI = { "ikigai": "a Japanese idea: a reason for being", "passion": "what you love + what you're good at", "profession": "what you're good at + what you can be paid for", "vocation": "what you're paid for + what the world needs", "mission": "what the world needs + what you love", "gerund": "a verb with -ing used as a noun: designing, helping" };
 const Q_IKIGAI = [
-  { q: "What does ikigai roughly mean?", options: ["A reason for being.", "A Japanese method to get a very high salary in a short time.", "A type of exercise.", "A bank."], correct: 0, feedback: "The reason to get up in the morning." },
-  { q: "Love + good at = …", options: ["passion.", "profession, because you get paid for the things that you do very well.", "vocation.", "mission."], correct: 0, feedback: "Passion." },
-  { q: "Good at + paid for = …", options: ["profession.", "mission, because it is what you love and what the world needs today.", "passion.", "ikigai."], correct: 0, feedback: "Profession." },
-  { q: "Which careers fit Camila's ikigai?", options: ["UX/UI designer for educational apps.", "Professional football player in a European team, because she loves video games.", "Bank teller.", "Pilot."], correct: 0, feedback: "Designing + explaining + education." },
-  { q: "What did Julián do with his love for football?", options: ["He looked for 'neighbor' careers.", "He forgot football completely and studied the career that paid the most money.", "He quit school.", "Nothing."], correct: 0, feedback: "Physiotherapy, data, coaching, journalism…" },
-  { q: "A job that pays a lot but makes you unhappy is called…", options: ["comfortable emptiness.", "delight without wealth, because you have a lot of money but no free time.", "a mission.", "an ikigai."], correct: 0, feedback: "Paid + good at, but no love." },
-  { q: "“I love designing things.” Why 'designing'?", options: ["It's a gerund for activities.", "Because 'design' is always a past tense verb in English.", "It's a mistake.", "It's a noun only."], correct: 0, feedback: "Love + verb-ing." },
-  { q: "According to the text, your ikigai is…", options: ["a compass that can change.", "one single job that you must find before you finish high school.", "a test result.", "your salary."], correct: 0, feedback: "It grows with you." },
+  { q: "What does ikigai roughly mean?", options: ["A reason for being.", "A method to earn a high salary.", "A Japanese savings plan.", "A type of meditation."], correct: 0, feedback: "The reason to get up in the morning." },
+  { q: "Love + good at = …", options: ["passion.", "profession.", "vocation.", "mission."], correct: 0, feedback: "Passion." },
+  { q: "Good at + paid for = …", options: ["profession.", "mission.", "passion.", "vocation."], correct: 0, feedback: "Profession." },
+  { q: "Which careers fit Camila's ikigai?", options: ["UX/UI designer for educational apps.", "Professional e-sports player.", "Bank teller in a big bank.", "Commercial airline pilot."], correct: 0, feedback: "Designing + explaining + education." },
+  { q: "What did Julián do with his love for football?", options: ["He looked for 'neighbor' careers.", "He forgot football and chose the best salary.", "He tried to become a professional player.", "He decided to choose a career later."], correct: 0, feedback: "Physiotherapy, data, coaching, journalism…" },
+  { q: "A job that pays a lot but makes you unhappy is called…", options: ["comfortable emptiness.", "delight without wealth.", "a mission.", "an ikigai."], correct: 0, feedback: "Paid + good at, but no love." },
+  { q: "“I love designing things.” Why 'designing'?", options: ["It's a gerund for activities.", "'Design' is a past tense verb.", "It's a common spelling mistake.", "'Designing' is a noun only."], correct: 0, feedback: "Love + verb-ing." },
+  { q: "According to the text, your ikigai is…", options: ["a compass that can change.", "one job you must find in school.", "the result of a personality test.", "the career that pays the most."], correct: 0, feedback: "It grows with you." },
 ];
 
 /* ---------- LECTURA · Careers by the Numbers ---------- */
@@ -2027,14 +2012,14 @@ const READ_CAREERS = [
 ];
 const GLOSS_CAREERS = { "tuition": "the money you pay to study (matrícula)", "employability": "how easy it is to find a job in that field", "entry salary": "the salary of a first job after graduating", "Observatorio Laboral": "Colombian government data about graduates and their salaries", "scenario": "a possible future with different numbers (pessimistic, moderate, optimistic)" };
 const Q_CAREERS = [
-  { q: "Which Colombian source publishes graduates' employment and salary data?", options: ["The Observatorio Laboral para la Educación.", "The comments that people write on social media about their universities.", "DANE's IPC.", "The TRM."], correct: 0, feedback: "OLE, from the Ministry of Education." },
-  { q: "Career A costs $12,000,000 per year for 5 years. Total tuition?", options: ["$60,000,000.", "$12,000,000, because you only pay the first year and then it's free.", "$17,000,000.", "$120,000,000."], correct: 0, feedback: "5 × 12,000,000." },
-  { q: "What else must you count besides tuition?", options: ["The income you don't earn while studying.", "Only the price of the books that you need in the first semester.", "Nothing else.", "Your phone plan."], correct: 0, feedback: "Opportunity cost." },
-  { q: "If a degree recovers $19,200,000 per year and the total investment is $156,000,000, payback is about…", options: ["8 years.", "19 years, because the investment is very big and the salary is very small.", "2 years.", "156 years."], correct: 0, feedback: "156 ÷ 19.2 ≈ 8.1." },
-  { q: "What does the NPV of a career ignore?", options: ["Whether you will be happy in that work.", "The money you invest in tuition during the years that you study.", "The discount rate.", "The salary."], correct: 0, feedback: "Numbers + ikigai must talk to each other." },
-  { q: "Why calculate three scenarios?", options: ["To see if the career works even when things go badly.", "Because universities require three different calculations before you can enroll.", "To get three degrees.", "It's not useful."], correct: 0, feedback: "Pessimistic, moderate, optimistic." },
-  { q: "Which is an advantage of Career B (technical) in the example?", options: ["It starts earning 3 years earlier.", "It always pays more than a five-year degree for the whole life of the worker.", "It's free.", "It has no risk."], correct: 0, feedback: "Lower cost and earlier income." },
-  { q: "What should you write next to every career number?", options: ["The source and the date.", "Your opinion about the university and the color of its logo.", "Nothing.", "A hashtag."], correct: 0, feedback: "Data without source and date can't be trusted." },
+  { q: "Which Colombian source publishes graduates' employment and salary data?", options: ["The Observatorio Laboral para la Educación.", "The DANE, in its monthly IPC report.", "The Banco de la República.", "The universities' own websites."], correct: 0, feedback: "OLE, from the Ministry of Education." },
+  { q: "Career A costs $12,000,000 per year for 5 years. Total tuition?", options: ["$60,000,000.", "$12,000,000.", "$17,000,000.", "$72,000,000."], correct: 0, feedback: "5 × 12,000,000." },
+  { q: "What else must you count besides tuition?", options: ["The income you don't earn while studying.", "Only the books of the first semester.", "The salary you will earn after graduating.", "The interest of a student loan only."], correct: 0, feedback: "Opportunity cost." },
+  { q: "If a degree recovers $19,200,000 per year and the total investment is $156,000,000, payback is about…", options: ["About 8 years.", "About 19 years.", "About 2 years.", "About 12 years."], correct: 0, feedback: "156 ÷ 19.2 ≈ 8.1." },
+  { q: "What does the NPV of a career ignore?", options: ["Whether you will be happy in that work.", "The money you pay for tuition each year.", "The discount rate that you choose.", "The salary you earn after graduating."], correct: 0, feedback: "Numbers + ikigai must talk to each other." },
+  { q: "Why calculate three scenarios?", options: ["To see if it still works when things go badly.", "Universities require three calculations.", "To choose the most optimistic number.", "To get a more exact salary."], correct: 0, feedback: "Pessimistic, moderate, optimistic." },
+  { q: "Which is an advantage of Career B (technical) in the example?", options: ["It starts earning 3 years earlier.", "It always pays more for life.", "It is free in every institution.", "It has no risk at all."], correct: 0, feedback: "Lower cost and earlier income." },
+  { q: "What should you write next to every career number?", options: ["The source and the date.", "Your opinion of the university.", "The university's ranking.", "Nothing, numbers speak alone."], correct: 0, feedback: "Data without source and date can't be trusted." },
 ];
 
 /* ---------- LECTURA · Anatomy of a CV ---------- */
@@ -2054,14 +2039,14 @@ const READ_CV = [
 ];
 const GLOSS_CV = { "recruiter": "a person who looks for and selects candidates for a job", "profile": "a short summary at the top of the CV", "action verb": "a verb that shows what you did: managed, created, led", "measurable result": "a result with a number: +30%, 1,200 followers", "STAR": "Situation, Task, Action, Result" };
 const Q_CV = [
-  { q: "What is a CV, according to the text?", options: ["An advertisement of the value you can create.", "A complete list of absolutely everything you have done since you were born.", "A school report.", "A contract."], correct: 0, feedback: "It sells your value in a few seconds." },
-  { q: "Which email is professional?", options: ["daniela.rojas.p@email.com", "princesa_gamer_2009@email.com, because it shows your personality.", "lol123@email.com", "no email needed"], correct: 0, feedback: "Name-based and simple." },
-  { q: "Which line is stronger?", options: ["“Increased followers from 300 to 1,200.”", "“I was in charge of the social media of the family bakery during some weekends.”", "“I did stuff.”", "“Instagram.”"], correct: 0, feedback: "Action verb + measurable result." },
-  { q: "Can a 17-year-old include school projects as experience?", options: ["Yes, with numbers and results.", "No, because only paid jobs in big companies count as real experience.", "Only sports.", "Never."], correct: 0, feedback: "Projects show real skills." },
-  { q: "What should you write about your English level?", options: ["Your honest level (B1, B2…).", "Always 'fluent', because recruiters never check the level of English.", "Nothing.", "C2 always."], correct: 0, feedback: "Honesty — the interview will show it." },
-  { q: "Do CVs always include a photo?", options: ["It depends on the country.", "Yes, in every country of the world, because the law requires a photo.", "Never.", "Only in the US."], correct: 0, feedback: "Common in Colombia; usually not in the US." },
-  { q: "Which is an action verb?", options: ["Designed.", "Was, because it is the most common verb in English sentences.", "Very.", "Responsibility."], correct: 0, feedback: "Designed, managed, led, created…" },
-  { q: "What does STAR mean?", options: ["Situation, Task, Action, Result.", "Salary, Time, Area, Responsibility of the job.", "Start, Try, Ask, Repeat.", "Skills, Talent, Attitude, Respect."], correct: 0, feedback: "The structure of strong answers and CV lines." },
+  { q: "What is a CV, according to the text?", options: ["An advertisement of the value you can create.", "A complete list of everything you have done.", "A copy of your school report card.", "A contract between you and the company."], correct: 0, feedback: "It sells your value in a few seconds." },
+  { q: "Which email is professional?", options: ["daniela.rojas.p@email.com", "princesa_gamer_2009@email.com", "dani.lol.123@email.com", "daniela.rojas.cv.2025.final@email.com"], correct: 0, feedback: "Name-based and simple." },
+  { q: "Which line is stronger?", options: ["“Increased followers from 300 to 1,200.”", "“I was in charge of social media.”", "“I helped my family's bakery a lot.”", "“Instagram, TikTok and Facebook.”"], correct: 0, feedback: "Action verb + measurable result." },
+  { q: "Can a 17-year-old include school projects as experience?", options: ["Yes, with numbers and results.", "No, only paid jobs count.", "Only sports and arts projects.", "Only if a teacher signs them."], correct: 0, feedback: "Projects show real skills." },
+  { q: "What should you write about your English level?", options: ["Your honest level (B1, B2…).", "Always 'fluent'.", "Nothing about English.", "Always one level higher."], correct: 0, feedback: "Honesty — the interview will show it." },
+  { q: "Do CVs always include a photo?", options: ["It depends on the country.", "Yes, in every country.", "Never, it's illegal.", "Only for jobs in the US."], correct: 0, feedback: "Common in Colombia; usually not in the US." },
+  { q: "Which is an action verb?", options: ["Designed.", "Was.", "Very.", "Responsibility."], correct: 0, feedback: "Designed, managed, led, created…" },
+  { q: "What does STAR mean?", options: ["Situation, Task, Action, Result.", "Salary, Time, Area, Responsibility.", "Start, Try, Ask, Repeat.", "Skills, Talent, Attitude, Respect."], correct: 0, feedback: "The structure of strong answers and CV lines." },
 ];
 
 /* ---------- LECTURA · Your Credit Score in Colombia ---------- */
@@ -2085,14 +2070,14 @@ const READ_CREDIT = [
 ];
 const GLOSS_CREDIT = { "credit history": "the record of how you pay your debts", "credit bureau": "a company that collects payment information (central de riesgo)", "credit score": "a number that summarizes your credit history", "Habeas Data": "your right to know and correct your personal data", "debt-to-income": "the % of your income that goes to debt payments", "collection": "when a company tries to recover a debt you didn't pay" };
 const Q_CREDIT = [
-  { q: "When does your own credit history usually start?", options: ["With your first credit product as an adult.", "On the day you are born, when your parents register you at the notary.", "At 30.", "Never."], correct: 0, feedback: "From your first loan or card." },
-  { q: "Which are Colombian credit bureaus?", options: ["DataCrédito Experian and TransUnion.", "DANE and the Banco de la República, which publish inflation and interest rates.", "Fogafín.", "OLE."], correct: 0, feedback: "Centrales de riesgo." },
-  { q: "What does the Habeas Data law protect?", options: ["Your right to know and correct your financial data.", "The right of banks to publish your debts on social media without telling you.", "Your salary.", "Your passwords."], correct: 0, feedback: "Law 1266 of 2008." },
-  { q: "What happened to Santiago?", options: ["A small unpaid bill made his loan more expensive.", "He got a lower rate because he had a lot of debts with different companies.", "Nothing.", "He won a prize."], correct: 0, feedback: "Small debts, big costs." },
-  { q: "How did Laura build her history?", options: ["Small card use, full payment every month.", "She used her full card limit and paid only the minimum to keep the bank happy.", "She asked for 10 loans.", "She lent her name."], correct: 0, feedback: "Use little, pay all, on time." },
-  { q: "Andrés earns $3,000,000 and pays $1,500,000 in debts. His debt-to-income is…", options: ["50% — too risky.", "15%, which is a very healthy number for a young professional.", "30%.", "5%."], correct: 0, feedback: "1.5 ÷ 3 = 50%." },
-  { q: "Which action LOWERS your score?", options: ["Late payments.", "Paying the full balance of your credit card every single month on time.", "Using little of your limit.", "A long history."], correct: 0, feedback: "Even small delays count." },
-  { q: "Why is 'lending your name' dangerous?", options: ["The debt becomes yours.", "Because the bank gives you a lower rate and you pay less interest in the future.", "It isn't.", "It's illegal for adults."], correct: 0, feedback: "If they don't pay, YOUR history suffers." },
+  { q: "When does your own credit history usually start?", options: ["With your first credit product as an adult.", "On the day you are born.", "When you open a savings account at 14.", "When you turn 30."], correct: 0, feedback: "From your first loan or card." },
+  { q: "Which are Colombian credit bureaus?", options: ["DataCrédito Experian and TransUnion.", "DANE and the Banco de la República.", "Fogafín and the Superfinanciera.", "Nequi and Daviplata."], correct: 0, feedback: "Centrales de riesgo." },
+  { q: "What does the Habeas Data law protect?", options: ["Your right to know and correct your financial data.", "The bank's right to publish your debts online.", "Your right to have your debts cancelled.", "The privacy of your passwords only."], correct: 0, feedback: "Law 1266 of 2008." },
+  { q: "What happened to Santiago?", options: ["A small unpaid bill made his loan more expensive.", "He got a lower rate thanks to his many debts.", "He couldn't get a loan because he was too young.", "Nothing, small bills don't affect your history."], correct: 0, feedback: "Small debts, big costs." },
+  { q: "How did Laura build her history?", options: ["Small card use, full payment every month.", "She used her full limit and paid the minimum.", "She asked for many loans at the same time.", "She lent her name to a friend."], correct: 0, feedback: "Use little, pay all, on time." },
+  { q: "Andrés earns $3,000,000 and pays $1,500,000 in debts. His debt-to-income is…", options: ["50%, too risky.", "15%, very healthy.", "30%, the ideal level.", "5%, very low."], correct: 0, feedback: "1.5 ÷ 3 = 50%." },
+  { q: "Which action LOWERS your score?", options: ["Late payments.", "Paying the full balance on time.", "Using little of your limit.", "A long credit history."], correct: 0, feedback: "Even small delays count." },
+  { q: "Why is 'lending your name' dangerous?", options: ["The debt becomes yours.", "You get a lower interest rate.", "It's illegal for adults.", "It only matters for big loans."], correct: 0, feedback: "If they don't pay, YOUR history suffers." },
 ];
 
 /* ---------- RUSH · DOFA: inside or outside? ---------- */
@@ -2143,21 +2128,21 @@ const EXAM10_MISSIONS = [
   { tag: "💳 Credit (P4)", q: "Income $4,000,000; debt payments $1,600,000. Debt-to-income %?", answer: 40, unit: "%", hint: "1.6 ÷ 4", explain: "40% — above the ~30–35% guideline." },
 ];
 const EXAM10_Q = [
-  { t: "Value & markets", q: "Why does barter need money?", options: ["Double coincidence of wants is hard.", "Because objects lose all their value after one year without money.", "It doesn't.", "Banks require it."], correct: 0, feedback: "Money is a medium of exchange everybody accepts." },
-  { t: "Value & markets", q: "Supply falls and demand stays the same. Price…", options: ["goes up.", "goes down, because sellers want to sell all their products quickly.", "stays the same.", "disappears."], correct: 0, feedback: "Scarcity raises prices." },
-  { t: "Value & markets", q: "The dollar goes up. Who benefits?", options: ["Exporters.", "Importers who pay their suppliers in dollars every month.", "Tourists going abroad.", "Nobody."], correct: 0, feedback: "More pesos per dollar sold abroad." },
-  { t: "Money math", q: "1% monthly is about how much E.A.?", options: ["12.68%.", "12%, because one percent multiplied by twelve months is twelve.", "1%.", "100%."], correct: 0, feedback: "(1.01)¹² − 1." },
-  { t: "Money math", q: "Paying only the card minimum…", options: ["makes the debt last much longer.", "is the fastest way to pay the debt because the bank reduces the interest.", "is free.", "cancels the debt."], correct: 0, feedback: "Minimums shrink; debt lives on." },
-  { t: "Money math", q: "Inflation 7%, savings 4%. Real return?", options: ["About −3%.", "About +11%, because you add the two numbers.", "+4%.", "0%."], correct: 0, feedback: "Rate − inflation." },
-  { t: "Investing", q: "An ETF reduces risk because…", options: ["it holds many companies.", "the government insures it against every possible loss in the market.", "it's a deposit.", "it never falls."], correct: 0, feedback: "Diversification." },
-  { t: "Investing", q: "“30% monthly guaranteed, invite friends.” This is probably…", options: ["a Ponzi scheme.", "an excellent investment supervised by the Superintendencia Financiera.", "a CDT.", "an ETF."], correct: 0, feedback: "Guaranteed high returns + recruiting." },
-  { t: "Investing", q: "A project's NPV at 12% is +$500,000. It…", options: ["creates value vs. the alternative.", "destroys value, because positive numbers in finance always mean losses.", "is illegal.", "has no risk."], correct: 0, feedback: "NPV > 0." },
-  { t: "Future planning", q: "In a personal DOFA, 'green jobs are growing' is…", options: ["an opportunity.", "a strength, because it is a positive thing that you have inside you.", "a weakness.", "a threat."], correct: 0, feedback: "External and positive." },
-  { t: "Future planning", q: "Good at + paid for, in the ikigai, is…", options: ["profession.", "mission, because it is what the world needs and what you love doing.", "passion.", "vocation."], correct: 0, feedback: "Profession." },
-  { t: "Future planning", q: "A career's payback should include…", options: ["the income lost while studying.", "only the price of the first semester and the books.", "nothing else.", "your favorite subjects."], correct: 0, feedback: "Opportunity cost." },
-  { t: "Credit & life", q: "What helps your credit score most?", options: ["Paying on time, every month.", "Asking for many loans in a short time to show the banks you are active.", "Using your full limit.", "Lending your name."], correct: 0, feedback: "Punctuality builds history." },
-  { t: "Credit & life", q: "Who started investing at 16 vs. 35 with the same monthly amount?", options: ["The one at 16 usually ends with much more.", "The one at 35, because people earn more money when they are older.", "Equal.", "Nobody."], correct: 0, feedback: "Time + compounding." },
-  { t: "Credit & life", q: "A STAR answer in an interview includes…", options: ["Situation, Task, Action, Result.", "Salary, Time, Area and the Responsibilities of the job you want.", "Only your strengths.", "Your favorite star."], correct: 0, feedback: "Specific stories with results." },
+  { t: "Value & markets", q: "Why does barter need money?", options: ["A double coincidence of wants is hard to find.", "Objects lose all their value after a year.", "Banks require money for every trade.", "It doesn't, barter works the same."], correct: 0, feedback: "Money is a medium of exchange everybody accepts." },
+  { t: "Value & markets", q: "Supply falls and demand stays the same. Price…", options: ["goes up.", "goes down.", "stays the same.", "falls to zero."], correct: 0, feedback: "Scarcity raises prices." },
+  { t: "Value & markets", q: "The dollar goes up. Who benefits?", options: ["Exporters.", "Importers.", "Tourists.", "Nobody."], correct: 0, feedback: "More pesos per dollar sold abroad." },
+  { t: "Money math", q: "1% monthly is about how much E.A.?", options: ["12.68%.", "12%.", "13.5%.", "11.4%."], correct: 0, feedback: "(1.01)¹² − 1." },
+  { t: "Money math", q: "Paying only the card minimum…", options: ["makes the debt last much longer.", "is the fastest way to pay the debt.", "lowers the interest rate each month.", "is free if you never miss a payment."], correct: 0, feedback: "Minimums shrink; debt lives on." },
+  { t: "Money math", q: "Inflation 7%, savings 4%. Real return?", options: ["About −3%.", "About +11%.", "About +4%.", "About +3%."], correct: 0, feedback: "Rate − inflation." },
+  { t: "Investing", q: "An ETF reduces risk because…", options: ["it holds many companies.", "the government insures it.", "it works like a deposit.", "its price never falls."], correct: 0, feedback: "Diversification." },
+  { t: "Investing", q: "“30% monthly guaranteed, invite friends.” This is probably…", options: ["a Ponzi scheme.", "a supervised investment.", "a high-yield CDT.", "a diversified ETF."], correct: 0, feedback: "Guaranteed high returns + recruiting." },
+  { t: "Investing", q: "A project's NPV at 12% is +$500,000. It…", options: ["creates value vs. the alternative.", "destroys value vs. the alternative.", "has no risk at all.", "pays back in one year."], correct: 0, feedback: "NPV > 0." },
+  { t: "Future planning", q: "In a personal DOFA, 'green jobs are growing' is…", options: ["an opportunity.", "a strength.", "a weakness.", "a big threat."], correct: 0, feedback: "External and positive." },
+  { t: "Future planning", q: "Good at + paid for, in the ikigai, is…", options: ["profession.", "mission.", "passion.", "vocation."], correct: 0, feedback: "Profession." },
+  { t: "Future planning", q: "A career's payback should include…", options: ["the income lost while studying.", "only the first semester and books.", "the salary you'll earn later.", "nothing besides tuition."], correct: 0, feedback: "Opportunity cost." },
+  { t: "Credit & life", q: "What helps your credit score most?", options: ["Paying on time, every month.", "Asking for many loans fast.", "Using your full limit.", "Lending your name."], correct: 0, feedback: "Punctuality builds history." },
+  { t: "Credit & life", q: "Who started investing at 16 vs. 35 with the same monthly amount?", options: ["The one at 16 usually ends with much more.", "The one at 35, because older people earn more.", "Both end with the same amount of money.", "The one at 35, because they take less risk."], correct: 0, feedback: "Time + compounding." },
+  { t: "Credit & life", q: "A STAR answer in an interview includes…", options: ["Situation, Task, Action, Result.", "Salary, Time, Area, Responsibility.", "Only your strengths and skills.", "Strengths, Talents, Abilities, Results."], correct: 0, feedback: "Specific stories with results." },
 ];
 const EXAM10_TIPS = { "Value & markets": "Review Period 1: barter, supply & demand, the dollar.", "Money math": "Review Period 2: E.A. rates, the minimum-payment trap, real return.", Investing: "Review Period 3: ETFs, scams and NPV.", "Future planning": "Review your DOFA, your Ikigai and Careers by the Numbers.", "Credit & life": "Reread Your Credit Score in Colombia and replay the Time Machine and the Interview Simulator." };
 
@@ -2491,11 +2476,11 @@ function CVBuilder({ resp, studentName, existing, onSave, onExit }) {
 
 /* ---------- C4 · Interview Simulator (STAR) ---------- */
 const INT_Q = [
-  { q: "Tell me about yourself.", options: ["I'm an organized 11th-grader who loves data. I built a budget dashboard and managed a simulated portfolio, so I'm ready to learn fast.", "Well… I'm a normal student, I guess. I like music, my friends, my phone and many other things, and I don't really know what else to say about myself right now, sorry, I'm a little nervous.", "I'm the best student in my school. Nobody is better than me at anything."], correct: 0, explain: "Short, specific, connected to the job — with proof." },
-  { q: "Tell me about a time you solved a problem.", options: ["Our food sale had low sales (S). I had to find why (T). I made a spreadsheet and changed the products (A). We beat the goal by $250,000 (R).", "I solve problems all the time because I'm a very responsible person and I always work really hard in every single project at school, so my teachers and my classmates always say I'm good at it.", "I never have problems."], correct: 0, explain: "That's STAR: Situation, Task, Action, Result." },
-  { q: "What is your biggest weakness?", options: ["I used to get nervous presenting, so I practiced in FinFluent pitches and now I feel more confident.", "Honestly, I think my biggest weakness is that I'm a perfectionist and I work too much, which is really a weakness that all the very good workers have, so it's not a real problem for the company.", "I don't have weaknesses."], correct: 0, explain: "Honest + what you are doing to improve." },
-  { q: "Why do you want to work here?", options: ["I researched your company: you help small businesses with data, and I want to learn that while I contribute my Excel skills.", "Because I need some extra money for the weekends and for my plans with friends, and this job is very close to my house, so it's easy for me to arrive on time every day without taking the bus.", "My mom told me to apply."], correct: 0, explain: "Show research and the value you bring." },
-  { q: "Do you have any questions for us?", options: ["Yes: what does a successful first month look like in this role?", "No, I think you already explained everything very well, thank you very much for your time.", "How many vacation days do I get?"], correct: 0, explain: "A smart question shows interest and maturity." },
+  { q: "Tell me about yourself.", options: ["I'm an organized 11th-grader who loves data. I built a budget dashboard and managed a simulated portfolio, so I'm ready to learn fast.", "I'm a normal student, I guess. I like music, my friends and my phone, and I don't really know what else to say about myself right now.", "I'm the best student in my school. I'm good at everything, and I'm sure I would be perfect for any job in this company."], correct: 0, explain: "Short, specific, connected to the job — with proof." },
+  { q: "Tell me about a time you solved a problem.", options: ["Our food sale had low sales (S). I had to find why (T). I made a spreadsheet and changed the products (A). We beat the goal by $250,000 (R).", "I solve problems all the time because I'm very responsible and I always work hard, so my teachers and my classmates say I'm good at it.", "Once we had a big problem in a group project, but in the end everything was OK and we finished it. I don't remember what I did exactly."], correct: 0, explain: "That's STAR: Situation, Task, Action, Result." },
+  { q: "What is your biggest weakness?", options: ["I used to get nervous presenting, so I practiced in FinFluent pitches and now I feel more confident.", "I think my biggest weakness is that I'm a perfectionist and I work too much, but that's a weakness all good workers have.", "Honestly, I don't think I have real weaknesses. I always do my best in everything, so I don't need to improve much."], correct: 0, explain: "Honest + what you are doing to improve." },
+  { q: "Why do you want to work here?", options: ["I researched your company: you help small businesses with data, and I want to learn that while I contribute my Excel skills.", "I need some extra money for the weekends, and this job is very close to my house, so it's easy for me to arrive on time every day.", "My mom told me to apply because she knows somebody here, and I think it could be a good experience for my CV."], correct: 0, explain: "Show research and the value you bring." },
+  { q: "Do you have any questions for us?", options: ["Yes: what does a successful first month look like in this role?", "No, I think you explained everything very well. Thank you!", "Yes: how many vacation days do I get, and when can I start?"], correct: 0, explain: "A smart question shows interest and maturity." },
 ];
 const STAR = [["s", "S · Situation", "Where and when?"], ["t", "T · Task", "What did you have to do?"], ["a", "A · Action", "What did YOU do?"], ["r", "R · Result", "What happened? (a number!)"]];
 function InterviewSim({ existing, onSave, onExit }) {
@@ -2616,7 +2601,7 @@ function CreditPath({ onSave, onExit }) {
       {!res ? <ImpactRounds stats={CP_STATS} rounds={CP_R} onDone={setRes} /> : (
         <>
           <div className="g10-stats"><div><small>📈 Final score</small><b className={res.values.score >= 550 ? "pos" : "neg"}>{res.values.score} · {lab(res.values.score)}</b></div><div><small>💳 Debt level</small><b>{res.values.debt}</b></div><div><small>✅ Smart decisions</small><b>{res.good}/{CP_R.length}</b></div></div>
-          <PickOne q="What builds a good credit history fastest?" options={["Small use and on-time full payments.", "Asking for many loans and cards to show the banks that you are a very active client.", "Having no card at all.", "Paying only minimums."]} correct={0} explain="Use little, pay all, on time — every month." />
+          <PickOne q="What builds a good credit history fastest?" options={["Small use and on-time full payments.", "Many cards to look like an active client.", "No cards or loans at all, ever.", "Paying the minimum every month."]} correct={0} explain="Use little, pay all, on time — every month." />
           <div className="start-foot"><button className="s1-btn primary big" onClick={() => finish(18 + res.good * 2, { score: res.values.score, debt: res.values.debt, good: res.good })}>Save my credit path <span className="coin-tag"><Coins size={15} /> +{18 + res.good * 2}</span></button></div>
         </>
       )}
@@ -2752,11 +2737,11 @@ function BlueprintPitch({ resp, studentName, have, existing, onSave, onExit }) {
 
 /* ---------- C7 · Money Radar 10 Final ---------- */
 const RADAR10_NEW = [
-  { d: "val", q: "A classmate wants to sell you a used phone. What do you do first?", o: ["Pay what they ask.", "Compare market prices, check its condition and negotiate.", "Buy two.", "Ignore the price."], s: [0, 3, 0, 1] },
-  { d: "mm", q: "You get your first salary at 18. What is your first move?", o: ["Pay myself first: save a fixed %.", "Buy what I wanted for months.", "Lend it.", "Keep it all in cash."], s: [3, 0, 0, 1] },
-  { d: "math", q: "A loan app offers 5% monthly. That is about…", o: ["60% E.A.", "Almost 80% E.A. — very expensive.", "5% a year.", "Free money."], s: [1, 3, 0, 0] },
-  { d: "inv", q: "Your portfolio falls 12% in a global shock. You…", o: ["Sell everything.", "Keep the plan or rebalance.", "Borrow to buy crypto.", "Close my eyes forever."], s: [0, 3, 0, 1] },
-  { d: "fut", q: "Choosing a career, you compare…", o: ["Only salaries.", "Ikigai + years + cost + salary + payback.", "What my friends do.", "Nothing."], s: [1, 3, 0, 0] },
+  { d: "val", q: "A classmate wants to sell you a used phone. What do you do first?", o: ["Pay the price if it's lower than a new one.", "Check its condition, compare prices and negotiate.", "Ask a friend who knows phones to give an opinion.", "Offer a low price and see what they answer."], s: [0, 3, 2, 1] },
+  { d: "mm", q: "You get your first salary at 18. What is your first move?", o: ["Set a budget for the month before spending.", "Keep it in my account and spend carefully.", "Pay myself first: move a fixed % to savings.", "Pay my family back for what they gave me."], s: [2, 1, 3, 1] },
+  { d: "math", q: "A loan app offers 5% monthly. That is about…", o: ["60% E.A. — 5% × 12 months.", "Almost 80% E.A. — very expensive.", "5% a year, like a normal loan.", "Similar to a credit card, about 26% E.A."], s: [1, 3, 0, 0] },
+  { d: "inv", q: "Your portfolio falls 12% in a global shock. You…", o: ["Keep the plan, or rebalance to my target mix.", "Move everything to a CDT until things calm down.", "Buy more of what fell, it's on sale now.", "Sell the assets that fell the most."], s: [3, 1, 2, 0] },
+  { d: "fut", q: "Choosing a career, you compare…", o: ["Mainly the salary five years after graduating.", "Ikigai, years, cost, salary and payback.", "What I enjoy and how long it takes to study.", "The careers my friends are choosing."], s: [1, 3, 2, 0] },
 ];
 const SELF10 = [["value", "💎 I can create value and negotiate a win-win trade."], ["math", "🧮 I can use compound interest, E.A. rates and loan tables."], ["invest", "📈 I can build a diversified portfolio and spot scams."], ["career", "🎓 I can evaluate a career with data and NPV."], ["life", "🏙️ I can design a realistic budget and credit plan for my 20s."], ["eng", "🎤 I can present my financial plan in English."]];
 function Radar10Final({ resp, existing, onSave, onExit }) {
@@ -2880,42 +2865,42 @@ const GUIDE = {
    ESTRUCTURA · 10° PERIODO 4 · FUTURE ME (7 clases)
    ===================================================================== */
 const G10P4_WEEKS = [
-  { n: 1, title: "Who Am I?", e: "🔎", blurb: "Personality, values and your personal DOFA.", skills: ["Test", "Reading", "DOFA"], prove: { from: "Period 1", q: "In your Future Me ID, what did you imagine at 25?", options: ["A career, a city and a goal.", "Nothing, because 10th-graders can't think about the future yet.", "Only a salary.", "A car."], correct: 0, why: "Today you check if you still think the same." }, acts: [
+  { n: 1, title: "Who Am I?", e: "🔎", blurb: "Personality, values and your personal DOFA.", skills: ["Test", "Reading", "DOFA"], acts: [
     A10("c1_test", "Personality Test 🔎", "Your type + 3 traits · Prove It.", <Fingerprint size={22} />, 25, "comportamiento"),
     A10("c1_read", "Reading: What a Personality Test Can (and Can't) Tell You 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c1_values", "Work Style & Values 🧭", "Top 5 values + work style.", <Heart size={22} />, 22, "comportamiento"),
     A10("c1_rush", "DOFA Rush ⚡", "Inside or outside?", <Zap size={22} />, 24, "aprendi"),
     A10("c1_dofa", "DOFA Builder 🧩 · Page 19", "A SWOT analysis of YOU.", <Puzzle size={22} />, 30, "aprendi"),
   ] },
-  { n: 2, title: "My Ikigai", e: "🌸", blurb: "What you love, what you're good at, what the world needs, what pays.", skills: ["Reading", "Builder", "Top 3"], prove: { from: "Period 1", q: "How is value created?", options: ["By solving someone's need.", "By having the most expensive object in the market.", "By luck.", "By printing money."], correct: 0, why: "Your Value Creator Card: the same idea applies to careers." }, acts: [
+  { n: 2, title: "My Ikigai", e: "🌸", blurb: "What you love, what you're good at, what the world needs, what pays.", skills: ["Reading", "Builder", "Top 3"], acts: [
     A10("c2_read", "Reading: Ikigai 📖", "4 circles + a model · 8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c2_builder", "Ikigai World Builder 🌸", "Cards in 4 circles · careers unlock.", <Sparkles size={22} />, 28, "aprendi"),
     A10("c2_match", "Career Match · My Top 3 🎯 · Page 20", "Gerunds + 3 careers.", <Target size={22} />, 30, "aprendi"),
   ] },
-  { n: 3, title: "Career Research Lab", e: "🎓", blurb: "Your career is an investment: research it and calculate its NPV.", skills: ["Reading", "Detective", "NPV"], prove: { from: "Period 3", q: "A project has NPV > 0. That means…", options: ["it creates value vs. the alternative.", "it will never lose money in any scenario of the economy.", "it's illegal.", "nothing."], correct: 0, why: "The same tool now evaluates your career." }, acts: [
+  { n: 3, title: "Career Research Lab", e: "🎓", blurb: "Your career is an investment: research it and calculate its NPV.", skills: ["Reading", "Detective", "NPV"], acts: [
     A10("c3_read", "Reading: Careers by the Numbers 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c3_detective", "Career Detective 🕵️", "Real data + sources.", <Search size={22} />, 30, "aprendi"),
     A10("c3_worth", "Is My Degree Worth It? 🎓 · Page 21", "NPV · payback · 3 scenarios.", <GraduationCap size={22} />, 32, "aprendi"),
     A10("c3_rush", "Skills of the Future ⚡", "Growing or automated?", <Zap size={22} />, 24, "aprendi"),
   ] },
-  { n: 4, title: "Get the Job", e: "💼", blurb: "Your first CV in English and a job interview with STAR answers.", skills: ["Reading", "CV", "Interview"], prove: { from: "Period 1", q: "A feature vs. a benefit: which is a benefit?", options: ["“You'll feel confident.”", "“It is made of strong fabric produced in our own factory.”", "“It's blue.”", "“It costs $50.”"], correct: 0, why: "In a CV, show the benefit of your skills." }, acts: [
+  { n: 4, title: "Get the Job", e: "💼", blurb: "Your first CV in English and a job interview with STAR answers.", skills: ["Reading", "CV", "Interview"], acts: [
     A10("c4_read", "Reading: Anatomy of a CV 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c4_fixer", "CV Fixer 🛠️", "Find 6 errors.", <FileText size={22} />, 30, "aprendi"),
     A10("c4_cv", "CV Builder 📄 · Page 22", "Your first CV · download it.", <FileText size={22} />, 34, "aprendi"),
     A10("c4_interview", "Interview Simulator 🎙️", "STAR answers + two offers.", <Users size={22} />, 30, "aprendi"),
   ] },
-  { n: 5, title: "My Life at 25", e: "🏙️", blurb: "Your career salary, your Money Rules, your credit history.", skills: ["Reading", "Life sim", "Credit"], prove: { from: "Period 2", q: "In an amortization table, early payments go mostly to…", options: ["interest.", "the capital, so the debt goes down very fast at the start.", "fees.", "taxes."], correct: 0, why: "Your loan decisions at 25 work the same way." }, acts: [
+  { n: 5, title: "My Life at 25", e: "🏙️", blurb: "Your career salary, your Money Rules, your credit history.", skills: ["Reading", "Life sim", "Credit"], acts: [
     A10("c5_read", "Reading: Your Credit Score in Colombia 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c5_life", "Life Simulator 25 🏙️ · Page 23", "Budget · debt · crisis.", <Home size={22} />, 34, "aprendi"),
     A10("c5_credit", "Credit Path from 18 💳", "12 months · your score.", <CreditCard size={22} />, 34, "aprendi"),
     A10("c5_at18", "What Can I Do at 18? ⚡", "Before 18 · at 18 · never.", <Zap size={22} />, 24, "aprendi"),
   ] },
-  { n: 6, title: "The Power of Starting Early", e: "⏳", blurb: "Start at 16, 25 or 35? Then prepare your Blueprint and your time capsule.", skills: ["Simulator", "Rehearsal", "Letter"], prove: { from: "Period 3", q: "Your investor profile helps you choose…", options: ["a risk level that fits you.", "the asset that will surely go up the most next month.", "a bank's logo.", "your career."], correct: 0, why: "Your Investor Card sets your return in the Time Machine." }, acts: [
+  { n: 6, title: "The Power of Starting Early", e: "⏳", blurb: "Start at 16, 25 or 35? Then prepare your Blueprint and your time capsule.", skills: ["Simulator", "Rehearsal", "Letter"], acts: [
     A10("c6_machine", "The Time Machine · 16 vs. 25 vs. 35 ⏳", "Who wins at 60?", <Hourglass size={22} />, 30, "aprendi"),
     A10("c6_blueprint", "Blueprint Check + Rehearsal 🎭", "7 parts · timer · feedback.", <ShieldCheck size={22} />, 28, "aprendi"),
     A10("c6_capsule", "Time Capsule Letter 💌", "A letter for your graduation.", <Mail size={22} />, 30, "comportamiento"),
   ] },
-  { n: 7, title: "Future Me Summit", e: "🏆", blurb: "Your Blueprint pitch, your final radar, your Wrapped and the final exam.", skills: ["Project", "Radar", "Exam"], prove: { from: "The whole year", q: "Which Future Me Card did you earn in Period 2?", options: ["My Money Rules.", "Value Creator, the card of the Red Paperclip Challenge.", "Investor Card.", "None."], correct: 0, why: "P1 Value Creator · P2 My Money Rules · P3 Investor Card · P4 Blueprint." }, acts: [
+  { n: 7, title: "Future Me Summit", e: "🏆", blurb: "Your Blueprint pitch, your final radar, your Wrapped and the final exam.", skills: ["Project", "Radar", "Exam"], acts: [
     A10("c7_pitch", "Future Me Blueprint 🧭 · THE BIG PROJECT", "Present + jury + certificate.", <Rocket size={22} />, 70, "aprendi"),
     A10("c7_radar", "My Money Radar 10 · Final 🧭", "Before & after + self-assessment.", <Compass size={22} />, 30, "comportamiento"),
     A10("c7_wrapped", "Year Wrapped 10° 🎁", "Your year in slides.", <Gift size={22} />, 25, "comportamiento"),

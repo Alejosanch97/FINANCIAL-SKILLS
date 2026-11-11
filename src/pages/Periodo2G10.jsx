@@ -1449,24 +1449,6 @@ function FutureMePanel({ id, have, stats, compact, studentName, title }) {
 function FPBadge({ n, t, e = "📄" }) {
   return <div className="g8-bpbadge g91-badge g10-fpbadge"><span>📘 FUTURE PAGE {String(n).padStart(2, "0")}</span><b>{e} {t}</b></div>;
 }
-/* Prove It: repaso rápido al abrir cada clase (no da monedas, no se guarda) */
-function ProveIt({ data }) {
-  const [pick, setPick] = useState(null);
-  const [open, setOpen] = useState(false);
-  if (!data) return null;
-  return (
-    <div className={`g10-prove ${open ? "open" : ""}`}>
-      <button type="button" className="g10-prove-top" onClick={() => setOpen(!open)}><em>⚡</em><div><small>PROVE IT · 1 MINUTE · {data.from}</small><b>{data.q}</b></div><i>{open ? "▲" : "Try ▼"}</i></button>
-      {open && (
-        <div className="g10-prove-body">
-          <div className="quiz-options">{data.options.map((o, k) => <button key={k} type="button" disabled={pick != null} className={`quiz-opt ${pick != null && k === data.correct ? "correct" : ""} ${pick === k && k !== data.correct ? "wrong" : ""}`} onClick={() => setPick(k)}><span className="opt-key">{"ABCD"[k]}</span><span className="opt-text">{o}</span></button>)}</div>
-          {pick != null && <p className={`g91-note ${pick === data.correct ? "pos" : "neg"}`}>{pick === data.correct ? "✅ You remember it! " : "🔁 Not this time. "}{data.why}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /* Barras de reparto (suman 100% o un total) */
 function AllocBars({ items, vals, set, step = 5, total = 100, unit = "%", fmt }) {
   const sum = items.reduce((a, it) => a + (vals[it.k] || 0), 0);
@@ -1682,17 +1664,19 @@ const RADAR10_DIMS = [
   { k: "val", l: "Value Creation", short: "Value" }, { k: "mm", l: "Money Management", short: "Money" }, { k: "math", l: "Money Math", short: "Math" },
   { k: "inv", l: "Investing & Risk", short: "Investing" }, { k: "fut", l: "Future Planning", short: "Future" },
 ];
+// Todas las opciones son razonables: cada una vale 0–3 según qué tan completa es la decisión.
+// El orden se baraja en pantalla y las longitudes son parecidas para que no se adivine.
 const RADAR10_Q = [
-  { d: "val", q: "You have an old object you don't use. What is the smartest first step?", o: ["Throw it away.", "Find who needs it and what they would give for it.", "Keep it forever.", "Sell it at the first price anybody says."], s: [0, 3, 0, 1] },
-  { d: "val", q: "Why can the same umbrella cost more on a rainy day?", o: ["Because umbrellas are magic.", "Because demand goes up while supply stays the same.", "Because the government says so.", "Because it is a different umbrella."], s: [0, 3, 1, 0] },
-  { d: "mm", q: "You receive your first salary. What do you do first?", o: ["Spend it on what I wanted for months.", "Make a plan: needs, savings and a part for fun.", "Keep it all in cash at home.", "Lend it all to a friend."], s: [0, 3, 1, 0] },
-  { d: "mm", q: "Inflation is 6% and your money sits in a piggy bank for a year. What happens?", o: ["Nothing.", "It can buy less than before.", "It grows 6%.", "It doubles."], s: [0, 3, 0, 0] },
-  { d: "math", q: "A bank offers 1% per month. A CDT offers 12% E.A. Which pays more in a year?", o: ["They are exactly the same.", "1% per month (it compounds to about 12.7%).", "The CDT, always.", "I can't know and I don't care."], s: [1, 3, 1, 0] },
-  { d: "math", q: "You can pay a $1,200,000 phone in 1 or 36 card installments. What should you check?", o: ["Only the monthly payment.", "The interest rate and the total I will pay.", "The color of the card.", "Nothing — installments are free."], s: [1, 3, 0, 0] },
-  { d: "inv", q: "Your investment falls 15% in one week. What do you do?", o: ["Sell everything immediately.", "Check why it fell and remember my plan and time horizon.", "Borrow money to buy more.", "Ask a stranger online."], s: [0, 3, 0, 0] },
-  { d: "inv", q: "An app promises 20% per month, guaranteed. You…", o: ["Invest everything.", "Suspect a scam and check if it is supervised.", "Invite my family.", "Invest half."], s: [0, 3, 0, 0] },
-  { d: "fut", q: "When should you start saving and investing for your future?", o: ["When I'm 40.", "As soon as I can, even with small amounts.", "Never, it's for rich people.", "Only when I win the lottery."], s: [0, 3, 0, 0] },
-  { d: "fut", q: "You are choosing a career. What do you consider?", o: ["Only what my friends study.", "What I love, what I'm good at, what the world needs and what pays.", "Only the salary.", "Nothing, I'll decide later."], s: [0, 3, 1, 0] },
+  { d: "val", q: "You have an old bike you don't use anymore. What do you do first?", o: ["Find out who needs a bike and what they would give for it.", "Check online what similar used bikes are selling for.", "Clean it and fix the brakes so it looks better.", "Sell it to the first person who makes an offer."], s: [3, 2, 2, 1] },
+  { d: "val", q: "Why can the same umbrella cost more on a rainy day?", o: ["Demand jumps while the supply on the street stays the same.", "Sellers know people need it now, so they raise the price.", "Many people already bought one, so fewer are left.", "Bringing umbrellas to the street costs more when it rains."], s: [3, 2, 1, 1] },
+  { d: "mm", q: "You receive your first salary. What do you do first?", o: ["Pay my needs first and save whatever is left.", "Save a fixed part first, then plan needs and fun.", "Write down every expense this month to see where it goes.", "Buy the thing I wanted for months — I worked for it."], s: [2, 3, 1, 0] },
+  { d: "mm", q: "Inflation is 6% and you keep $1,000,000 at home for a year. What happens?", o: ["It's still $1,000,000, so I don't lose any pesos.", "It buys about 6% less than it did a year ago.", "It's safe from bank fees, so it keeps more value.", "It only loses value if I buy things that went up."], s: [1, 3, 1, 0] },
+  { d: "math", q: "A bank offers 1% per month. A CDT offers 12% E.A. Which pays more in a year?", o: ["They are equal: 1% × 12 months is 12%.", "The CDT: E.A. already includes the compounding.", "1% monthly, because it compounds to about 12.7%.", "I'd convert both to E.A. before I decide."], s: [1, 1, 3, 2] },
+  { d: "math", q: "You can pay a $1,200,000 phone in 1 or 36 card installments. What do you check?", o: ["If the monthly payment fits in my budget.", "The interest rate and the total I'll pay at the end.", "If the store gives a discount for paying at once.", "How many installments people usually choose."], s: [1, 3, 2, 0] },
+  { d: "inv", q: "Your investment falls 15% in one week. What do you do?", o: ["Wait without looking; markets usually recover.", "Sell part of it to reduce the risk I feel.", "Sell everything now before it falls even more.", "Check why it fell and compare it with my plan."], s: [2, 1, 0, 3] },
+  { d: "inv", q: "An app promises 20% per month, guaranteed. You…", o: ["Check if it is supervised by the Superfinanciera.", "Stay away: a guaranteed high return is a red flag.", "Invest a small amount first to test if it pays.", "Ask friends who invested if they really got paid."], s: [3, 2, 1, 0] },
+  { d: "fut", q: "When should you start saving and investing for your future?", o: ["When I have a stable job and a real salary.", "After university, when I know what I want.", "Now, even with small amounts, so time helps.", "When I earn enough to save big amounts."], s: [2, 1, 3, 0] },
+  { d: "fut", q: "You are choosing a career. What do you consider?", o: ["Salaries and job demand for the next ten years.", "What I love, what I'm good at and what pays.", "The subjects where I get my best grades.", "What my family recommends — they know me."], s: [2, 3, 1, 0] },
 ];
 function radarProfile10(avg) {
   if (avg <= 30) return { l: "Starter 🌱", d: "You are building your foundations. Every class this year is a step." };
@@ -1704,6 +1688,7 @@ const radarScores10 = (ans, offset = 0) => { const o = {}; RADAR10_DIMS.forEach(
 function RadarQuiz({ title, qs, intro, onDone, onExit }) {
   const [cur, setCur] = useState(0);
   const [ans, setAns] = useState({});
+  const [orders] = useState(() => qs.map((x) => shuffleArr(x.o.map((_, k) => k))));
   const q = qs[cur]; const answered = ans[cur] != null;
   return (
     <div className="s1-quiz">
@@ -1713,7 +1698,8 @@ function RadarQuiz({ title, qs, intro, onDone, onExit }) {
       {cur === 10 && <p className="start-tip">🆕 5 new situations about this year's topics.</p>}
       <span className="diag-dim">{cur >= 10 ? "🆕 " : ""}{RADAR10_DIMS.find((d) => d.k === q.d).l}</span>
       <p className="quiz-q">{q.q}</p>
-      <div className="quiz-options">{q.o.map((o, k) => <button key={k} type="button" className={`quiz-opt ${ans[cur] === k ? "correct" : ""}`} onClick={() => setAns({ ...ans, [cur]: k })}><span className="opt-key">{"ABCD"[k]}</span><span className="opt-text">{o}</span></button>)}</div>
+      <p className="start-tip">💡 Every option makes sense. Choose what YOU would really do — there is no trick.</p>
+      <div className="quiz-options">{orders[cur].map((k, pos) => <button key={k} type="button" className={`quiz-opt ${ans[cur] === k ? "correct" : ""}`} onClick={() => setAns({ ...ans, [cur]: k })}><span className="opt-key">{"ABCD"[pos]}</span><span className="opt-text">{q.o[k]}</span></button>)}</div>
       <div className="quiz-nav">
         <button className="s1-btn ghost" onClick={() => (cur > 0 ? setCur(cur - 1) : onExit())}>{cur > 0 ? "Back" : "Exit"}</button>
         <button className="s1-btn primary" disabled={!answered} onClick={() => (cur < qs.length - 1 ? setCur(cur + 1) : onDone(ans))}>{cur < qs.length - 1 ? "Next" : "See my radar 🧭"} <ChevronRight size={18} /></button>
@@ -1882,7 +1868,6 @@ function PeriodShell10({ cfg, userData, API_URL, existingRow, onBack }) {
           <div className="s1-progress"><div className="bar"><i style={{ width: `${(wDone / w.acts.length) * 100}%` }} /></div><span className="pill">{wDone}/{w.acts.length}</span></div>
         </div>
         {cfg.panel(ctxBase, true)}
-        <ProveIt data={w.prove} />
         <div className="s1-quest">
           {w.acts.map((a) => (
             <div key={a.key} className={`act-card ${checklist[a.key] ? "done" : ""} ${(cfg.pageKeys || []).includes(a.key) ? "g8-page-act" : ""} ${a.key.endsWith("_rush") ? "g8-rush-act" : ""} ${LEARN_END.some((s) => a.key.endsWith(s)) ? "g73-learn-act" : ""} ${(cfg.bigKeys || []).includes(a.key) ? "g94-big-act" : ""}`}>
@@ -1956,50 +1941,50 @@ const INCOME18 = 1600000;
 
 /* ---------- VIDEO · Scarcity and Opportunity Cost (St. Louis Fed) ---------- */
 const VQ_OPP10 = [
-  { q: "What economic problem does the school board face with the empty lot?", options: ["Scarcity: the land can't fit every wish.", "A big municipal debt caused by very high taxes that the school could not pay on time.", "A law that forbids building.", "Too few workers to measure the land."], correct: 0, feedback: "Limited land, competing wants (parking vs. playground): that's scarcity." },
-  { q: "How does the video define scarcity?", options: ["Not enough resources to produce everything people want.", "A short break in the supply of products because of problems with ships and trucks.", "A price limit set by the government.", "A rule from the central bank."], correct: 0, feedback: "Resources are limited, wants are unlimited — so we must choose." },
-  { q: "The board chose a bigger playground. What concept does this show?", options: ["Making a choice because of scarcity.", "A perfect market equilibrium where every person gets exactly everything they want.", "A tax subsidy.", "A real-estate investment."], correct: 0, feedback: "Scarcity forces choices: one alternative over another." },
-  { q: "What was the opportunity cost of building the playground?", options: ["The parking space they gave up.", "The total amount of money that they paid for the new swings and slides.", "The rent of the land.", "The tax revenue."], correct: 0, feedback: "Opportunity cost = the next best alternative you give up." },
-  { q: "What is the relationship between wants and resources?", options: ["Wants are unlimited; resources are limited.", "Wants are fixed by law and resources grow automatically when people need more.", "Both are infinite.", "They are always equal."], correct: 0, feedback: "That basic tension is the starting point of economics." },
-  { q: "What did the students discover with their playground wish list?", options: ["It didn't all fit on the land.", "The city did not allow them to install climbing ropes because of a safety law.", "Prices went up.", "The board banned games."], correct: 0, feedback: "Unlimited wants vs. limited space." },
-  { q: "What did the students do before presenting to the board?", options: ["They measured the land and each piece of equipment.", "They asked a commercial bank for a big loan to buy a second piece of land next to it.", "They sold naming rights.", "They calculated depreciation."], correct: 0, feedback: "Data (measurements) helped them choose what really fits." },
-  { q: "Why must people, businesses and governments make trade-offs?", options: ["Using a resource for one thing means not using it for another.", "Because the law says that nobody can keep more than one resource at the same time.", "Prices change instantly.", "Everybody wants the same."], correct: 0, feedback: "Land, time or money used here can't be used there." },
-  { q: "How did information help the school board?", options: ["It showed what could realistically fit.", "It convinced politicians to give the school a federal grant for a much larger park.", "It created a company.", "It raised taxes."], correct: 0, feedback: "Good data → better decisions under scarcity." },
-  { q: "How is opportunity cost different from the money you pay?", options: ["It measures the value of the option you give up.", "It is a tax penalty that companies must pay when they invest in a new project.", "It only applies to governments.", "It's measured in dollars only."], correct: 0, feedback: "It's broader than the price: it's what you lose by not choosing the alternative." },
-  { q: "What general lesson does the classroom story teach?", options: ["Every decision means choosing some wants and giving up others.", "Markets reach equilibrium only when the city creates new rules for using land.", "Satisfaction grows forever.", "Only land matters."], correct: 0, feedback: "Scarcity governs every decision." },
-  { q: "What was the final outcome?", options: ["They chose the playground and accepted less parking.", "They returned the land to its original owner and decided not to build anything at all.", "They built a parking garage.", "They printed bonds."], correct: 0, feedback: "A deliberate choice, with a clear opportunity cost." },
+  { q: "What economic problem does the school board face with the empty lot?", options: ["Scarcity: the land can't fit every wish.", "A big municipal debt from high taxes.", "A law that forbids building on the lot.", "Too few workers to build everything."], correct: 0, feedback: "Limited land, competing wants (parking vs. playground): that's scarcity." },
+  { q: "How does the video define scarcity?", options: ["Not enough resources for everything people want.", "A short break in supply because of ship problems.", "A price limit set by the government.", "When a product becomes too expensive to buy."], correct: 0, feedback: "Resources are limited, wants are unlimited — so we must choose." },
+  { q: "The board chose a bigger playground. What concept does this show?", options: ["A choice made because of scarcity.", "A market where everyone gets what they want.", "A subsidy from the government.", "An investment to make the land more valuable."], correct: 0, feedback: "Scarcity forces choices: one alternative over another." },
+  { q: "What was the opportunity cost of building the playground?", options: ["The parking space they gave up.", "The money they paid for swings and slides.", "The rent they could charge for the land.", "The time the students spent measuring."], correct: 0, feedback: "Opportunity cost = the next best alternative you give up." },
+  { q: "What is the relationship between wants and resources?", options: ["Wants are unlimited; resources are limited.", "Resources grow when people need more.", "Wants and resources are always equal.", "Wants are limited; resources are unlimited."], correct: 0, feedback: "That basic tension is the starting point of economics." },
+  { q: "What did the students discover with their playground wish list?", options: ["It didn't all fit on the land.", "The city banned climbing ropes for safety.", "Equipment prices went up too much.", "The board didn't like the games."], correct: 0, feedback: "Unlimited wants vs. limited space." },
+  { q: "What did the students do before presenting to the board?", options: ["They measured the land and each piece of equipment.", "They asked a bank for a loan to buy more land.", "They sold the naming rights of the playground.", "They voted to choose the most popular game."], correct: 0, feedback: "Data (measurements) helped them choose what really fits." },
+  { q: "Why must people, businesses and governments make trade-offs?", options: ["Using a resource for one thing means not using it for another.", "The law says nobody can keep more than one resource.", "Prices change so fast that people must choose quickly.", "Everybody wants the same things at the same time."], correct: 0, feedback: "Land, time or money used here can't be used there." },
+  { q: "How did information help the school board?", options: ["It showed what could realistically fit.", "It got the school a bigger grant.", "It raised the money to buy everything.", "It proved parking wasn't needed."], correct: 0, feedback: "Good data → better decisions under scarcity." },
+  { q: "How is opportunity cost different from the money you pay?", options: ["It measures the value of the option you give up.", "It is the total money you pay for something.", "It is a fee companies pay when they invest.", "It only applies to governments, not people."], correct: 0, feedback: "It's broader than the price: it's what you lose by not choosing the alternative." },
+  { q: "What general lesson does the classroom story teach?", options: ["Every decision means choosing some wants and giving up others.", "With enough information, you can always have everything you want.", "Good planning removes the need to give anything up.", "Only big organizations need to think about trade-offs."], correct: 0, feedback: "Scarcity governs every decision." },
+  { q: "What was the final outcome?", options: ["They chose the playground and accepted less parking.", "They built both and bought more land later.", "They chose parking because it was cheaper.", "They decided not to build anything at all."], correct: 0, feedback: "A deliberate choice, with a clear opportunity cost." },
 ];
 
 /* ---------- VIDEO · The Rule of 72 ---------- */
 const VQ_72 = [
-  { q: "What two variables do you usually need to know how fast money doubles?", options: ["The starting balance and the interest rate.", "Your annual taxes and the inflation rate of the city where you live and work.", "Your salary and debts.", "Your age and pension."], correct: 0, feedback: "Starting money + compound interest rate." },
-  { q: "Why does the video skip the logarithm formula?", options: ["Most people can't do logarithms mentally.", "Because the government does not allow people to use logarithms to calculate their savings.", "Interest isn't exponential.", "It needs a computer."], correct: 0, feedback: "We don't have 'bionic brains' — so we use a shortcut." },
-  { q: "What is the Rule of 72?", options: ["72 ÷ interest rate = years to double.", "100 minus your age = the percentage of your money that you should invest in stocks.", "Principal × 50% per decade.", "360 ÷ payments."], correct: 0, feedback: "Divide 72 by the rate to estimate the doubling time." },
-  { q: "$5,000 at 4%. How many years to reach $10,000?", options: ["18 years.", "12 years, because 4% is a high rate for a savings account at the bank.", "9 years.", "24 years."], correct: 0, feedback: "72 ÷ 4 = 18 years." },
-  { q: "What does the Rule of 72 show about small rate changes?", options: ["Small rate increases make a huge difference over time.", "Rate changes don't affect long-term savings because the bank adjusts the balance every year.", "Linear growth wins.", "Rates shorten maturity."], correct: 0, feedback: "Compounding turns small differences into big ones." },
-  { q: "36 years at 4%. How many times does the money double?", options: ["Twice.", "Four times, because the money doubles every nine years with that interest rate.", "Eight times.", "Sixteen times."], correct: 0, feedback: "Doubles every 18 years → 36 ÷ 18 = 2 times." },
-  { q: "Same 36 years but at 8%. What happens?", options: ["It doubles 4 times (×16).", "It doubles only twice, the same as with 4%, because time is the same for both savers.", "It doesn't double.", "It doubles 16 times."], correct: 0, feedback: "72 ÷ 8 = 9 years → 4 doublings: 2⁴ = 16 times the money. (The video simplifies it as 'quadrupling the doublings'.)" },
-  { q: "At 12% for 36 years, how many times does it double?", options: ["6 times (every 6 years).", "Three times, because twelve divided by four equals three doublings in total.", "Twice.", "Eight times."], correct: 0, feedback: "72 ÷ 12 = 6 years → 36 ÷ 6 = 6 doublings (2⁶ = 64 times)." },
-  { q: "Why is 72 such a useful number?", options: ["It divides easily by many rates.", "Because tax agencies use 72 as the official number for every calculation in the country.", "It adjusts for inflation.", "It removes risk."], correct: 0, feedback: "72 ÷ 2, 3, 4, 6, 8, 9, 12 — easy mental math." },
-  { q: "What is the big lesson for retirement planning?", options: ["Compounding and higher rates change your future wealth a lot.", "Only the money you put at the beginning matters, so the interest rate is not important.", "Avoid all risk always.", "Banks decide everything."], correct: 0, feedback: "Rate + time = the power of compounding." },
-  { q: "How exact is the Rule of 72?", options: ["A very close approximation.", "An exact formula used by government auditors for every investment in the country.", "100% certain for stocks.", "It estimates taxes."], correct: 0, feedback: "A practical shortcut — close enough for normal rates." },
-  { q: "What is the relationship between rate and doubling time?", options: ["Higher rate → shorter doubling time.", "Higher rate → longer doubling time, because the bank needs more time to pay you.", "No relationship.", "It's linear."], correct: 0, feedback: "72 ÷ bigger number = fewer years." },
+  { q: "What two variables do you usually need to know how fast money doubles?", options: ["The starting balance and the interest rate.", "Your taxes and the city's inflation rate.", "Your salary and your monthly debts.", "Your age and the amount you deposit."], correct: 0, feedback: "Starting money + compound interest rate." },
+  { q: "Why does the video skip the logarithm formula?", options: ["Most people can't do logarithms mentally.", "Logarithms only work for simple interest.", "Logarithms give the wrong answer here.", "It needs a special computer program."], correct: 0, feedback: "We don't have 'bionic brains' — so we use a shortcut." },
+  { q: "What is the Rule of 72?", options: ["72 ÷ interest rate = years to double.", "100 − your age = % to invest in stocks.", "72 × interest rate = total interest earned.", "72 ÷ years = interest you need to triple."], correct: 0, feedback: "Divide 72 by the rate to estimate the doubling time." },
+  { q: "$5,000 at 4%. How many years to reach $10,000?", options: ["18 years.", "12 years.", "9 years.", "24 years."], correct: 0, feedback: "72 ÷ 4 = 18 years." },
+  { q: "What does the Rule of 72 show about small rate changes?", options: ["Small rate increases make a huge difference over time.", "Small rate changes don't matter in the long term.", "Only the first deposit matters, not the rate.", "A higher rate doubles your money in the same time."], correct: 0, feedback: "Compounding turns small differences into big ones." },
+  { q: "36 years at 4%. How many times does the money double?", options: ["Twice.", "Four times.", "Three times.", "Once."], correct: 0, feedback: "Doubles every 18 years → 36 ÷ 18 = 2 times." },
+  { q: "Same 36 years but at 8%. What happens?", options: ["It doubles 4 times (×16).", "It doubles twice, like at 4%.", "It doubles 8 times (×256).", "It doubles 3 times (×8)."], correct: 0, feedback: "72 ÷ 8 = 9 years → 4 doublings: 2⁴ = 16 times the money. (The video simplifies it as 'quadrupling the doublings'.)" },
+  { q: "At 12% for 36 years, how many times does it double?", options: ["6 times (every 6 years).", "3 times (every 12 years).", "4 times (every 9 years).", "12 times (every 3 years)."], correct: 0, feedback: "72 ÷ 12 = 6 years → 36 ÷ 6 = 6 doublings (2⁶ = 64 times)." },
+  { q: "Why is 72 such a useful number?", options: ["It divides easily by many rates.", "Tax agencies use it in every calculation.", "It adjusts the result for inflation.", "It removes the risk from the estimate."], correct: 0, feedback: "72 ÷ 2, 3, 4, 6, 8, 9, 12 — easy mental math." },
+  { q: "What is the big lesson for retirement planning?", options: ["Compounding and higher rates change your future wealth a lot.", "Only the first deposit matters, not the interest rate.", "It is better to start late with bigger amounts.", "A 1% difference in rate is too small to care about."], correct: 0, feedback: "Rate + time = the power of compounding." },
+  { q: "How exact is the Rule of 72?", options: ["A very close approximation.", "An exact formula for every rate.", "Only valid for stocks.", "Useful only for loans, not savings."], correct: 0, feedback: "A practical shortcut — close enough for normal rates." },
+  { q: "What is the relationship between rate and doubling time?", options: ["Higher rate → shorter doubling time.", "Higher rate → longer doubling time.", "The rate doesn't change the doubling time.", "Doubling time = rate × 72."], correct: 0, feedback: "72 ÷ bigger number = fewer years." },
 ];
 
 /* ---------- VIDEO · The Minimum Payment Trap ---------- */
 const VQ_MINPAY = [
-  { q: "What is the real purpose of minimum payment formulas?", options: ["To keep you paying as long as possible.", "To help you finish paying the debt in less than two years without paying much interest.", "To follow a law that caps interest.", "To move debt to cheap loans."], correct: 0, feedback: "They keep you in a long loop while you feel responsible." },
-  { q: "$5,000 at 22%, paying only the minimum. What happens?", options: ["About 19 years and ~$8,000 in interest.", "Only 26 months and very little interest, because the bank lowers the rate every year.", "The debt triples in 5 years.", "The bank cancels it."], correct: 0, feedback: "19 years and about $8,000 just in interest." },
-  { q: "How is a typical minimum payment calculated?", options: ["Monthly interest + about 1% of the balance.", "A fixed 10% of the first purchase plus a fee for every month that you use the card.", "50% of your income.", "$50 by law."], correct: 0, feedback: "Interest + ~1% of what you owe." },
-  { q: "Why do minimum payments get smaller every month?", options: ["1% of a smaller balance is smaller, so you repay slower.", "Because the law gives you a big discount on the interest after you pay for five years.", "Banks reward you.", "Stores pay part."], correct: 0, feedback: "A shrinking payment means the debt shrinks slower and slower." },
-  { q: "What happens if you pay a fixed $250 per month instead?", options: ["Paid in ~26 months with ~$1,300 interest.", "You still need 19 years, because the interest rate is the same for every payment plan.", "The bank refuses.", "You pay $8,000 interest."], correct: 0, feedback: "Fixed payments: 26 months and $1,300 instead of 19 years and $8,000." },
-  { q: "What is Step 1 to escape the trap?", options: ["Stop adding new charges.", "Call the bank immediately and ask them to cancel the whole balance of your card.", "Declare bankruptcy.", "Take a new loan."], correct: 0, feedback: "You can't empty a bathtub with the tap still running." },
-  { q: "Why make a list of all your debts (Step 2)?", options: ["It becomes a clear map after 10 scary minutes.", "Because the list automatically reduces the interest rate of every debt by half.", "It freezes the bills.", "It gives you grants."], correct: 0, feedback: "Debts, rates and minimums on one page = your plan." },
-  { q: "What is the Debt Avalanche method?", options: ["Extra money goes to the highest rate first.", "You pay the smallest balance first to feel motivated, without looking at the interest rates.", "Equal payments to all.", "Sell your things."], correct: 0, feedback: "Highest rate first saves the most money." },
-  { q: "What is the Debt Snowball method?", options: ["Pay the smallest balance first for quick wins.", "Pay the highest interest rate first, because it saves the most money in mathematical terms.", "Combine all debts.", "Negotiate with agencies."], correct: 0, feedback: "Smallest first = motivation from quick victories." },
-  { q: "What can you ask your card company?", options: ["A lower rate, if you always pay on time.", "To eliminate all the interest forever, or you will take them to court immediately.", "Stop paying.", "Change cards monthly."], correct: 0, feedback: "Many people never ask — sometimes it works." },
-  { q: "When does a balance transfer or consolidation loan help?", options: ["Only after you stop adding new debt.", "Before you use all your available credit, so you can spend more money with a bigger limit.", "To raise your limit.", "To pay daily expenses."], correct: 0, feedback: "Otherwise you just build a bigger chain." },
-  { q: "What is the reality of getting out of debt?", options: ["Boring, consistent payments month after month.", "One big heroic moment when you win an investment in the stock market and pay everything.", "Government help.", "The right app."], correct: 0, feedback: "Discipline beats drama." },
+  { q: "What is the real purpose of minimum payment formulas?", options: ["To keep you paying as long as possible.", "To help you finish your debt in two years.", "To follow a law that caps the interest.", "To make your monthly payments bigger."], correct: 0, feedback: "They keep you in a long loop while you feel responsible." },
+  { q: "$5,000 at 22%, paying only the minimum. What happens?", options: ["About 19 years and ~$8,000 in interest.", "About 26 months and very little interest.", "About 5 years and ~$1,300 in interest.", "About 10 years, then the bank cancels it."], correct: 0, feedback: "19 years and about $8,000 just in interest." },
+  { q: "How is a typical minimum payment calculated?", options: ["Monthly interest + about 1% of the balance.", "10% of the first purchase plus a fee.", "A fixed $50 set by law.", "Half of the monthly interest only."], correct: 0, feedback: "Interest + ~1% of what you owe." },
+  { q: "Why do minimum payments get smaller every month?", options: ["1% of a smaller balance is smaller, so you repay slower.", "The bank gives you a discount on interest after a few years.", "The interest rate goes down automatically every month.", "The store pays part of your debt as a reward."], correct: 0, feedback: "A shrinking payment means the debt shrinks slower and slower." },
+  { q: "What happens if you pay a fixed $250 per month instead?", options: ["Paid in ~26 months with ~$1,300 interest.", "Still 19 years, because the rate is the same.", "Paid in ~12 months with no interest.", "Paid in ~5 years with ~$4,000 interest."], correct: 0, feedback: "Fixed payments: 26 months and $1,300 instead of 19 years and $8,000." },
+  { q: "What is Step 1 to escape the trap?", options: ["Stop adding new charges.", "Ask the bank to cancel the balance.", "Take a new loan to pay the card.", "Pay only the minimum for now."], correct: 0, feedback: "You can't empty a bathtub with the tap still running." },
+  { q: "Why make a list of all your debts (Step 2)?", options: ["It becomes a clear map after 10 scary minutes.", "It lowers the interest rate of each debt.", "It freezes your bills for a few months.", "The bank needs it to give you more credit."], correct: 0, feedback: "Debts, rates and minimums on one page = your plan." },
+  { q: "What is the Debt Avalanche method?", options: ["Extra money goes to the highest rate first.", "Extra money goes to the smallest balance first.", "Equal extra payments go to every debt.", "You combine all debts into one new card."], correct: 0, feedback: "Highest rate first saves the most money." },
+  { q: "What is the Debt Snowball method?", options: ["Smallest balance first, for quick wins.", "Highest interest rate first, to save money.", "Biggest balance first, to finish it early.", "All debts at the same time, equally."], correct: 0, feedback: "Smallest first = motivation from quick victories." },
+  { q: "What can you ask your card company?", options: ["A lower rate, if you always pay on time.", "To erase all the interest you have paid.", "To stop paying for six months, no cost.", "A higher limit, so you can pay it faster."], correct: 0, feedback: "Many people never ask — sometimes it works." },
+  { q: "When does a balance transfer or consolidation loan help?", options: ["Only after you stop adding new debt.", "Before you use all your credit limit.", "When you want a higher credit limit.", "When you need money for daily expenses."], correct: 0, feedback: "Otherwise you just build a bigger chain." },
+  { q: "What is the reality of getting out of debt?", options: ["Boring, consistent payments month after month.", "One big win in the stock market that pays everything.", "A new app that organizes your money for you.", "Help from the government after a few years."], correct: 0, feedback: "Discipline beats drama." },
 ];
 
 /* ---------- LISTENING · A CDT at the Bank (mp3 · decimo2.mp3) ---------- */
@@ -2024,16 +2009,16 @@ const SCRIPT_CDT = [
   { who: "Narrator", t: "Valentina didn't choose the biggest number. She chose the option that matched her goal: a fixed date and no risk. The 14% was last year's return, not a promise, and the 2% fee is charged every year." },
 ];
 const Q_CDT = [
-  { q: "Why does Valentina need the money in exactly one year?", options: ["To pay for a programming course.", "To buy a new laptop for her aunt's bakery before the end of the year.", "To travel.", "To lend it."], correct: 0, feedback: "Her goal has a fixed date: a programming course." },
-  { q: "How much would the savings account pay in one year?", options: ["About 80,000 pesos.", "About 200,000 pesos, the same as the CDT, because both are bank products.", "280,000.", "Nothing."], correct: 0, feedback: "4% of 2,000,000 = 80,000." },
-  { q: "What is the main condition of the CDT?", options: ["You can't withdraw before 360 days.", "You can withdraw at any moment, but the bank pays you less interest every month.", "It charges 2% fees.", "It pays 14%."], correct: 0, feedback: "Higher rate, but the money is locked." },
-  { q: "What was the trap in the adviser's offer?", options: ["14% was LAST year's return, not a promise.", "The CDT was not real and the bank wanted to keep Valentina's money for itself.", "The account had no interest.", "Her mom was wrong."], correct: 0, feedback: "Past returns don't guarantee future returns." },
-  { q: "What extra cost does the fund have?", options: ["A 2% management fee every year.", "A penalty of 3% if she takes the money out before the 360 days of the contract.", "A tax of 14%.", "No cost."], correct: 0, feedback: "The fee is charged even in bad years." },
-  { q: "Why did Valentina choose the CDT?", options: ["Fixed date + no risk matches her goal.", "Because it pays the highest number of all the options that the bank offered to her.", "Her mom told her.", "It's liquid."], correct: 0, feedback: "She matched the product to her goal, not to the biggest number." },
-  { q: "What does 10% E.A. mean?", options: ["What she really earns in one full year.", "That the bank pays her 10% every single month for the twelve months of the year.", "10% per day.", "A fee."], correct: 0, feedback: "Effective annual = the real yearly return, with compounding included." },
-  { q: "How much would the CDT pay in one year?", options: ["About 200,000 pesos.", "About 2,400,000 pesos, because 10% each month for twelve months is 120%.", "80,000.", "20,000."], correct: 0, feedback: "10% of 2,000,000 = 200,000." },
-  { q: "When could the fund be a better option?", options: ["With a long horizon and money you can risk.", "When you need the money on a fixed date next month and you can't lose any of it.", "Never.", "Only on Fridays."], correct: 0, feedback: "Funds fit long-term goals where you can wait out bad years." },
-  { q: "What smart question did Valentina ask?", options: ["“Is the 14% guaranteed?”", "“Can you give me the 14% now and the CDT later, so I get both?”", "“Where is the exit?”", "“Do you like my mom?”"], correct: 0, feedback: "Always ask if a return is guaranteed — and what the fees are." },
+  { q: "Why does Valentina need the money in exactly one year?", options: ["To pay for a programming course.", "To buy a laptop for her aunt's bakery.", "To travel with her friends.", "To lend it to her mom."], correct: 0, feedback: "Her goal has a fixed date: a programming course." },
+  { q: "How much would the savings account pay in one year?", options: ["About 80,000 pesos.", "About 200,000 pesos.", "About 280,000 pesos.", "About 20,000 pesos."], correct: 0, feedback: "4% of 2,000,000 = 80,000." },
+  { q: "What is the main condition of the CDT?", options: ["You can't withdraw before 360 days.", "You can withdraw any time, with less interest.", "It charges a 2% fee every year.", "Its rate goes up and down every month."], correct: 0, feedback: "Higher rate, but the money is locked." },
+  { q: "What was the trap in the adviser's offer?", options: ["14% was LAST year's return, not a promise.", "The CDT wasn't real; the bank wanted her money.", "The fund was illegal in Colombia.", "The 14% was monthly, not annual."], correct: 0, feedback: "Past returns don't guarantee future returns." },
+  { q: "What extra cost does the fund have?", options: ["A 2% management fee every year.", "A 3% penalty to withdraw early.", "A 14% tax on the profit.", "A fixed fee of $50,000 a month."], correct: 0, feedback: "The fee is charged even in bad years." },
+  { q: "Why did Valentina choose the CDT?", options: ["Fixed date + no risk matches her goal.", "It paid the most of all the options.", "Her mom chose it for her.", "She could take the money out any day."], correct: 0, feedback: "She matched the product to her goal, not to the biggest number." },
+  { q: "What does 10% E.A. mean?", options: ["What she really earns in one full year.", "The bank pays her 10% every month.", "10% minus the inflation of the year.", "What she earns in the first month only."], correct: 0, feedback: "Effective annual = the real yearly return, with compounding included." },
+  { q: "How much would the CDT pay in one year?", options: ["About 200,000 pesos.", "About 2,400,000 pesos.", "About 80,000 pesos.", "About 280,000 pesos."], correct: 0, feedback: "10% of 2,000,000 = 200,000." },
+  { q: "When could the fund be a better option?", options: ["With a long horizon and money you can risk.", "When you need the money on a fixed date soon.", "When you want a guaranteed 14%.", "When you can't lose any of your money."], correct: 0, feedback: "Funds fit long-term goals where you can wait out bad years." },
+  { q: "What smart question did Valentina ask?", options: ["“Is the 14% guaranteed?”", "“Can I have 14% now and the CDT later?”", "“Which option does my mom prefer?”", "“What did the fund pay two years ago?”"], correct: 0, feedback: "Always ask if a return is guaranteed — and what the fees are." },
 ];
 
 /* ---------- LECTURA · Your Money in a Spreadsheet (B2) ---------- */
@@ -2056,16 +2041,16 @@ const READ_SHEET = [
 ];
 const GLOSS_SHEET = { "spreadsheet": "a program with rows and columns that calculates automatically (Excel, Google Sheets)", "cell": "one box of a spreadsheet, like B4", "formula": "an instruction that starts with = and calculates", "fixed expenses": "costs that are the same every month", "variable expenses": "costs that change from month to month", "50/30/20": "a guide: 50% needs, 30% wants, 20% savings" };
 const Q_SHEET = [
-  { q: "What is cell C7?", options: ["Column C, row 7.", "Row C and column 7 of the second page of the spreadsheet.", "A formula.", "A total."], correct: 0, feedback: "Column letter + row number." },
-  { q: "Which formula adds cells B2 to B8?", options: ["=SUM(B2:B8)", "SUM B2 and then B8 without the equals sign at the beginning of the cell", "B2+B8", "=B2*B8"], correct: 0, feedback: "Formulas start with = and SUM adds a range." },
-  { q: "Income is in B1. How do you calculate 20% savings?", options: ["=B1*20%", "Type 320,000 in the cell by hand, because it's faster than writing a formula.", "=B1+20", "=20/B1"], correct: 0, feedback: "Multiplying by 20% always updates if B1 changes." },
-  { q: "With $1,600,000 and 50/30/20, how much for wants?", options: ["$480,000.", "$800,000, because wants are the biggest part of the budget for young people.", "$320,000.", "$160,000."], correct: 0, feedback: "30% × 1,600,000 = 480,000." },
-  { q: "Which is a FIXED expense?", options: ["A monthly phone plan.", "Going out with friends on the weekends, which changes every single month.", "Snacks.", "Gifts."], correct: 0, feedback: "Same amount every month = fixed." },
-  { q: "Why is a spreadsheet better than a notebook?", options: ["It recalculates automatically.", "Because a notebook can't contain numbers bigger than one million pesos.", "It's prettier.", "It's free."], correct: 0, feedback: "Change one cell → every total updates." },
-  { q: "You save $400,000 a month for a $1,200,000 laptop. How long?", options: ["3 months.", "4 months, because you always need one extra month for unexpected expenses.", "12 months.", "2 months."], correct: 0, feedback: "1,200,000 ÷ 400,000 = 3." },
-  { q: "What is the best moment to save, according to the text?", options: ["First, when you receive your income.", "At the end of the month, with the money that you didn't spend on other things.", "Never.", "Only in December."], correct: 0, feedback: "Pay yourself first." },
-  { q: "A $5,000 snack every school day (22 days) costs…", options: ["$110,000 a month.", "$5,000 a month, because it's only a small daily expense.", "$22,000.", "$50,000."], correct: 0, feedback: "Small expenses add up: 5,000 × 22." },
-  { q: "What is the 50/30/20 rule?", options: ["A guide, not a law.", "A law in Colombia that every person with a salary must follow every month.", "A tax.", "A bank product."], correct: 0, feedback: "Adapt it to your life." },
+  { q: "What is cell C7?", options: ["Column C, row 7.", "Row C, column 7.", "The seventh formula in column C.", "The total of column C."], correct: 0, feedback: "Column letter + row number." },
+  { q: "Which formula adds cells B2 to B8?", options: ["=SUM(B2:B8)", "=B2+B8", "=SUM(B2;B8)", "=B2*B8"], correct: 0, feedback: "Formulas start with = and SUM adds a range." },
+  { q: "Income is in B1. How do you calculate 20% savings?", options: ["=B1*20%", "=B1+20%", "=20/B1", "=B1*20"], correct: 0, feedback: "Multiplying by 20% always updates if B1 changes." },
+  { q: "With $1,600,000 and 50/30/20, how much for wants?", options: ["$480,000.", "$800,000.", "$320,000.", "$500,000."], correct: 0, feedback: "30% × 1,600,000 = 480,000." },
+  { q: "Which is a FIXED expense?", options: ["A monthly phone plan.", "Weekend plans with friends.", "Snacks at school.", "Birthday gifts."], correct: 0, feedback: "Same amount every month = fixed." },
+  { q: "Why is a spreadsheet better than a notebook?", options: ["It recalculates automatically.", "It can hold bigger numbers.", "It looks more professional.", "It keeps your data private."], correct: 0, feedback: "Change one cell → every total updates." },
+  { q: "You save $400,000 a month for a $1,200,000 laptop. How long?", options: ["3 months.", "4 months.", "2 months.", "6 months."], correct: 0, feedback: "1,200,000 ÷ 400,000 = 3." },
+  { q: "What is the best moment to save, according to the text?", options: ["First, as soon as you receive your income.", "At the end of the month, with what is left.", "After paying for your wants.", "Only when you get a bonus or a gift."], correct: 0, feedback: "Pay yourself first." },
+  { q: "A $5,000 snack every school day (22 days) costs…", options: ["$110,000 a month.", "$5,000 a month.", "$100,000 a month.", "$150,000 a month."], correct: 0, feedback: "Small expenses add up: 5,000 × 22." },
+  { q: "What is the 50/30/20 rule?", options: ["A guide, not a law.", "A law every worker must follow.", "A tax rule from the DIAN.", "A bank savings product."], correct: 0, feedback: "Adapt it to your life." },
 ];
 
 /* ---------- LECTURA · The Time Traveler's Wallet (B2) ---------- */
@@ -2086,16 +2071,16 @@ const READ_TIME = [
 ];
 const GLOSS_TIME = { "time value of money": "money today is worth more than the same money in the future", "present value": "what a future amount is worth today", "future value": "what money today will become in the future", "compounding": "earning interest on your interest", "purchasing power": "how many things your money can buy", "real return": "your return after inflation" };
 const Q_TIME = [
-  { q: "Why did Mariana's $100,000 lose value?", options: ["Prices rose (inflation).", "The bill was too old and the bank stopped accepting it in 2025.", "The book damaged it.", "Grandpa spent it."], correct: 0, feedback: "Same bill, higher prices → less purchasing power." },
-  { q: "$1,000,000 at 10% for 3 years becomes…", options: ["$1,331,000.", "$1,300,000, because you earn exactly $100,000 every year for three years.", "$1,100,000.", "$3,000,000."], correct: 0, feedback: "1,000,000 × 1.1³ = 1,331,000 (compounding)." },
-  { q: "What is present value?", options: ["What a future amount is worth today.", "The money that you have in your pocket right now, without thinking about interest.", "A gift.", "A tax."], correct: 0, feedback: "PV = FV ÷ (1 + r)ⁿ." },
-  { q: "$1,000,000 today or $1,100,000 in a year, with a CDT at 12%?", options: ["Today: it becomes $1,120,000.", "Next year, because $1,100,000 is always a bigger number than $1,000,000.", "The same.", "Neither."], correct: 0, feedback: "Invest today at 12% → 1,120,000 > 1,100,000." },
-  { q: "Same choice, but your best rate is 6%?", options: ["Wait: $1,100,000 beats $1,060,000.", "Take it today, because money today is always better in every situation.", "The same.", "Ask the aunt."], correct: 0, feedback: "1,000,000 × 1.06 = 1,060,000 < 1,100,000." },
-  { q: "Your money grows 6% and inflation is 9%. Real return?", options: ["About −3%.", "About +15%, because you add the interest rate and the inflation rate together.", "+6%.", "0%."], correct: 0, feedback: "Real ≈ 6% − 9% = −3%." },
-  { q: "Which year had the highest inflation in the table?", options: ["2022 (13.12%).", "2016, because prices always go up more at the beginning of a period of time.", "2020.", "2018."], correct: 0, feedback: "2022: 13.12%." },
-  { q: "What is your opportunity cost in the 'today or tomorrow' example?", options: ["The rate you could earn elsewhere.", "The total amount of money that your aunt has in her bank account today.", "The inflation of 2016.", "Zero."], correct: 0, feedback: "Your best alternative return." },
-  { q: "10% per year for 3 years is…", options: ["33.1% in total.", "30% in total, because you multiply 10% by 3 years.", "10%.", "300%."], correct: 0, feedback: "1.1³ − 1 = 0.331." },
-  { q: "Why do banks move money 'to the same moment' before comparing?", options: ["Money from different years isn't comparable.", "Because the law says they can only compare money from the same day of the week.", "To charge fees.", "To confuse clients."], correct: 0, feedback: "Time changes the value of money." },
+  { q: "Why did Mariana's $100,000 lose value?", options: ["Prices rose (inflation).", "The bill became too old to use.", "The peso got stronger.", "The bank charged a fee."], correct: 0, feedback: "Same bill, higher prices → less purchasing power." },
+  { q: "$1,000,000 at 10% for 3 years becomes…", options: ["$1,331,000.", "$1,300,000.", "$1,310,000.", "$1,030,000."], correct: 0, feedback: "1,000,000 × 1.1³ = 1,331,000 (compounding)." },
+  { q: "What is present value?", options: ["What a future amount is worth today.", "The money you have in your pocket now.", "The value of something after interest.", "The price of a product in the future."], correct: 0, feedback: "PV = FV ÷ (1 + r)ⁿ." },
+  { q: "$1,000,000 today or $1,100,000 in a year, with a CDT at 12%?", options: ["Today: it becomes $1,120,000.", "Next year: $1,100,000 is bigger.", "It's the same either way.", "Next year, it has no risk."], correct: 0, feedback: "Invest today at 12% → 1,120,000 > 1,100,000." },
+  { q: "Same choice, but your best rate is 6%?", options: ["Wait: $1,100,000 beats $1,060,000.", "Take it today: money today always wins.", "Take it today: it becomes $1,120,000.", "It's exactly the same either way."], correct: 0, feedback: "1,000,000 × 1.06 = 1,060,000 < 1,100,000." },
+  { q: "Your money grows 6% and inflation is 9%. Real return?", options: ["About −3%.", "About +15%.", "About +6%.", "About +3%."], correct: 0, feedback: "Real ≈ 6% − 9% = −3%." },
+  { q: "Which year had the highest inflation in the table?", options: ["2022 (13.12%).", "2016 (5.75%).", "2023 (9.28%).", "2020 (1.61%)."], correct: 0, feedback: "2022: 13.12%." },
+  { q: "What is your opportunity cost in the 'today or tomorrow' example?", options: ["The rate you could earn elsewhere.", "The money your aunt has in the bank.", "The inflation of the last year.", "The time you wait for the money."], correct: 0, feedback: "Your best alternative return." },
+  { q: "10% per year for 3 years is…", options: ["33.1% in total.", "30% in total.", "31% in total.", "13.3% in total."], correct: 0, feedback: "1.1³ − 1 = 0.331." },
+  { q: "Why do banks move money 'to the same moment' before comparing?", options: ["Money from different years isn't comparable.", "The law requires the same day of the week.", "It helps them charge more fees.", "It makes the numbers look bigger."], correct: 0, feedback: "Time changes the value of money." },
 ];
 
 /* ---------- EXPLAINER · Reading a Bank Ad (E.A. vs. mensual) ---------- */
@@ -2110,13 +2095,13 @@ const BRIEF_RATES = [
 ];
 const GLOSS_RATES = { "effective annual": "the real rate for one year, including compounding (E.A.)", "monthly rate": "the interest rate for one month", "promotional rate": "a special rate that lasts a limited time", "minimum balance": "the money you must keep in the account" };
 const Q_RATES = [
-  { q: "What is 1% monthly in E.A.?", options: ["About 12.68%.", "Exactly 12%, because 1% times 12 months is 12% every year.", "1%.", "120%."], correct: 0, feedback: "(1.01)¹² − 1 = 12.68%." },
-  { q: "Which pays more for SAVING: 1% monthly or 12% E.A.?", options: ["1% monthly (12.68% E.A.).", "12% E.A., because annual rates are always bigger than monthly rates.", "They're equal.", "Neither."], correct: 0, feedback: "Translate first, then compare." },
-  { q: "A card charges 2% monthly. E.A.?", options: ["About 26.8%.", "24%, because two percent multiplied by twelve months gives twenty-four.", "2%.", "12%."], correct: 0, feedback: "(1.02)¹² − 1 = 26.82%." },
-  { q: "12% E.A. is about how much per month?", options: ["0.95%.", "1%, because you divide twelve percent by the twelve months of the year.", "12%.", "0.5%."], correct: 0, feedback: "(1.12)^(1/12) − 1 ≈ 0.949%." },
-  { q: "For a LOAN, which rate do you want?", options: ["The lowest E.A.", "The highest E.A., because the bank will give you more money for your project.", "Monthly only.", "Any."], correct: 0, feedback: "Borrowing → lowest cost." },
-  { q: "Besides the rate, what should you check?", options: ["Fees, conditions and withdrawals.", "Only the color of the bank's logo and the design of its app on your phone.", "Nothing.", "The adviser's name."], correct: 0, feedback: "The rate is not the only thing that matters." },
-  { q: "$2,000,000 in a CDT at 10% E.A. for one year gives…", options: ["$2,200,000.", "$4,400,000, because the CDT pays ten percent every month for one year.", "$2,010,000.", "$2,000,000."], correct: 0, feedback: "2,000,000 × 1.10." },
+  { q: "What is 1% monthly in E.A.?", options: ["About 12.68%.", "Exactly 12%.", "About 11.39%.", "About 13.5%."], correct: 0, feedback: "(1.01)¹² − 1 = 12.68%." },
+  { q: "Which pays more for SAVING: 1% monthly or 12% E.A.?", options: ["1% monthly (12.68% E.A.).", "12% E.A.: annual is always bigger.", "They are exactly equal.", "12% E.A.: fewer calculations."], correct: 0, feedback: "Translate first, then compare." },
+  { q: "A card charges 2% monthly. E.A.?", options: ["About 26.8%.", "Exactly 24%.", "About 22.4%.", "About 30%."], correct: 0, feedback: "(1.02)¹² − 1 = 26.82%." },
+  { q: "12% E.A. is about how much per month?", options: ["About 0.95%.", "Exactly 1%.", "About 1.2%.", "About 0.5%."], correct: 0, feedback: "(1.12)^(1/12) − 1 ≈ 0.949%." },
+  { q: "For a LOAN, which rate do you want?", options: ["The lowest E.A.", "The highest E.A.", "The lowest monthly payment.", "The one with the most installments."], correct: 0, feedback: "Borrowing → lowest cost." },
+  { q: "Besides the rate, what should you check?", options: ["Fees, conditions and when you can withdraw.", "Only the design of the bank's app.", "The bank's ranking on social media.", "How many branches it has in your city."], correct: 0, feedback: "The rate is not the only thing that matters." },
+  { q: "$2,000,000 in a CDT at 10% E.A. for one year gives…", options: ["$2,200,000.", "$4,400,000.", "$2,020,000.", "$2,240,000."], correct: 0, feedback: "2,000,000 × 1.10." },
 ];
 
 /* ---------- LECTURA · The Price Times (periódico) ---------- */
@@ -2134,14 +2119,14 @@ const READ_PRICES = [
 ];
 const GLOSS_PRICES = { "IPC": "Índice de Precios al Consumidor: measures the average change of prices of a basket", "DANE": "Colombia's official statistics office", "driver": "the main cause of a change", "inflation target": "the inflation the central bank wants (3% in Colombia)", "basket": "a group of products used to measure prices" };
 const Q_PRICES = [
-  { q: "What inflation did Colombia have in 2022, according to DANE?", options: ["13.12%.", "5.20%, which was the highest number of the last twenty years in the country.", "3%.", "1.61%."], correct: 0, feedback: "2022: 13.12%, the highest in more than 20 years." },
-  { q: "What is the Banco de la República's inflation target?", options: ["3%.", "13%, the same number as the inflation of 2022 that the families suffered.", "0%.", "10%."], correct: 0, feedback: "3% (with a range of ± 1 point)." },
-  { q: "A bus ticket goes from $2,300 to $3,200. % change?", options: ["About 39%.", "About 28%, because you divide the difference by the new price of 3,200.", "900%.", "3.2%."], correct: 0, feedback: "900 ÷ 2,300 × 100 ≈ 39%." },
-  { q: "Why can YOUR inflation be different from the IPC?", options: ["You buy a different basket.", "Because the IPC only measures the prices of cars and houses in big cities.", "The IPC is wrong.", "It can't."], correct: 0, feedback: "The IPC is an average basket." },
-  { q: "$1,000,000 in a piggy bank with 5% inflation buys what… bought before.", options: ["about $952,000", "about $1,050,000, because the money grows with inflation every year.", "$1,000,000", "$500,000"], correct: 0, feedback: "1,000,000 ÷ 1.05 ≈ 952,000." },
-  { q: "Why did the central bank raise rates in 2022?", options: ["To cool down spending and inflation.", "To help families spend more money in supermarkets during the crisis.", "To print money.", "For fun."], correct: 0, feedback: "Higher rates → less spending → lower inflation." },
-  { q: "A phone goes from $800,000 to $700,000. % change?", options: ["−12.5%.", "+14.3%, because the difference is one hundred thousand pesos.", "−100%.", "0%."], correct: 0, feedback: "−100,000 ÷ 800,000 = −12.5%." },
-  { q: "What protects your purchasing power?", options: ["A return higher than inflation.", "Keeping all your savings in cash at home, where nobody can touch them.", "Spending fast.", "Nothing."], correct: 0, feedback: "Real return = rate − inflation must be positive." },
+  { q: "What inflation did Colombia have in 2022, according to DANE?", options: ["13.12%.", "5.20%.", "9.28%.", "10.15%."], correct: 0, feedback: "2022: 13.12%, the highest in more than 20 years." },
+  { q: "What is the Banco de la República's inflation target?", options: ["3%.", "13%.", "0%.", "5%."], correct: 0, feedback: "3% (with a range of ± 1 point)." },
+  { q: "A bus ticket goes from $2,300 to $3,200. % change?", options: ["About 39%.", "About 28%.", "About 9%.", "About 90%."], correct: 0, feedback: "900 ÷ 2,300 × 100 ≈ 39%." },
+  { q: "Why can YOUR inflation be different from the IPC?", options: ["You buy a different basket.", "The IPC only measures cars and houses.", "The IPC is calculated once every 10 years.", "Your city doesn't count in the IPC."], correct: 0, feedback: "The IPC is an average basket." },
+  { q: "$1,000,000 in a piggy bank with 5% inflation buys what… bought before.", options: ["about $952,000", "about $1,050,000", "about $900,000", "about $500,000"], correct: 0, feedback: "1,000,000 ÷ 1.05 ≈ 952,000." },
+  { q: "Why did the central bank raise rates in 2022?", options: ["To cool down spending and inflation.", "To help families spend more.", "To make loans cheaper for everybody.", "To make the peso weaker."], correct: 0, feedback: "Higher rates → less spending → lower inflation." },
+  { q: "A phone goes from $800,000 to $700,000. % change?", options: ["−12.5%.", "−14.3%.", "+14.3%.", "−10%."], correct: 0, feedback: "−100,000 ÷ 800,000 = −12.5%." },
+  { q: "What protects your purchasing power?", options: ["A return higher than inflation.", "Keeping your savings in cash at home.", "A return equal to last year's rate.", "Spending your money before prices rise."], correct: 0, feedback: "Real return = rate − inflation must be positive." },
 ];
 
 /* ---------- RUSH · Budget ---------- */
@@ -2164,21 +2149,21 @@ const RUSH_BUDGET = {
 const BOSS2_MISSIONS = [
   { tag: "🧾 Level 1 · Budget", q: "Income $1,600,000. Needs $780,000, wants $420,000. How much is left to save?", answer: 400000, money: true, hint: "1,600,000 − 780,000 − 420,000", explain: "1,600,000 − 1,200,000 = 400,000 (25%)." },
   { tag: "📈 Level 2 · Compound", q: "$2,000,000 at 10% E.A. for 2 years. Final value?", answer: 2420000, money: true, hint: "2,000,000 × 1.1 × 1.1", explain: "2,000,000 × 1.21 = 2,420,000." },
-  { tag: "🏦 Level 3 · Rates", q: "Which pays more for saving?", options: ["1% monthly (12.68% E.A.).", "11.5% E.A., because annual rates already include all the months of the year.", "0.8% monthly.", "10% E.A."], correct: 0, explain: "(1.01)¹² − 1 = 12.68%." },
+  { tag: "🏦 Level 3 · Rates", q: "Which pays more for saving?", options: ["1% monthly (12.68% E.A.).", "11.5% E.A. (no fees).", "0.8% monthly.", "12% E.A. (fixed rate)."], correct: 0, explain: "(1.01)¹² − 1 = 12.68%." },
   { tag: "💳 Level 4 · Loan", q: "A $1,200,000 purchase on a card at 2% monthly in 12 installments: payment ≈ $113,472. Total paid?", answer: 1361664, money: true, tol: 300, hint: "113,472 × 12", explain: "≈ $1,361,664 — about $161,664 of interest." },
   { tag: "🫧 Level 5 · Inflation", q: "Your savings pay 4% and inflation is 7%. Real return (approx.)?", answer: -3, unit: "%", tol: 0.2, hint: "rate − inflation", explain: "4% − 7% = −3%: you lose purchasing power." },
 ];
 const BOSS2_Q = [
-  { t: "Budget", q: "In 50/30/20, the 20% is for…", options: ["savings.", "wants like going out, because young people need more fun in their lives.", "rent.", "taxes."], correct: 0, feedback: "50 needs · 30 wants · 20 savings." },
-  { t: "Budget", q: "Which formula adds B2 to B6?", options: ["=SUM(B2:B6)", "SUM(B2-B6) without the equals sign at the beginning", "=B2*B6", "B2+B6"], correct: 0, feedback: "= starts every formula." },
-  { t: "Opportunity cost", q: "You choose a course instead of a trip. Opportunity cost?", options: ["The trip.", "The total price of the course plus the materials that you will need to buy.", "Nothing.", "The bus."], correct: 0, feedback: "The next best alternative you gave up." },
-  { t: "Time value", q: "PV of $1,210,000 in 2 years at 10%?", options: ["$1,000,000.", "$1,010,000, because you subtract ten percent two times from the future value.", "$1,210,000.", "$968,000."], correct: 0, feedback: "1,210,000 ÷ 1.21." },
-  { t: "Time value", q: "Why is money today worth more than tomorrow?", options: ["Inflation + you can invest it.", "Because banks close on Sundays and you can't use your money that day.", "It isn't.", "Taxes."], correct: 0, feedback: "Two reasons: prices rise and opportunity." },
-  { t: "Interest", q: "Rule of 72: at 9%, money doubles in…", options: ["8 years.", "9 years, the same number as the interest rate that the bank pays you.", "72 years.", "4 years."], correct: 0, feedback: "72 ÷ 9 = 8." },
-  { t: "Interest", q: "Compound interest means…", options: ["earning interest on interest.", "receiving the same interest every year, calculated only on the first deposit.", "paying taxes.", "no interest."], correct: 0, feedback: "That's why the curve bends upward." },
-  { t: "Loans & cards", q: "Paying only the card minimum…", options: ["keeps you in debt for years.", "is the fastest way to finish your debt, because the bank lowers the interest.", "is free.", "cancels interest."], correct: 0, feedback: "Minimums shrink — the debt lives longer." },
-  { t: "Loans & cards", q: "In an amortization table, at the beginning most of the payment goes to…", options: ["interest.", "the capital, so the debt goes down very fast during the first months.", "fees.", "insurance."], correct: 0, feedback: "Interest is calculated on a big balance at first." },
-  { t: "Inflation", q: "Inflation 9%, account 4%. Your purchasing power…", options: ["falls about 5%.", "grows about 13%, because you add the interest and the inflation.", "stays the same.", "doubles."], correct: 0, feedback: "Real ≈ 4 − 9 = −5%." },
+  { t: "Budget", q: "In 50/30/20, the 20% is for…", options: ["savings.", "wants.", "needs.", "fun plans."], correct: 0, feedback: "50 needs · 30 wants · 20 savings." },
+  { t: "Budget", q: "Which formula adds B2 to B6?", options: ["=SUM(B2:B6)", "=B2+B6", "=SUM(B2-B6)", "=B2*B6"], correct: 0, feedback: "= starts every formula." },
+  { t: "Opportunity cost", q: "You choose a course instead of a trip. Opportunity cost?", options: ["The trip.", "The price of the course.", "The materials for the course.", "Nothing, you chose well."], correct: 0, feedback: "The next best alternative you gave up." },
+  { t: "Time value", q: "PV of $1,210,000 in 2 years at 10%?", options: ["$1,000,000.", "$1,010,000.", "$968,000.", "$1,100,000."], correct: 0, feedback: "1,210,000 ÷ 1.21." },
+  { t: "Time value", q: "Why is money today worth more than tomorrow?", options: ["Inflation + you can invest it.", "Banks close on Sundays.", "Tomorrow you will pay taxes.", "Money gets old and loses value."], correct: 0, feedback: "Two reasons: prices rise and opportunity." },
+  { t: "Interest", q: "Rule of 72: at 9%, money doubles in…", options: ["8 years.", "9 years.", "6 years.", "10 years."], correct: 0, feedback: "72 ÷ 9 = 8." },
+  { t: "Interest", q: "Compound interest means…", options: ["earning interest on interest.", "earning the same interest every year.", "interest only on your first deposit.", "paying interest on interest."], correct: 0, feedback: "That's why the curve bends upward." },
+  { t: "Loans & cards", q: "Paying only the card minimum…", options: ["keeps you in debt for years.", "finishes your debt fast.", "lowers your interest rate.", "is free if you pay on time."], correct: 0, feedback: "Minimums shrink — the debt lives longer." },
+  { t: "Loans & cards", q: "In an amortization table, at the beginning most of the payment goes to…", options: ["interest.", "capital.", "fees.", "insurance."], correct: 0, feedback: "Interest is calculated on a big balance at first." },
+  { t: "Inflation", q: "Inflation 9%, account 4%. Your purchasing power…", options: ["falls about 5%.", "grows about 13%.", "grows about 4%.", "stays the same."], correct: 0, feedback: "Real ≈ 4 − 9 = −5%." },
 ];
 const BOSS2_TIPS = { Budget: "Review Your Money in a Spreadsheet and Survive the Month: formulas and 50/30/20.", "Opportunity cost": "Rewatch the St. Louis Fed video and replay Choices Arcade.", "Time value": "Reread The Time Traveler's Wallet: FV = PV × (1 + r)ⁿ and PV = FV ÷ (1 + r)ⁿ.", Interest: "Rewatch the Rule of 72 and replay the Interest Battle.", "Loans & cards": "Rewatch the Minimum Payment Trap and replay the Loan Lab.", Inflation: "Reread The Price Times: real return = rate − inflation." };
 
@@ -2265,7 +2250,7 @@ function SurviveMonth({ existing, onSave, onExit }) {
 const SHEET_VIS = <MiniTable head={["", "A", "B"]} rows={[["1", "Income", "1,600,000"], ["2", "Transport", "180,000"], ["3", "Food", "260,000"], ["4", "Phone", "60,000"], ["5", "Fun", "200,000"], ["6", "Total expenses", "?"]]} />;
 const SHEET_R = [
   { tag: "=SUM", q: "What does =SUM(B2:B5) show in B6?", visual: SHEET_VIS, answer: 700000, money: true, hint: "180,000 + 260,000 + 60,000 + 200,000", explain: "The four expenses add 700,000." },
-  { tag: "Formula", q: "Which formula calculates 20% savings of the income?", visual: SHEET_VIS, options: ["=B1*20%", "=SUM(B1:B5)*20 because you multiply all the cells by twenty", "=B1+20", "B1*20%"], correct: 0, explain: "Start with = and multiply the income cell by 20%." },
+  { tag: "Formula", q: "Which formula calculates 20% savings of the income?", visual: SHEET_VIS, options: ["=B1*20%", "=SUM(B1:B5)*20", "=B1+20%", "=B1/20"], correct: 0, explain: "Start with = and multiply the income cell by 20%." },
   { tag: "=B1-B6", q: "Free money = income − expenses. Result?", visual: SHEET_VIS, answer: 900000, money: true, hint: "1,600,000 − 700,000", explain: "=B1-B6 → 900,000." },
   { tag: "What if…", q: "Transport goes up to $240,000. What is the new total in B6?", answer: 760000, money: true, hint: "700,000 + 60,000", explain: "Change one cell, the formula updates: 760,000." },
   { tag: "%", q: "What % of the income is food ($260,000 of $1,600,000)?", answer: 16.25, unit: "%", tol: 0.1, hint: "=B3/B1", explain: "260,000 ÷ 1,600,000 = 16.25%." },
@@ -2329,7 +2314,7 @@ const HOURS_R = [
   { tag: "⏱️", q: "A $25,000 subscription for 12 months. Hours of work per year?", answer: 30, unit: "hours", hint: "25,000 × 12 ÷ 10,000", explain: "300,000 a year = 30 hours of your life." },
   { tag: "⏱️", q: "A $6,000 snack every school day (20 days). Hours per month?", answer: 12, unit: "hours", hint: "6,000 × 20 ÷ 10,000", explain: "120,000 = 12 hours every month." },
   { tag: "⏱️", q: "A $1,200,000 phone. How many hours?", answer: 120, unit: "hours", hint: "1,200,000 ÷ 10,000", explain: "120 hours = 30 shifts of 4 hours." },
-  { tag: "🧠 Decide", q: "Which purchase costs the MOST hours in a year?", options: ["A $6,000 daily snack (20 days/month).", "A $350,000 pair of sneakers, because it is the most expensive single product.", "A $25,000 monthly subscription.", "A $80,000 dinner once."], correct: 0, explain: "6,000 × 20 × 12 = 1,440,000 → 144 hours!" },
+  { tag: "🧠 Decide", q: "Which purchase costs the MOST hours in a year?", options: ["A $6,000 daily snack (20 days/month).", "A $350,000 pair of sneakers.", "A $25,000 monthly subscription.", "An $80,000 dinner, once."], correct: 0, explain: "6,000 × 20 × 12 = 1,440,000 → 144 hours!" },
 ];
 
 /* ---------- C2 · My Biggest Trade-off · Page 08 (SMART) ---------- */
@@ -2355,11 +2340,11 @@ function TradeoffPage({ existing, onSave, onExit }) {
 
 /* ---------- C3 · Today or Tomorrow? ---------- */
 const TODAY_R = [
-  { tag: "⏳ 12% available", q: "$1,000,000 today or $1,100,000 in one year? You can get 12% E.A.", options: ["Today (it becomes $1,120,000).", "In one year, because $1,100,000 is always more than one million pesos.", "It's the same.", "Neither."], correct: 0, explain: "1,000,000 × 1.12 = 1,120,000 > 1,100,000." },
-  { tag: "⏳ 6% available", q: "Same offer, but your best option pays 6% E.A.", options: ["Wait for $1,100,000.", "Take it today, because money today is always the best choice in any situation.", "Same.", "Neither."], correct: 0, explain: "1,000,000 × 1.06 = 1,060,000 < 1,100,000." },
+  { tag: "⏳ 12% available", q: "$1,000,000 today or $1,100,000 in one year? You can get 12% E.A.", options: ["Today (it becomes $1,120,000).", "In one year: $1,100,000 is more.", "It's exactly the same.", "In one year, because waiting is safer."], correct: 0, explain: "1,000,000 × 1.12 = 1,120,000 > 1,100,000." },
+  { tag: "⏳ 6% available", q: "Same offer, but your best option pays 6% E.A.", options: ["Wait for $1,100,000.", "Take it today: money today is always better.", "It's exactly the same.", "Take it today and invest it at 6%."], correct: 0, explain: "1,000,000 × 1.06 = 1,060,000 < 1,100,000." },
   { tag: "🧮 Future value", q: "$500,000 at 8% E.A. for 2 years. Future value?", answer: 583200, money: true, hint: "500,000 × 1.08 × 1.08", explain: "500,000 × 1.1664 = 583,200." },
   { tag: "🧮 Present value", q: "You will receive $2,420,000 in 2 years. With 10%, what is it worth today?", answer: 2000000, money: true, hint: "2,420,000 ÷ 1.21", explain: "2,420,000 ÷ 1.1² = 2,000,000." },
-  { tag: "🫧 Real value", q: "Your money grows 5% but inflation is 9%. What happens?", options: ["You lose about 4% of purchasing power.", "You win 14%, because you add the interest and the inflation together.", "Nothing changes.", "You double your money."], correct: 0, explain: "Real ≈ 5% − 9% = −4%." },
+  { tag: "🫧 Real value", q: "Your money grows 5% but inflation is 9%. What happens?", options: ["You lose about 4% of purchasing power.", "You win 14%: interest plus inflation.", "You win 5%, inflation doesn't matter.", "Nothing changes in real terms."], correct: 0, explain: "Real ≈ 5% − 9% = −4%." },
 ];
 
 /* ---------- C3 · PV/FV Machine (máquina del tiempo) ---------- */
@@ -2400,7 +2385,7 @@ const PVFV_R = [
   { tag: "FV", q: "$1,000,000 at 12% for 2 years?", answer: 1254400, money: true, hint: "1,000,000 × 1.12²", explain: "1,000,000 × 1.2544." },
   { tag: "PV", q: "$1,100,000 in 1 year at 10%. Value today?", answer: 1000000, money: true, hint: "1,100,000 ÷ 1.1", explain: "1,000,000." },
   { tag: "PV", q: "$1,331,000 in 3 years at 10%. Value today?", answer: 1000000, money: true, hint: "÷ 1.331", explain: "1,000,000." },
-  { tag: "Think", q: "If the rate goes UP, the PV of a future amount…", options: ["goes down.", "goes up, because a higher rate always makes every amount of money more valuable.", "stays the same.", "doubles."], correct: 0, explain: "You divide by a bigger number → a smaller PV." },
+  { tag: "Think", q: "If the rate goes UP, the PV of a future amount…", options: ["goes down.", "goes up.", "stays the same.", "doubles."], correct: 0, explain: "You divide by a bigger number → a smaller PV." },
 ];
 
 /* ---------- C4 · Interest Battle (simple vs. compuesto) ---------- */
@@ -2448,7 +2433,7 @@ const INT_R = [
   { tag: "Compound", q: "$2,000,000 at 8% COMPOUND for 3 years. Total?", answer: 2519424, money: true, tol: 5, hint: "2,000,000 × 1.08³", explain: "2,000,000 × 1.259712 = 2,519,424." },
   { tag: "Rule of 72", q: "At 6%, how many years to double?", answer: 12, unit: "years", hint: "72 ÷ 6", explain: "12 years." },
   { tag: "Rule of 72", q: "You want to double your money in 8 years. Rate needed?", answer: 9, unit: "%", hint: "72 ÷ 8", explain: "9% per year." },
-  { tag: "Shape", q: "Which graph shows compound interest?", options: ["A curve that bends upward.", "A straight line that goes up the same amount every year, like stairs.", "A flat line.", "A line going down."], correct: 0, explain: "Exponential growth curves upward." },
+  { tag: "Shape", q: "Which graph shows compound interest?", options: ["A curve that bends upward.", "A straight line that climbs the same every year.", "A line that rises fast, then goes flat.", "Stairs: equal steps up every year."], correct: 0, explain: "Exponential growth curves upward." },
 ];
 
 /* ---------- C4 · My Growth Chart · Page 09 ---------- */
@@ -2495,7 +2480,7 @@ function RateTranslator({ onSave, onExit }) {
     { tag: "Monthly → E.A.", q: "1.5% monthly = ?% E.A.", answer: 19.56, unit: "%", tol: 0.05, hint: "(1.015)^12 − 1", explain: "19.56% E.A." },
     { tag: "E.A. → monthly", q: "10% E.A. = ?% monthly", answer: 0.8, unit: "%", tol: 0.01, hint: "(1.10)^(1/12) − 1", explain: "0.797% ≈ 0.80% monthly." },
     { tag: "E.A. → monthly", q: "26.82% E.A. = ?% monthly", answer: 2, unit: "%", tol: 0.02, hint: "(1.2682)^(1/12) − 1", explain: "2% monthly — a typical card rate." },
-    { tag: "Compare", q: "For saving: 0.9% monthly or 11% E.A.?", options: ["0.9% monthly (11.35% E.A.).", "11% E.A., because it already includes the twelve months of the year.", "Equal.", "Can't know."], correct: 0, explain: "(1.009)^12 − 1 = 11.35% > 11%." },
+    { tag: "Compare", q: "For saving: 0.9% monthly or 11% E.A.?", options: ["0.9% monthly (about 11.35% E.A.).", "11% E.A., it already includes twelve months.", "They are exactly equal.", "11% E.A., because annual rates are bigger."], correct: 0, explain: "(1.009)^12 − 1 = 11.35% > 11%." },
   ];
   if (st.done) return <Reward title="Rate translator! 🔁" subtitle="You speak the language of banks." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
@@ -2620,7 +2605,7 @@ function Installments({ onSave, onExit }) {
             <p>Same $1,200,000 debt. Minimum = interest + 1% of the balance (at least $30,000).</p>
             <div className="g10-stats"><div><small>🐌 Only the minimum</small><b className="neg">{Math.round(minSim.months / 12 * 10) / 10} years</b><span className="g10-sub">interest {cop(minSim.interest)}</span></div><div><small>🚀 Fixed $120,000/month</small><b className="pos">{fixSim.months} months</b><span className="g10-sub">interest {cop(fixSim.interest)}</span></div></div>
           </div>
-          <PickOne q="What is the smartest way to use a credit card?" options={["Pay the full amount at 1 installment, every month.", "Use 36 installments for everything, because the monthly payment is very small and easy to pay.", "Pay only the minimum.", "Never check the statement."]} correct={0} explain="1 installment usually has no interest. Long installments and minimums make you pay much more." />
+          <PickOne q="What is the smartest way to use a credit card?" options={["Pay the full balance in 1 installment, every month.", "Use 36 installments so the payment is small.", "Pay the minimum and save the rest.", "Pay in 12 installments to build credit faster."]} correct={0} explain="1 installment usually has no interest. Long installments and minimums make you pay much more." />
         </>
       )}
       <div className="start-foot"><button className="s1-btn primary big" disabled={guess == null} onClick={() => finish(26, { guess, extra36: Math.round(opts[4].tot - P), minYears: Math.round(minSim.months / 12 * 10) / 10 })}>Finish <span className="coin-tag"><Coins size={15} /> +26</span></button></div>
@@ -2693,7 +2678,7 @@ function InflationApocalypse({ onSave, onExit }) {
       ) : (
         <>
           <ChartCard title="Baskets I can buy, quarter by quarter"><LineChart money={false} labels={hist.map((_, k) => `Q${k}`)} series={[{ name: "Baskets", values: hist.map((h) => baskets(h.m, h.b)), color: "#16b074" }]} /></ChartCard>
-          <PickOne q="Who wins in an inflation crisis?" options={["Whoever keeps the most purchasing power.", "Whoever has the biggest number of pesos at the end, without looking at the prices.", "Whoever keeps cash at home.", "Nobody."]} correct={0} explain="Count baskets, not pesos: purchasing power is what matters." />
+          <PickOne q="Who wins in an inflation crisis?" options={["Whoever keeps the most purchasing power.", "Whoever ends with the most pesos.", "Whoever keeps cash at home.", "Whoever spends fast before prices rise."]} correct={0} explain="Count baskets, not pesos: purchasing power is what matters." />
           <div className="start-foot"><button className="s1-btn primary big" onClick={() => finish(22 + (now >= start ? 8 : 0), { final: money, basket, baskets: now, start, picks: hist.slice(1).map((h) => h.pick) })}>Finish <span className="coin-tag"><Coins size={15} /> +{22 + (now >= start ? 8 : 0)}</span></button></div>
         </>
       )}
@@ -2866,48 +2851,48 @@ const GUIDE = {
    ESTRUCTURA · 10° PERIODO 2 · MONEY MATH LAB (8 clases)
    ===================================================================== */
 const G10P2_WEEKS = [
-  { n: 1, title: "Budget Reboot", e: "🧾", blurb: "Future Me at 18: your first salary, a spreadsheet and the 50/30/20 rule.", skills: ["Rush", "Reading", "Simulator"], prove: { from: "9th grade", q: "In 50/30/20, the 30% is for…", options: ["wants.", "savings for the future and for emergencies.", "rent.", "taxes."], correct: 0, why: "50 needs · 30 wants · 20 savings." }, acts: [
+  { n: 1, title: "Budget Reboot", e: "🧾", blurb: "Future Me at 18: your first salary, a spreadsheet and the 50/30/20 rule.", skills: ["Rush", "Reading", "Simulator"], acts: [
     A10("c1_rush", "Budget Rush ⚡", "Fixed or variable? Need or want?", <Zap size={22} />, 24, "aprendi"),
     A10("c1_read", "Reading: Your Money in a Spreadsheet 📖", "Cells, formulas, 50/30/20 · 8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c1_month", "Survive the Month 🗓️ · Page 07", "$1,600,000 · temptations · emergency.", <Calendar size={22} />, 34, "aprendi"),
     A10("c1_sheet", "Spreadsheet Formulas 🧮", "=SUM, %, what if · 6 rounds.", <Calculator size={22} />, 26, "aprendi"),
   ] },
-  { n: 2, title: "Opportunity Cost", e: "⚖️", blurb: "Every choice has a cost: the best thing you didn't choose.", skills: ["Video", "Arcade", "SMART"], prove: { from: "9th grade", q: "Which is a SMART goal?", options: ["Save $300,000 for a bike in 4 months.", "Save a lot of money someday because it's important for the future.", "Be rich.", "Buy things."], correct: 0, why: "Specific, measurable, achievable, relevant, time-bound." }, acts: [
+  { n: 2, title: "Opportunity Cost", e: "⚖️", blurb: "Every choice has a cost: the best thing you didn't choose.", skills: ["Video", "Arcade", "SMART"], acts: [
     A10("c2_video", "Video: Scarcity & Opportunity Cost 🎬", "St. Louis Fed · 8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c2_arcade", "Choices Arcade 🕹️", "8 rounds of A or B.", <Shuffle size={22} />, 30, "aprendi"),
     A10("c2_hours", "Time Is Money ⏱️", "Prices in hours of work.", <Timer size={22} />, 23, "aprendi"),
     A10("c2_page", "My Biggest Trade-off ⚖️ · Page 08", "SMART goal + If I choose…, I lose…", <Scale size={22} />, 28, "aprendi"),
   ] },
-  { n: 3, title: "Time Value of Money", e: "⏳", blurb: "A peso today is worth more than a peso tomorrow. Learn to travel through time.", skills: ["Reading", "Machine", "Rounds"], prove: { from: "Period 1", q: "In The Last Million, why did the mattress lose?", options: ["Inflation reduced its purchasing power.", "Because somebody stole part of the money while you were sleeping.", "Fees.", "It didn't lose."], correct: 0, why: "Money that doesn't grow loses value." }, acts: [
+  { n: 3, title: "Time Value of Money", e: "⏳", blurb: "A peso today is worth more than a peso tomorrow. Learn to travel through time.", skills: ["Reading", "Machine", "Rounds"], acts: [
     A10("c3_read", "Reading: The Time Traveler's Wallet 📖", "FV, PV and real DANE data · 8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c3_today", "Today or Tomorrow? ⏳", "5 decisions with rates.", <Hourglass size={22} />, 23, "aprendi"),
     A10("c3_machine", "PV/FV Machine 🚀", "Travel forward and backward.", <Rocket size={22} />, 28, "aprendi"),
     A10("c3_rounds", "PV/FV Rounds 🧮", "5 calculations.", <Calculator size={22} />, 23, "aprendi"),
   ] },
-  { n: 4, title: "Simple vs. Compound Interest", e: "📈", blurb: "Interest on interest: the slow superpower — and the Rule of 72.", skills: ["Video", "Battle", "Page 09"], prove: { from: "9th grade", q: "Where does a bank get money to pay interest?", options: ["From the interest it charges on loans.", "From the government, which pays the interest of every savings account.", "From fees only.", "It prints it."], correct: 0, why: "Banks lend your deposits and charge more interest than they pay." }, acts: [
+  { n: 4, title: "Simple vs. Compound Interest", e: "📈", blurb: "Interest on interest: the slow superpower — and the Rule of 72.", skills: ["Video", "Battle", "Page 09"], acts: [
     A10("c4_video", "Video: The Rule of 72 🎬", "8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c4_race", "The Interest Battle ⚔️", "Simple vs. compound · boss offer.", <Swords size={22} />, 30, "aprendi"),
     A10("c4_rounds", "Formula Rounds 🧮", "Simple, compound, Rule of 72.", <Calculator size={22} />, 23, "aprendi"),
     A10("c4_page", "My Growth Chart 📈 · Page 09", "YOUR savings projected.", <LineIcon size={22} />, 28, "aprendi"),
   ] },
-  { n: 5, title: "E.A. vs. Monthly Rates", e: "🏦", blurb: "Bank ads speak different languages. Translate them all into E.A.", skills: ["Listening", "Translator", "Detective"], prove: { from: "9th grade", q: "What is a CDT?", options: ["A term deposit with a fixed rate.", "A credit card that you can use in any store of the country.", "A loan.", "A fund."], correct: 0, why: "You lock your money for a term and get a fixed rate." }, acts: [
+  { n: 5, title: "E.A. vs. Monthly Rates", e: "🏦", blurb: "Bank ads speak different languages. Translate them all into E.A.", skills: ["Listening", "Translator", "Detective"], acts: [
     A10("c5_listen", "Listening: A CDT at the Bank 🎧", "Valentina's choice · 8 questions.", <Headphones size={22} />, 42, "quizzes"),
     A10("c5_brief", "Explainer: What Does 10% E.A. Mean? 💡", "6 questions.", <BookOpen size={22} />, 34, "quizzes"),
     A10("c5_translator", "Rate Translator 🔁", "Monthly ↔ E.A. · 5 challenges.", <Percent size={22} />, 29, "aprendi"),
     A10("c5_detective", "Bank Ads Detective 🕵️", "5 ads · small letters.", <Search size={22} />, 30, "aprendi"),
   ] },
-  { n: 6, title: "The Real Cost of a Loan", e: "💳", blurb: "Amortization, extra payments, installments and the minimum-payment trap.", skills: ["Video", "Loan Lab", "Page 10"], prove: { from: "Class 5", q: "A card charges 2% monthly. In E.A. that's about…", options: ["26.8%.", "24%, because two percent times twelve months gives twenty-four.", "2%.", "12%."], correct: 0, why: "(1.02)¹² − 1." }, acts: [
+  { n: 6, title: "The Real Cost of a Loan", e: "💳", blurb: "Amortization, extra payments, installments and the minimum-payment trap.", skills: ["Video", "Loan Lab", "Page 10"], acts: [
     A10("c6_video", "Video: The Minimum Payment Trap 🎬", "8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c6_loan", "Loan Lab 🏦", "Amortization + a $1,000,000 bonus.", <Landmark size={22} />, 30, "aprendi"),
     A10("c6_cuotas", "1 vs. 36 Installments 💳", "Total cost + minimum trap.", <CreditCard size={22} />, 26, "aprendi"),
     A10("c6_page", "My Loan Decision 📝 · Page 10", "3 offers · total cost.", <FileText size={22} />, 30, "aprendi"),
   ] },
-  { n: 7, title: "Inflation & Purchasing Power", e: "🫧", blurb: "Count baskets, not pesos. Investigate the prices of your family.", skills: ["Newspaper", "Apocalypse", "Page 11"], prove: { from: "Class 3", q: "Your money grows 4%, inflation is 7%. Real return?", options: ["About −3%.", "About +11%, because you add the two percentages together.", "+4%.", "0%."], correct: 0, why: "Rate − inflation." }, acts: [
+  { n: 7, title: "Inflation & Purchasing Power", e: "🫧", blurb: "Count baskets, not pesos. Investigate the prices of your family.", skills: ["Newspaper", "Apocalypse", "Page 11"], acts: [
     A10("c7_read", "The Price Times 📰", "Real inflation data · 8 questions.", <Newspaper size={22} />, 42, "quizzes"),
     A10("c7_apoc", "The Inflation Apocalypse 🧟", "5 quarters · keep your baskets.", <Flame size={22} />, 30, "aprendi"),
     A10("c7_machine", "Price Time Machine 🕰️ · Page 11", "Your family's prices vs. the IPC.", <Clock size={22} />, 30, "aprendi"),
   ] },
-  { n: 8, title: "Certification Day", e: "🎓", blurb: "Your Money Dashboard, your defense, the vault — and your Money Rules.", skills: ["Project", "Defense", "Certificate"], prove: { from: "Class 4", q: "Rule of 72 at 8%: money doubles in…", options: ["9 years.", "8 years, the same number as the rate.", "72 years.", "4 years."], correct: 0, why: "72 ÷ 8 = 9." }, acts: [
+  { n: 8, title: "Certification Day", e: "🎓", blurb: "Your Money Dashboard, your defense, the vault — and your Money Rules.", skills: ["Project", "Defense", "Certificate"], acts: [
     A10("c8_dashboard", "My Money Dashboard 📊 · Page 12", "THE BIG PROJECT · formulas + CSV.", <Database size={22} />, 36, "aprendi"),
     A10("c8_defense", "Money Math Defense 🎤", "Present + jury.", <Mic size={22} />, 50, "aprendi"),
     A10("c8_boss", "Certification Challenge 🔐", "5 levels + 10 questions (70%).", <Lock size={22} />, 70, "quizzes"),
