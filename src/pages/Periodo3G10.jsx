@@ -31,7 +31,7 @@ import "../Styles/noveno4.css";
 import "../Styles/decimo1.css";   // 10° · base Future Me (todas las piezas compartidas de décimo)
 import "../Styles/decimo3.css";   // 10° · Periodo 3 · Global Investor
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import audioDollarsMiami from "../assets/img/decimo3.mp3"; // 🎧 Listening clase 3 · Dollars for Miami (cámbiale el nombre si tu archivo se llama distinto)
+import audioDollarsMiami from "../assets/img/3DECIMO.mp3"; // 🎧 Listening clase 3 · Dollars for Miami (cámbiale el nombre si tu archivo se llama distinto)
 
 /* =====================================================================
    GRADO 10 · PERIODO 3 · GLOBAL INVESTOR (B1+ a B2)
