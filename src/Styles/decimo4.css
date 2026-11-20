@@ -99,3 +99,36 @@
 .g10-capsule span { opacity: .85; font-size: .84rem; }
 .g10-capsule i { font-style: normal; font-weight: 900; color: #f5d27a; margin-top: 6px; }
 .g74-wlist span.off { opacity: .45; }
+
+
+/* ---------- My Own Ikigai Map ---------- */
+.g10-myiki { grid-template-columns: minmax(260px, 420px) minmax(0, 1fr); }
+@media (max-width: 860px) { .g10-myiki { grid-template-columns: 1fr; } }
+.g10-myiki-map { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 12px; position: sticky; top: 10px; }
+.g10-myiki-map > small { display: block; text-align: center; font-size: .64rem; font-weight: 900; letter-spacing: .12em; color: var(--muted); }
+.g10-myiki-svg { width: 100%; display: block; }
+.g10-myiki-svg circle { fill-opacity: .22; stroke-width: 2; }
+.g10-myiki-svg .c-love { fill: #ff6b57; stroke: #ff6b57; } .g10-myiki-svg .c-good { fill: #f5b23e; stroke: #f5b23e; }
+.g10-myiki-svg .c-need { fill: #1b4a33; stroke: #1b4a33; } .g10-myiki-svg .c-paid { fill: #16b074; stroke: #16b074; }
+.g10-myiki-svg text { fill: #0f2a1e; font-family: var(--font-body); }
+.g10-myiki-svg text.h { font-size: 13px; font-weight: 900; }
+.g10-myiki-svg text.w { font-size: 11.5px; font-weight: 700; }
+.g10-myiki-svg .x text { font-size: 12px; font-weight: 800; fill: #6b7a72; }
+.g10-myiki-svg .x.on text { fill: #0f2a1e; font-weight: 900; }
+.g10-myiki-svg circle.mid { fill: #fff; fill-opacity: 1; stroke: #f5b23e; stroke-width: 3; }
+.g10-myiki-svg text.m { font-size: 20px; } .g10-myiki-svg text.mt { font-size: 9.5px; font-weight: 900; }
+.g10-myiki-cap { margin: 6px 4px 0; text-align: center; color: var(--forest); }
+.g10-myiki-row { border-left: 5px solid var(--c); padding: 4px 0 4px 10px; margin: 0 0 10px; }
+.g10-myiki-row > b { display: block; color: var(--forest); margin-bottom: 4px; }
+.g10-myiki-row > b small { color: var(--muted); }
+.g10-myiki-row > div { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+.g10-myiki-x { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.g10-myiki-x > div { display: flex; flex-direction: column; gap: 6px; background: #fff; border: 2px dashed var(--line); border-radius: 16px; padding: 10px 12px; }
+.g10-myiki-x > div.on { border-style: solid; border-color: var(--green); background: #f3fcf7; }
+.g10-myiki-x b { color: var(--forest); } .g10-myiki-x b small { color: var(--muted); font-weight: 700; }
+.g10-myiki-pair { font-size: .8rem; color: var(--ink-soft); background: #f6f8f7; border-radius: 10px; padding: 6px 8px; line-height: 1.5; }
+.g10-myiki-x i { font-style: normal; font-size: .76rem; font-weight: 800; color: var(--muted); text-align: right; }
+.g10-steps4 { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.g10-steps4 span { font-size: .8rem; font-weight: 800; padding: 6px 12px; border-radius: 999px; background: #f1f5f3; color: var(--muted); border: 2px solid transparent; }
+.g10-steps4 span.now { background: #fff; border-color: var(--green); color: var(--forest); }
+.g10-steps4 span.done { background: #eafaf2; color: var(--forest); }

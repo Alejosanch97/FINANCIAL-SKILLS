@@ -2395,6 +2395,7 @@ function InterestBattle({ onSave, onExit }) {
   const [yrs, setYrs] = useState(30);
   const [add, setAdd] = useState(0);
   const [boss, setBoss] = useState(null);
+  const [boss2, setBoss2] = useState(null);
   const [st, finish] = useFinish(onSave);
   const r = rate / 100;
   const simple = [], comp = [];
@@ -2403,6 +2404,9 @@ function InterestBattle({ onSave, onExit }) {
   const step = Math.max(1, Math.round(yrs / 10));
   const idx = simple.map((_, k) => k).filter((k) => k % step === 0 || k === yrs);
   const A = Math.round(5000000 * (1 + 0.12 * 10)), B = Math.round(5000000 * Math.pow(1.1, 10));
+  const A3 = Math.round(5000000 * (1 + 0.12 * 3)), B3 = Math.round(5000000 * Math.pow(1.1, 3));
+  const win10 = B > A ? "B" : "A", win3 = B3 > A3 ? "B" : "A";
+  const bossPts = (boss === win10 ? 3 : 0) + (boss2 === win3 ? 3 : 0);
   if (st.done) return <Reward title="Battle won! ⚔️" subtitle="Compound interest is a slow superpower." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Swords size={22} strokeWidth={2.1} />} title="The Interest Battle ⚔️" subtitle="Player A earns simple interest. Player B earns compound interest. Same money, same rate." onExit={onExit}>
@@ -2421,10 +2425,17 @@ function InterestBattle({ onSave, onExit }) {
       <div className="start-block g10-boss">
         <h3>👾 Boss mode · The bank's 'amazing' offer</h3>
         <p>You have $5,000,000 for 10 years. <b>Offer A:</b> “12% simple interest per year!” <b>Offer B:</b> “10% E.A. compound”. Which gives you more?</p>
-        <div className="quiz-options">{[["A", `Offer A: ${cop(A)}`], ["B", `Offer B: ${cop(B)}`]].map(([k, t]) => <button key={k} type="button" disabled={!!boss} className={`quiz-opt ${boss === k ? (k === "A" ? "correct" : "wrong") : ""}`} onClick={() => setBoss(k)}><span className="opt-text">{boss ? t : `Offer ${k}`}</span></button>)}</div>
-        {boss && <p className={`g91-note ${boss === "A" ? "pos" : "neg"}`}>{boss === "A" ? "✅" : "❌"} A: 5,000,000 × (1 + 0.12 × 10) = {cop(A)}. B: 5,000,000 × 1.1¹⁰ = {cop(B)}. Here the higher simple rate wins — but extend it to 20 years and compound wins. Always calculate!</p>}
+        <div className="quiz-options">{[["A", `Offer A: ${cop(A)}`], ["B", `Offer B: ${cop(B)}`]].map(([k, t]) => <button key={k} type="button" disabled={!!boss} className={`quiz-opt ${boss === k ? (k === win10 ? "correct" : "wrong") : ""} ${boss && k === win10 ? "correct" : ""}`} onClick={() => setBoss(k)}><span className="opt-text">{boss ? t : `Offer ${k}`}</span></button>)}</div>
+        {boss && <p className={`g91-note ${boss === win10 ? "pos" : "neg"}`}>{boss === win10 ? "✅" : "❌"} A: 5,000,000 × (1 + 0.12 × 10) = {cop(A)}. B: 5,000,000 × 1.1¹⁰ = {cop(B)}. Offer B wins: with compound interest you earn interest on your interest, so after 10 years 10% compound beats 12% simple.</p>}
+        {boss && (
+          <>
+            <h3>👾 Boss round 2 · Same offers, but you need the money in 3 years</h3>
+            <div className="quiz-options">{[["A", `Offer A: ${cop(A3)}`], ["B", `Offer B: ${cop(B3)}`]].map(([k, t]) => <button key={k} type="button" disabled={!!boss2} className={`quiz-opt ${boss2 === k ? (k === win3 ? "correct" : "wrong") : ""} ${boss2 && k === win3 ? "correct" : ""}`} onClick={() => setBoss2(k)}><span className="opt-text">{boss2 ? t : `Offer ${k}`}</span></button>)}</div>
+            {boss2 && <p className={`g91-note ${boss2 === win3 ? "pos" : "neg"}`}>{boss2 === win3 ? "✅" : "❌"} A: 5,000,000 × (1 + 0.12 × 3) = {cop(A3)}. B: 5,000,000 × 1.1³ = {cop(B3)}. In only 3 years the higher simple rate wins: compound interest needs TIME. The winner depends on the years — always calculate!</p>}
+          </>
+        )}
       </div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!boss} onClick={() => finish(24 + (boss === "A" ? 6 : 0), { cap, rate, yrs, add, simple: simple[yrs], comp: comp[yrs], boss })}>Finish the battle <span className="coin-tag"><Coins size={15} /> +{24 + (boss === "A" ? 6 : 0)}</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!boss || !boss2} onClick={() => finish(24 + bossPts, { cap, rate, yrs, add, simple: simple[yrs], comp: comp[yrs], boss, boss2, bossOk: bossPts / 3 })}>Finish the battle <span className="coin-tag"><Coins size={15} /> +{24 + bossPts}</span></button></div>
     </ActShell>
   );
 }
@@ -2827,7 +2838,7 @@ const GUIDE = {
   c3_machine: { goal: "Travel through time with the PV/FV machine and decide 'today or tomorrow' with numbers.", steps: ["Choose FV or PV.", "Move the money, the rate and the years.", "Read the year-by-year table.", "Explain your decision (will / would)."], win: [["Decision written (25–70 words, will/would + 2 numbers)", "+28 🪙"]] },
   c3_rounds: { goal: "Practice future value and present value calculations.", steps: ["Use FV = PV × (1 + r)ⁿ or PV = FV ÷ (1 + r)ⁿ.", "Type your answer.", "Read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c4_video: B_VIDEO("Learn the Rule of 72: how many years until your money doubles.", "Next: the Interest Battle."),
-  c4_race: { goal: "Watch simple vs. compound interest fight for 30 years — then beat the bank's 'amazing' offer.", steps: ["Move money, rate, years and monthly extra.", "Compare the two curves.", "Boss mode: choose the better offer."], win: [["Finishing", "+24 🪙"], ["Boss offer right", "+6 🪙"]] },
+  c4_race: { goal: "Watch simple vs. compound interest fight for 30 years — then beat the bank's 'amazing' offer.", steps: ["Move money, rate, years and monthly extra.", "Compare the two curves.", "Boss mode: choose the better offer for 10 years — then for 3 years."], win: [["Finishing", "+24 🪙"], ["Each boss round right (2)", "+3 🪙"]] },
   c4_rounds: { goal: "Practice simple interest, compound interest and the Rule of 72.", steps: ["Simple: P × (1 + r × n). Compound: P × (1 + r)ⁿ.", "Rule of 72: 72 ÷ rate = years to double.", "Type your answer and read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c4_page: { goal: "Project YOUR monthly savings with compound interest. This is Future Page 09.", steps: ["Choose your monthly saving, rate and years.", "Compare 'my deposits' vs. 'with interest'.", "Write Page 09 with comparatives and 2 numbers."], win: TPAGE("09", "25–70", "comparatives + 2 numbers", 28) },
   c5_listen: B_LISTEN("Listen to Valentina at the bank and discover why the biggest number is not always the best option."),

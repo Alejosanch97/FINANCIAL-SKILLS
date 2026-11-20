@@ -2302,6 +2302,85 @@ function IkigaiBuilder({ existing, onSave, onExit }) {
   );
 }
 
+/* ---------- C2 · My Own Ikigai Map (lo escriben ellos: círculos + intersecciones + diagrama) ---------- */
+const MYIKI_C = [
+  { k: "love", e: "❤️", l: "What I love", ph: ["designing apps", "playing football", "helping my friends"], c: "#ff6b57" },
+  { k: "good", e: "⭐", l: "What I'm good at", ph: ["explaining things", "math", "organizing events"], c: "#f5b23e" },
+  { k: "need", e: "🌍", l: "What the world needs", ph: ["better education", "clean energy", "mental health"], c: "#1b4a33" },
+  { k: "paid", e: "💰", l: "What I can be paid for", ph: ["teaching", "analyzing data", "selling"], c: "#16b074" },
+];
+const MYIKI_X = [
+  { k: "passion", e: "🔥", l: "Passion", a: "love", b: "good", st: "My passion is… because I love… and I'm good at…" },
+  { k: "mission", e: "🕊️", l: "Mission", a: "love", b: "need", st: "My mission is… because the world needs… and I love…" },
+  { k: "vocation", e: "🛠️", l: "Vocation", a: "need", b: "paid", st: "My vocation could be… because people pay for…" },
+  { k: "profession", e: "💼", l: "Profession", a: "good", b: "paid", st: "My profession could be… because I'm good at…" },
+];
+const ikiShort = (t, n = 22) => { const s = String(t || "").trim(); return s.length > n ? `${s.slice(0, n - 1)}…` : s; };
+function MyIkigai({ resp, existing, onSave, onExit }) {
+  const sel = resp?.c2_builder?.sel;
+  const [c, setC] = useState(existing?.circles || { love: ["", "", ""], good: ["", "", ""], need: ["", "", ""], paid: ["", "", ""] });
+  const [x, setX] = useState(existing?.inter || { passion: "", mission: "", vocation: "", profession: "" });
+  const [career, setCareer] = useState(existing?.career || "");
+  const [text, setText] = useState(existing?.text || "");
+  const [st, finish] = useFinish(onSave);
+  const up = (k, i, v) => setC({ ...c, [k]: c[k].map((y, j) => (j === i ? v : y)) });
+  const items = (k) => c[k].filter((y) => countWords(y) >= 1);
+  const circOk = MYIKI_C.every((m) => items(m.k).length >= 2);
+  const interOk = MYIKI_X.every((m) => countWords(x[m.k]) >= 8 && realText(x[m.k]));
+  const G = [W_GERUND, W_REASON, { l: "Use 2 of YOUR circle words", ex: "words you wrote above", test: (t) => { const s = (t || "").toLowerCase(); return MYIKI_C.flatMap((m) => items(m.k)).filter((w) => s.includes(w.toLowerCase().trim())).length >= 2; } }];
+  const ok = circOk && interOk && countWords(career) >= 2 && goalsOk(text, 30, 80, G);
+  const done = MYIKI_X.filter((m) => countWords(x[m.k]) >= 8).length;
+  const T = (k, cx, cy) => items(k).slice(0, 3).map((w, i) => <text key={i} x={cx} y={cy + i * 15} textAnchor="middle" className="w">{ikiShort(w)}</text>);
+  if (st.done) return <Reward title="My Ikigai map is ready! 🌸" subtitle="It is now part of your Future Me Blueprint." coins={st.coins} saving={st.saving} onExit={onExit} />;
+  return (
+    <ActShell icon={<PenLine size={22} strokeWidth={2.1} />} title="My Own Ikigai Map ✍️🌸" subtitle="The builder was the warm-up. Now YOU write your circles, find where they meet and design your own ikigai." onExit={onExit}>
+      <Brief91 k="c2_mine" />
+      <div className="g10-steps4"><span className={!circOk ? "now" : "done"}>1 · My circles</span><span className={circOk && !interOk ? "now" : interOk ? "done" : ""}>2 · Where they meet</span><span className={interOk ? "now" : ""}>3 · My ikigai</span></div>
+      <div className="g10-iki g10-myiki">
+        <div className="g10-myiki-map" id="g10-myiki">
+          <small>MY IKIGAI MAP · FINFLUENT · GRADE 10</small>
+          <svg viewBox="0 0 440 440" className="g10-myiki-svg" role="img" aria-label="My ikigai diagram">
+            <circle cx="220" cy="140" r="115" className="c-love" /><circle cx="140" cy="220" r="115" className="c-good" /><circle cx="300" cy="220" r="115" className="c-need" /><circle cx="220" cy="300" r="115" className="c-paid" />
+            <text x="220" y="48" textAnchor="middle" className="h">❤️ LOVE</text>{T("love", 220, 70)}
+            <text x="74" y="200" textAnchor="middle" className="h">⭐ GOOD AT</text>{T("good", 78, 220)}
+            <text x="366" y="200" textAnchor="middle" className="h">🌍 WORLD NEEDS</text>{T("need", 362, 220)}
+            <text x="220" y="372" textAnchor="middle" className="h">💰 PAID FOR</text>{T("paid", 220, 394)}
+            {[["passion", 150, 150], ["mission", 290, 150], ["profession", 150, 296], ["vocation", 290, 296]].map(([k, px, py]) => { const m = MYIKI_X.find((z) => z.k === k); const on = countWords(x[k]) >= 8; return <g key={k} className={on ? "x on" : "x"}><text x={px} y={py} textAnchor="middle">{m.e} {m.l}{on ? " ✓" : ""}</text></g>; })}
+            <circle cx="220" cy="220" r="34" className="mid" /><text x="220" y="215" textAnchor="middle" className="m">🌸</text><text x="220" y="236" textAnchor="middle" className="mt">{ikiShort(career, 16) || "IKIGAI"}</text>
+          </svg>
+          {career && <p className="g10-myiki-cap">🌸 <b>My ikigai idea:</b> {career}</p>}
+        </div>
+        <div>
+          <div className="start-block"><h3>1 · My four circles (2–3 ideas each, in English)</h3>
+            {sel && <p className="start-tip">💡 Your cards from the builder: ❤️ {sel.love.join(", ")} · ⭐ {sel.good.join(", ")} · 🌍 {sel.need.join(", ")} · 💰 {sel.paid.join(", ")}. Make them more personal: “tech” → “designing apps for kids”.</p>}
+            {MYIKI_C.map((m) => <div key={m.k} className="g10-myiki-row" style={{ "--c": m.c }}><b>{m.e} {m.l} <small>({items(m.k).length}/3)</small></b><div>{c[m.k].map((y, i) => <input key={i} className="start-input" value={y} onChange={(e) => up(m.k, i, e.target.value)} placeholder={`e.g. ${m.ph[i]}`} />)}</div></div>)}
+          </div>
+        </div>
+      </div>
+      {circOk && (
+        <div className="start-block"><h3>2 · Where do my circles meet? ({done}/4)</h3><p className="start-tip">Read the two circles of each zone and write one sentence (8+ words) that connects them. Watch your map light up!</p>
+          <div className="g10-myiki-x">{MYIKI_X.map((m) => { const A = MYIKI_C.find((z) => z.k === m.a), B = MYIKI_C.find((z) => z.k === m.b); return (
+            <div key={m.k} className={countWords(x[m.k]) >= 8 ? "on" : ""}>
+              <b>{m.e} {m.l} <small>= {A.e} + {B.e}</small></b>
+              <span className="g10-myiki-pair">{A.e} {items(m.a).join(" · ")}<br />{B.e} {items(m.b).join(" · ")}</span>
+              <textarea className="start-input" rows={2} value={x[m.k]} onChange={(e) => setX({ ...x, [m.k]: e.target.value })} placeholder={m.st} />
+              <i>{countWords(x[m.k])} words {countWords(x[m.k]) >= 8 ? "✓" : "· min 8"}</i>
+            </div>
+          ); })}</div>
+        </div>
+      )}
+      {circOk && interOk && (
+        <div className="start-block"><h3>3 · The center: my ikigai</h3>
+          <div className="p3-sentence edit"><span>🌸 A career or project at the center for me:</span><input className="start-input" value={career} onChange={(e) => setCareer(e.target.value)} placeholder="e.g. UX designer of educational apps" /></div>
+          <Starters items={["My ikigai could be… because I love…ing", "I'm good at…ing and the world needs…", "In 5 years I want to be…"]} onPick={appendStarter(setText)} />
+          <WordField value={text} onChange={setText} min={30} max={80} goals={G} placeholder="My ikigai could be designing educational apps because I love technology, I'm good at explaining…" />
+        </div>
+      )}
+      <div className="start-foot"><button className="s1-btn ghost" disabled={!circOk} onClick={() => downloadPNG("g10-myiki", "My_Ikigai_Map.png")}><Download size={16} /> PNG</button><button className="s1-btn primary big" disabled={!ok} onClick={() => finish(32, { circles: c, inter: x, career: career.trim(), text })}>{ok ? "Save my Ikigai map" : !circOk ? "Fill 2+ ideas in each circle" : !interOk ? "Write the 4 zones" : "Write the center"} <span className="coin-tag"><Coins size={15} /> +32</span></button></div>
+    </ActShell>
+  );
+}
+
 /* ---------- C2 · Career Match · Page 20 ---------- */
 function CareerMatch({ resp, existing, onSave, onExit }) {
   const sel = resp?.c2_builder?.sel;
@@ -2715,7 +2794,7 @@ function BlueprintPitch({ resp, studentName, have, existing, onSave, onExit }) {
   const all4 = have[1] && have[2] && have[3];
   const chapters = (v) => [
     { e: "🔎", t: "Who I am", s: [r.c1_test ? `My personality type is ${r.c1_test.type}: I'm ${r.c1_test.traits.join(", ")}.` : "", r.c1_dofa ? `My biggest strength: ${lowFirst(dot(r.c1_dofa.dofa.s[0]))} I want to improve: ${lowFirst(dot(r.c1_dofa.dofa.w[0]))}` : "", r.c1_values ? `What matters most to me: ${r.c1_values.values.slice(0, 3).join(", ").toLowerCase()}.` : ""].filter(Boolean) },
-    { e: "🌸", t: "My Ikigai", s: r.c2_match ? [`My top careers are ${r.c2_match.top.map((k) => careerOf(k).l.toLowerCase()).join(", ")}.`, r.c2_builder ? `I love ${r.c2_builder.sel.love.join(" and ")}, and I'm good at ${r.c2_builder.sel.good.join(" and ")}.` : ""].filter(Boolean) : [] },
+    { e: "🌸", t: "My Ikigai", s: (r.c2_match || r.c2_mine) ? [r.c2_mine?.career ? `My ikigai idea is: ${lowFirst(dot(r.c2_mine.career))}` : "", ...(r.c2_mine ? MYIKI_X.map((m) => (r.c2_mine.inter?.[m.k] ? `${m.e} ${m.l}: ${dot(capF(r.c2_mine.inter[m.k]))}` : "")) : []), r.c2_match ? `My top careers are ${r.c2_match.top.map((k) => careerOf(k).l.toLowerCase()).join(", ")}.` : "", !r.c2_mine && r.c2_builder ? `I love ${r.c2_builder.sel.love.join(" and ")}, and I'm good at ${r.c2_builder.sel.good.join(" and ")}.` : ""].filter(Boolean) : [] },
     { e: "🎓", t: "My career with numbers", s: r.c3_worth ? [`I researched ${r.c3_worth.career}.`, `With my data, its NPV is ${cop(r.c3_worth.npvDeg)} vs. ${cop(r.c3_worth.npvWork)} if I worked at 18.`, r.c3_worth.paybackAge ? `It pays back at about age ${r.c3_worth.paybackAge}.` : "In this scenario it doesn't pay back before 45 — so I need a scholarship or a plan B."] : r.c3_detective ? [`I researched ${r.c3_detective.careers.map((c) => c.name).join(" and ")} in real sources.`] : [] },
     { e: "🏙️", t: "My life at 25", s: r.c5_life ? [`At 25, working in ${r.c5_life.career.toLowerCase()}, I will earn about ${cop(r.c5_life.salary)}.`, `I will save ${r.c5_life.save}% and invest ${r.c5_life.inv}%; my debt payments will be ${r.c5_life.dti}% of my income.`, p2.c8_rules ? `My first money rule: ${lowFirst(dot(p2.c8_rules.rules[0]))}` : ""].filter(Boolean) : [] },
     { e: "📈", t: "My investment plan", s: r.c6_machine ? [`If I invest ${cop(r.c6_machine.monthly)} a month at ${r.c6_machine.ret}%, at 35 I could have ${millions(r.c6_machine.me35)}.`, `Starting at 16 instead of 35 makes a difference of ${millions(r.c6_machine.alex60 - r.c6_machine.chris60)} at 60.`, p3.c1_dna ? `I'm a ${PROFILES10[p3.c1_dna.profile]} investor.` : ""].filter(Boolean) : [] },
@@ -2839,7 +2918,8 @@ const GUIDE = {
   c1_dofa: { goal: "Build your personal DOFA (SWOT) with two ideas in each box. This is Future Page 19.", steps: ["Write 2 strengths and 2 weaknesses (inside).", "Write 2 opportunities and 2 threats (outside).", "Write Page 19 with 'I'm good at… / I need to improve…'."], win: TPAGE("19", "35–90", "I'm good at… / I need to improve… + a reason", 30) },
   c2_read: B_READ("Discover the Ikigai: what you love, what you're good at, what the world needs and what you can be paid for.", "Next: the Ikigai World Builder."),
   c2_builder: { goal: "Build your Ikigai with cards in 4 circles and unlock careers where they meet.", steps: ["Choose 2–3 cards in each circle.", "See the careers you unlock.", "Look at the 'circles' each career touches."], win: [["Saving your Ikigai", "+28 🪙"]], tip: "Salaries shown are illustrative — you'll research real ones in Class 3." },
-  c2_match: { goal: "Choose your Top 3 careers and explain your Ikigai with gerunds. This is Future Page 20.", steps: ["Choose 3 careers in order.", "Write Page 20: I love …ing, I'm good at …ing + a reason."], win: TPAGE("20", "30–80", "gerunds + a reason", 30) },
+  c2_mine: { goal: "Make the Ikigai YOURS: write your own ideas in the 4 circles, connect them in the 4 zones and design your ikigai. It goes into your Future Me Blueprint.", steps: ["Write 2–3 personal ideas in each circle (more personal than the cards).", "Write one sentence for each zone: passion, mission, vocation, profession.", "Write the career or project at the center + your ikigai (gerunds + a reason).", "Download your map as PNG."], win: [["Saving my Ikigai map", "+32 🪙"]], tip: "Your map appears in your final presentation." },
+  c2_match: { goal: "Choose your Top 3 careers and explain your Ikigai with gerunds.This is Future Page 20.", steps: ["Choose 3 careers in order.", "Write Page 20: I love …ing, I'm good at …ing + a reason."], win: TPAGE("20", "30–80", "gerunds + a reason", 30) },
   c3_read: B_READ("Learn the 5 numbers of a career — and how to calculate payback and NPV with opportunity cost.", "Next: Career Detective."),
   c3_detective: { goal: "Research 2 careers in real sources: years, cost, entry salary, demand — with the source.", steps: ["Open the official sources.", "Replace the illustrative numbers with real ones.", "Write the source of each career."], win: [["Both careers complete with source", "+30 🪙"]] },
   c3_worth: { goal: "Your career is an investment: compare it with working at 18 and with a technical program — NPV, payback and 3 scenarios. This is Future Page 21.", steps: ["Choose a career and a scenario.", "Read the NPVs and the payback age.", "Look at the cumulative chart.", "Write Page 21 with conditional 2."], win: TPAGE("21", "35–90", "conditional 2 + 2 numbers", 32) },
@@ -2872,9 +2952,10 @@ const G10P4_WEEKS = [
     A10("c1_rush", "DOFA Rush ⚡", "Inside or outside?", <Zap size={22} />, 24, "aprendi"),
     A10("c1_dofa", "DOFA Builder 🧩 · Page 19", "A SWOT analysis of YOU.", <Puzzle size={22} />, 30, "aprendi"),
   ] },
-  { n: 2, title: "My Ikigai", e: "🌸", blurb: "What you love, what you're good at, what the world needs, what pays.", skills: ["Reading", "Builder", "Top 3"], acts: [
+  { n: 2, title: "My Ikigai", e: "🌸", blurb: "What you love, what you're good at, what the world needs, what pays.", skills: ["Reading", "Builder", "My map", "Top 3"], acts: [
     A10("c2_read", "Reading: Ikigai 📖", "4 circles + a model · 8 questions.", <BookOpen size={22} />, 42, "quizzes"),
     A10("c2_builder", "Ikigai World Builder 🌸", "Cards in 4 circles · careers unlock.", <Sparkles size={22} />, 28, "aprendi"),
+    A10("c2_mine", "My Own Ikigai Map ✍️", "Your words · 4 zones · your diagram.", <PenLine size={22} />, 32, "aprendi"),
     A10("c2_match", "Career Match · My Top 3 🎯 · Page 20", "Gerunds + 3 careers.", <Target size={22} />, 30, "aprendi"),
   ] },
   { n: 3, title: "Career Research Lab", e: "🎓", blurb: "Your career is an investment: research it and calculate its NPV.", skills: ["Reading", "Detective", "NPV"], acts: [
@@ -2929,6 +3010,7 @@ const CFG104 = {
       case "c1_dofa": return <DofaBuilder resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c2_read": return L.reading("c2_read", "Ikigai: Why You Get Up in the Morning", "Four circles to think about your future — with a model.", READ_IKIGAI, GLOSS_IKIGAI, Q_IKIGAI, "🌸");
       case "c2_builder": return <IkigaiBuilder existing={ctx.existing} {...P} />;
+      case "c2_mine": return <MyIkigai resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c2_match": return <CareerMatch resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c3_read": return L.reading("c3_read", "Careers by the Numbers", "Duration, cost, salary, employability, growth — and payback.", READ_CAREERS, GLOSS_CAREERS, Q_CAREERS, "🎓");
       case "c3_detective": return <CareerDetective resp={ctx.resp} existing={ctx.existing} {...P} />;

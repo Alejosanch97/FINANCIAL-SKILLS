@@ -31,7 +31,7 @@ import "../Styles/noveno4.css";
 import "../Styles/decimo1.css";   // 10° · base Future Me (todas las piezas compartidas de décimo)
 import "../Styles/decimo3.css";   // 10° · Periodo 3 · Global Investor
 import useGlobalReducer from "../hooks/useGlobalReducer";
-import audioDollarsMiami from "../assets/img/3DECIMO.mp3"; // 🎧 Listening clase 3 · Dollars for Miami (cámbiale el nombre si tu archivo se llama distinto)
+import audioDollarsMiami from "../assets/img/decimo3.mp3"; // 🎧 Listening clase 3 · Dollars for Miami (cámbiale el nombre si tu archivo se llama distinto)
 
 /* =====================================================================
    GRADO 10 · PERIODO 3 · GLOBAL INVESTOR (B1+ a B2)
@@ -2169,6 +2169,8 @@ const BOSS3_TIPS = { "Risk & profile": "Rewatch Risk & Return and check your Inv
 const W_COND_RISK = { l: "If… (risk)", re: /\bif\b[^.]*\b(will|would|'ll|might|could)\b/i, ex: "If the market falls, I will…" };
 const W_SUPER = { l: "Use a superlative", re: /\b(the (best|worst|safest|most|least|highest|lowest|fastest|biggest|smallest)|[a-z]+est)\b/i, ex: "the safest · the best · the most liquid" };
 const W_PASSIVE = { l: "Use the passive", re: /\b(is|are|was|were|be|been|being) (?:not )?[a-z]+(ed|en|wn|ld|nt|ught)\b/i, ex: "risk is reduced · money is spread" };
+/* Tema obligatorio: el texto debe usar el vocabulario del tema, no solo la gramática */
+const W_TOPIC = (l, words, n = 2, ex) => ({ l, ex: ex || words.slice(0, 4).join(" · "), test: (t) => { const s = (t || "").toLowerCase(); return words.filter((w) => s.includes(w.toLowerCase())).length >= n; } });
 const W_CAUSE = { l: "Cause and effect", re: /\b(because|so|as a result|that's why|therefore|caused|made)\b/i, ex: "because · so · as a result" };
 const ASSETS10 = [
   { k: "bond", e: "🧱", l: "US bond fund", d: "low risk · ~4% a year", risk: 1, exp: 4, c: "#1b4a33" },
@@ -2258,7 +2260,7 @@ function AllocateLab({ resp, existing, onSave, onExit }) {
   const risk = riskOf(al), exp = expOf(al);
   const coherent = risk >= P.lo - 0.05 && risk <= P.hi + 0.05;
   const maxOne = Math.max(...Object.values(al));
-  const G = [W_COND_RISK, W_REASON];
+  const G = [W_COND_RISK, W_REASON, W_TOPIC("Use 3 investing words", ["risk", "return", "diversif", "profile", "conservative", "moderate", "aggressive", "etf", "bond", "stock", "bitcoin", "stablecoin", "dollar", "volatil"], 3, "risk · return · diversified · ETF"), W_NUMBERS(1)];
   const ok = sum === 100 && maxOne <= 60 && goalsOk(text, 30, 80, G);
   if (st.done) return <Reward title="Portfolio launched! 🚀" subtitle={`US$1,000 · risk ${risk}/5 · expected ~${exp}% a year`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
@@ -2343,20 +2345,33 @@ const BB_GOALS = [
   { k: "trip", e: "✈️", l: "School trip in 12 months · $2,000,000", d: "A fixed date. You won't touch it before.", best: ["cdt"], ok: ["cajita"] },
   { k: "uni", e: "🎓", l: "University in 5 years · $3,000,000", d: "Long horizon. Some bad years are OK.", best: ["fund"], ok: ["cdt"] },
 ];
+const BB_NAMES = { piggy: ["piggy"], acc: ["savings account", "account"], cajita: ["cajita", "digital"], cdt: ["cdt"], fund: ["fund"] };
+const BB_CHECK = [
+  { tag: "Read the table", q: "Which product is the most liquid AND pays the highest rate?", options: ["The digital cajita.", "The savings account.", "The 1-year CDT.", "The investment fund."], correct: 0, explain: "Cajita: liquidity ●●● and 8% E.A. (illustrative)." },
+  { tag: "Why?", q: "Why is the CDT the worst 'bed' for the emergency fund?", options: ["The money is locked for one year.", "It pays the lowest interest rate.", "It isn't insured by Fogafín.", "It can lose value like a fund."], correct: 0, explain: "A CDT is safe, but you can't use the money before the date." },
+  { tag: "Risk", q: "Which product can FALL in value?", options: ["The investment fund.", "The 1-year CDT.", "The savings account.", "The digital cajita."], correct: 0, explain: "A fund invests in assets whose prices go up and down." },
+  { tag: "Calculate", q: "$600,000 in the cajita at 8% E.A. for one year earns how much interest?", answer: 48000, money: true, hint: "600,000 × 0.08", explain: "$48,000 — and you can still use it any day." },
+];
+const W_BEDS = ["safe", "liquid", "return", "rate", "interest", "inflation", "emergency", "fogaf", "risk", "withdraw", "locked"];
 function BankBuilder({ existing, onSave, onExit }) {
   const [pick, setPick] = useState(existing?.picks || {});
   const [twist, setTwist] = useState(false);
+  const [check, setCheck] = useState(null);
   const [text, setText] = useState(existing?.text || "");
   const [st, finish] = useFinish(onSave);
   const all = BB_GOALS.every((g) => pick[g.k]);
   const score = BB_GOALS.reduce((a, g) => a + (g.best.includes(pick[g.k]) ? 2 : g.ok.includes(pick[g.k]) ? 1 : 0), 0);
   const emerOk = ["cajita", "acc"].includes(pick.emerg);
-  const G = [W_SUPER, W_REASON];
-  if (st.done) return <Reward title="Your personal bank is built! 🏗️" subtitle={`Fit score ${score}/6`} coins={st.coins} saving={st.saving} onExit={onExit} />;
+  const myNames = [...new Set(Object.values(pick))];
+  const W_MINE = { l: "Name 2 of YOUR products", ex: myNames.map((k) => BB_PROD.find((p) => p.k === k)?.l).filter(Boolean).join(" · "), test: (t) => { const s = (t || "").toLowerCase(); return myNames.filter((k) => (BB_NAMES[k] || []).some((w) => s.includes(w))).length >= Math.min(2, myNames.length); } };
+  const G = [W_SUPER, W_REASON, W_TOPIC("Use 3 words of the topic", W_BEDS, 3, "safe · liquid · return · emergency"), W_MINE];
+  const coins = 18 + score * 2 + (check?.firstTry || 0) * 2;
+  if (st.done) return <Reward title="Your personal bank is built! 🏗️" subtitle={`Fit score ${score}/6 · fact check ${check?.firstTry || 0}/4`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
-    <ActShell icon={<Building2 size={22} strokeWidth={2.1} />} title="Bank Builder 🏗️ · Page 14" subtitle="Three goals, five products. Give each goal the right 'bed' for its money." onExit={onExit}>
+    <ActShell icon={<Building2 size={22} strokeWidth={2.1} />} title="Bank Builder 🏗️ · Page 14" subtitle="Three goals, five products. Give each goal the right 'bed' for its money — then prove it with facts." onExit={onExit}>
       <Brief91 k="c2_bank" />
       <FPBadge n={14} t="My safe base" e="🏗️" />
+      <div className="g10-steps4"><span className={!all ? "now" : "done"}>🛏️ Choose</span><span className={all && !twist ? "now" : twist ? "done" : ""}>🚨 Emergency</span><span className={twist && !check ? "now" : check ? "done" : ""}>🔎 Fact check</span><span className={check ? "now" : ""}>✍️ Page 14</span></div>
       <MiniTable head={["Product", "Rate (illustrative)", "Liquidity", "Safety"]} rows={BB_PROD.map((p) => [`${p.e} ${p.l}`, `${p.rate}% E.A.`, "●".repeat(p.liq) + "○".repeat(3 - p.liq), "●".repeat(p.safe) + "○".repeat(3 - p.safe)])} />
       {BB_GOALS.map((g) => (
         <div key={g.k} className="start-block">
@@ -2367,8 +2382,15 @@ function BankBuilder({ existing, onSave, onExit }) {
       ))}
       {all && !twist && <div className="start-foot"><button className="s1-btn ghost big" onClick={() => setTwist(true)}>🚨 Something happens…</button></div>}
       {twist && <div className={`p1-banner ${emerOk ? "good" : "bad"}`}><span>🚑 Your dog needs surgery: $500,000 TODAY. {emerOk ? "Your emergency money was liquid — paid in 1 minute!" : "Your emergency money was in a place you can't use today (or it could be stolen/fell in value). Change it!"}</span></div>}
-      <div className="start-block"><h3>✍️ Page 14 · My safe base (superlatives)</h3><Starters items={["The safest place for… is…", "The best option for my trip is… because…", "The most liquid…"]} onPick={appendStarter(setText)} /><WordField value={text} onChange={setText} min={30} max={80} goals={G} placeholder="The safest place for my emergency fund is… because…" /></div>
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!all || !twist || !emerOk || !goalsOk(text, 30, 80, G)} onClick={() => finish(22 + score * 2, { picks: pick, score, text })}>Save Page 14 <span className="coin-tag"><Coins size={15} /> +{22 + score * 2}</span></button></div>
+      {twist && emerOk && !check && <div className="start-block"><h3>🔎 Fact check · prove your choices with the table</h3><RoundsRunner rounds={BB_CHECK} doneLabel="Write Page 14" onDone={setCheck} /></div>}
+      {check && (
+        <div className="start-block"><h3>✍️ Page 14 · My safe base (superlatives + the topic)</h3>
+          <p className="start-tip">Explain WHERE each goal sleeps and WHY, using safety, liquidity and return. Name your real products — a superlative alone is not enough.</p>
+          <Starters items={["The safest and most liquid place for my emergency fund is… because…", "For my trip, the best option is… because the money…", "The riskiest product is… so I use it only for…"]} onPick={appendStarter(setText)} />
+          <WordField value={text} onChange={setText} min={35} max={90} goals={G} placeholder="The most liquid place for my emergency fund is the digital cajita because I can withdraw the money any day…" />
+        </div>
+      )}
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!all || !twist || !emerOk || !check || !goalsOk(text, 35, 90, G)} onClick={() => finish(coins, { picks: pick, score, check: check?.firstTry || 0, text })}>Save Page 14 <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
     </ActShell>
   );
 }
@@ -2380,33 +2402,85 @@ const REAL_R = [
   { tag: "Decide", q: "Which beats 6% inflation?", options: ["A CDT at 10% E.A.", "A savings account at 1% E.A.", "A CDT at 5% E.A.", "A piggy bank."], correct: 0, explain: "Only returns above inflation grow purchasing power." },
 ];
 
-/* ---------- C3 · The Dollar Storm (cobertura) ---------- */
-const STORM_S = [{ k: "dev", e: "🌪️", l: "Peso devalues: TRM $4,600", trm: 4600 }, { k: "same", e: "🌤️", l: "Stable: TRM $4,000", trm: 4000 }, { k: "rev", e: "☀️", l: "Peso strengthens: TRM $3,600", trm: 3600 }];
-const STORM_P = [{ k: "wait", e: "⏳", l: "Keep pesos, buy all the dollars next year" }, { k: "now", e: "💵", l: "Buy all the dollars today ($4,000)" }, { k: "half", e: "⚖️", l: "Buy half today, half next year" }];
+/* ---------- C3 · The Dollar Storm (cobertura) · 4 casos + ganadores y perdedores ---------- */
+const STORM_CASES = [
+  { k: "trip", e: "✈️", who: "You · the class trip", side: "pay", usd: 1000, story: "Your class trip to Miami is in 12 months and costs US$1,000. You have the pesos today.", fut: [{ e: "🌪️", l: "Peso devalues", trm: 4600 }, { e: "🌤️", l: "Stable", trm: 4000 }, { e: "☀️", l: "Peso strengthens", trm: 3600 }],
+    q: { tag: "✈️ Trip", q: "You waited and the TRM went to $4,600. How many MORE pesos did you pay than if you had bought everything today at $4,000?", answer: 600000, money: true, hint: "1,000 × (4,600 − 4,000)", explain: "1,000 × 600 = $600,000 more — almost a plane ticket." } },
+  { k: "imp", e: "🏭", who: "Doña Marta · importer", side: "pay", usd: 20000, story: "She imports coffee machines from China. She must PAY US$20,000 in 6 months. She sells the machines in pesos.", fut: [{ e: "🌪️", l: "Peso devalues", trm: 4500 }, { e: "🌤️", l: "Stable", trm: 4000 }, { e: "☀️", l: "Peso strengthens", trm: 3700 }],
+    q: { tag: "🏭 Importer", q: "She didn't hedge and the dollar went from $4,000 to $4,500. How many more pesos does she pay?", answer: 10000000, money: true, hint: "20,000 × 500", explain: "$10,000,000 more. If her profit was $8,000,000, the dollar ate all of it — that's why importers hedge." } },
+  { k: "exp", e: "☕", who: "Don Julio · coffee exporter", side: "get", usd: 15000, story: "A buyer in Germany will PAY him US$15,000 in 6 months. He needs pesos to pay his workers.", fut: [{ e: "🌪️", l: "Peso devalues", trm: 4500 }, { e: "🌤️", l: "Stable", trm: 4000 }, { e: "☀️", l: "Peso strengthens", trm: 3600 }],
+    q: { tag: "☕ Exporter", q: "The peso STRENGTHENED: TRM $3,600. How many fewer pesos does he receive than at $4,000?", answer: 6000000, money: true, hint: "15,000 × (4,000 − 3,600)", explain: "$6,000,000 less. For an exporter the danger is the opposite: a STRONG peso." } },
+  { k: "uni", e: "🎓", who: "The Rojas family · university abroad", side: "pay", usd: 5000, story: "Their daughter's semester in Spain costs US$5,000 and they pay it in 9 months.", fut: [{ e: "🌪️", l: "Peso devalues", trm: 4700 }, { e: "🌤️", l: "Stable", trm: 4000 }, { e: "☀️", l: "Peso strengthens", trm: 3700 }],
+    q: { tag: "🎓 Half & half", q: "They bought half today at $4,000 and half later at $4,700. Total cost in pesos?", answer: 21750000, money: true, hint: "2,500 × 4,000 + 2,500 × 4,700", explain: "10,000,000 + 11,750,000 = $21,750,000 (all later would be $23,500,000; all today $20,000,000)." } },
+];
+const STORM_P = {
+  pay: [{ k: "wait", e: "⏳", l: "Wait: buy all the dollars later" }, { k: "now", e: "🔒", l: "Lock today: buy at $4,000" }, { k: "half", e: "⚖️", l: "Half today, half later" }],
+  get: [{ k: "wait", e: "⏳", l: "Wait: sell the dollars later" }, { k: "now", e: "🔒", l: "Lock today: forward at $4,000" }, { k: "half", e: "⚖️", l: "Lock half, wait for half" }],
+};
+const stormPesos = (c, p, trm) => (p === "now" ? c.usd * 4000 : p === "wait" ? c.usd * trm : (c.usd / 2) * 4000 + (c.usd / 2) * trm);
+const STORM_SORT = [
+  { t: "☕ A coffee farmer who sells to the US", win: true }, { t: "📱 A store that imports phones", win: false },
+  { t: "💌 A family that receives remittances in dollars", win: true }, { t: "🎓 A student who pays a university abroad", win: false },
+  { t: "✈️ A Colombian tourist going to Miami", win: false }, { t: "🏨 A hotel in Cartagena full of foreign tourists", win: true },
+  { t: "🎧 A teenager who pays Spotify and apps in dollars", win: false }, { t: "🌹 A flower company that exports to Europe", win: true },
+];
 function DollarStorm({ onSave, onExit }) {
-  const [pick, setPick] = useState(null);
-  const [imp, setImp] = useState(null);
+  const [ci, setCi] = useState(0);
+  const [pick, setPick] = useState({});
+  const [seen, setSeen] = useState(false);
+  const [calcDone, setCalcDone] = useState(false);
+  const [first, setFirst] = useState(0);
+  const [real] = useState(() => STORM_CASES.map(() => Math.floor(Math.random() * 3)));
+  const [sort, setSort] = useState({});
+  const [checked, setChecked] = useState(null);
+  const [sortFirst, setSortFirst] = useState(null);
   const [st, finish] = useFinish(onSave);
-  const cost = (p, s) => (p === "now" ? 1000 * 4000 : p === "wait" ? 1000 * s.trm : 500 * 4000 + 500 * s.trm);
-  if (st.done) return <Reward title="Storm survived! 🌪️" subtitle="Hedging reduces risk — it doesn't predict the future." coins={st.coins} saving={st.saving} onExit={onExit} />;
+  const inCases = ci < STORM_CASES.length;
+  const c = STORM_CASES[Math.min(ci, STORM_CASES.length - 1)];
+  const P = STORM_P[c.side];
+  const f = c.fut[real[Math.min(ci, STORM_CASES.length - 1)]];
+  const sortOk = STORM_SORT.filter((s, k) => sort[k] === s.win).length;
+  const coins = 10 + first * 3 + (sortFirst ?? 0);
+  const next = () => { setCi(ci + 1); setSeen(false); setCalcDone(false); };
+  if (st.done) return <Reward title="Storm survived! 🌪️" subtitle={`${first}/4 calculations on the first try · ${sortFirst ?? 0}/8 winners & losers`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
-    <ActShell icon={<Umbrella size={22} strokeWidth={2.1} />} title="The Dollar Storm 🌪️" subtitle="Your class trip to Miami is in one year and costs US$1,000. Today the TRM is $4,000. Nobody knows the future dollar." onExit={onExit}>
+    <ActShell icon={<Umbrella size={22} strokeWidth={2.1} />} title="The Dollar Storm 🌪️" subtitle="4 real cases · nobody knows the future dollar · today the TRM is $4,000." onExit={onExit}>
       <Brief91 k="c3_storm" />
-      <p className="quiz-q">Choose your strategy BEFORE you see the future:</p>
-      <div className="g10-ab four">{STORM_P.map((p) => <button key={p.k} type="button" disabled={!!pick} className={pick === p.k ? "on" : ""} onClick={() => setPick(p.k)}><em>{p.e}</em><b>{p.l}</b></button>)}</div>
-      {pick && (
+      <div className="g10-steps4">{STORM_CASES.map((x, k) => <span key={x.k} className={k < ci ? "done" : k === ci ? "now" : ""}>{x.e} {k + 1}</span>)}<span className={!inCases ? "now" : ""}>🏆 Sort</span></div>
+      {inCases ? (
         <>
-          <MiniTable head={["Strategy", ...STORM_S.map((s) => `${s.e} ${s.l}`), "Range"]} rows={STORM_P.map((p) => { const c = STORM_S.map((s) => cost(p.k, s)); return [`${p.e} ${p.l}${p.k === pick ? " ⬅️" : ""}`, ...c.map(cop), cop(Math.max(...c) - Math.min(...c))]; })} />
-          <div className="p1-banner good"><span>💡 Look at the last column: "buy now" has NO range (you know the cost today). "Half and half" cuts the range in half. Hedging doesn't give the cheapest result in every scenario — it gives you <b>certainty</b>.</span></div>
-          <div className="start-block g10-boss">
-            <h3>🏭 Bonus case · An importer</h3>
-            <p>Doña Marta imports coffee machines. She must pay US$20,000 in 6 months. If the dollar goes from $4,000 to $4,600, how much more does she pay in pesos?</p>
-            <div className="quiz-options">{["$12,000,000", "$6,000,000", "$600,000"].map((t, k) => <button key={t} type="button" disabled={imp != null} className={`quiz-opt ${imp === k ? (k === 0 ? "correct" : "wrong") : ""} ${imp != null && k === 0 ? "correct" : ""}`} onClick={() => setImp(k)}><span className="opt-text">{t}</span></button>)}</div>
-            {imp != null && <p className="g91-note pos">20,000 × (4,600 − 4,000) = $12,000,000. That's why importers hedge (forwards, buying dollars in advance).</p>}
-          </div>
+          <div className="g10-news"><small>CASE {ci + 1} / {STORM_CASES.length} · {c.who.toUpperCase()}</small><b>{c.e} {c.story}</b></div>
+          <div className="g10-formula">{c.side === "pay" ? "Pesos you PAY = US$ × TRM → you want a LOW dollar" : "Pesos you RECEIVE = US$ × TRM → you want a HIGH dollar"}</div>
+          <p className="quiz-q">1️⃣ Choose a strategy BEFORE you see the future:</p>
+          <div className="g10-ab four">{P.map((p) => <button key={p.k} type="button" disabled={seen} className={pick[c.k] === p.k ? "on" : ""} onClick={() => setPick({ ...pick, [c.k]: p.k })}><em>{p.e}</em><b>{p.l}</b></button>)}</div>
+          {!seen ? (
+            <div className="start-foot"><button className="s1-btn primary big" disabled={!pick[c.k]} onClick={() => setSeen(true)}>Reveal the future 🔮</button></div>
+          ) : (
+            <>
+              <div className={`p1-banner ${f.trm === 4000 ? "" : (f.trm > 4000) === (c.side === "get") ? "good" : "bad"}`}><span>2️⃣ <b>{f.e} {f.l}: the TRM is ${f.trm.toLocaleString("en-US")}.</b> With your strategy you {c.side === "pay" ? "paid" : "received"} <b>{cop(stormPesos(c, pick[c.k], f.trm))}</b>.</span></div>
+              <MiniTable head={["Strategy", ...c.fut.map((x) => `${x.e} $${x.trm.toLocaleString("en-US")}`), "Range"]} rows={P.map((p) => { const v = c.fut.map((x) => stormPesos(c, p.k, x.trm)); return [`${p.e} ${p.l}${p.k === pick[c.k] ? " ⬅️" : ""}`, ...v.map(cop), cop(Math.max(...v) - Math.min(...v))]; })} />
+              <p className="start-tip">💡 Look at the Range: locking today = $0 range (total certainty). Waiting = a bet on the dollar. Half and half cuts the risk in half. Hedging buys <b>certainty</b>, not always the best price.</p>
+              <p className="quiz-q">3️⃣ Calculate:</p>
+              {!calcDone ? <RoundsRunner key={c.k} rounds={[c.q]} doneLabel="Got it" onDone={(r) => { setFirst(first + r.firstTry); setCalcDone(true); }} /> : (
+                <div className="start-foot"><button className="s1-btn primary big" onClick={next}>{ci < STORM_CASES.length - 1 ? "Next case" : "Final challenge: winners & losers"} <ChevronRight size={18} /></button></div>
+              )}
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="g10-news"><small>FINAL CHALLENGE</small><b>🌪️ The peso DEVALUES 15% (the dollar goes up). Who wins and who loses?</b></div>
+          <div className="g10-sort">{STORM_SORT.map((s, k) => (
+            <div key={k} className={checked ? (sort[k] === s.win ? "ok" : "no") : ""}>
+              <span>{s.t}</span>
+              <div><button type="button" className={sort[k] === true ? "on win" : ""} onClick={() => { setSort({ ...sort, [k]: true }); setChecked(null); }}>🏆 Wins</button><button type="button" className={sort[k] === false ? "on lose" : ""} onClick={() => { setSort({ ...sort, [k]: false }); setChecked(null); }}>😓 Loses</button></div>
+            </div>
+          ))}</div>
+          <div className="start-foot"><button className="s1-btn ghost big" disabled={Object.keys(sort).length < STORM_SORT.length} onClick={() => { setChecked(true); if (sortFirst == null) setSortFirst(sortOk); }}>Check ({Object.keys(sort).length}/{STORM_SORT.length})</button></div>
+          {checked && <div className={`p1-banner ${sortOk === STORM_SORT.length ? "good" : "bad"}`}><span><b>{sortOk}/{STORM_SORT.length}</b> correct. {sortOk === STORM_SORT.length ? "Rule: whoever RECEIVES dollars wins with devaluation; whoever PAYS in dollars loses." : "Fix the red ones. Ask: does this person RECEIVE or PAY dollars?"}</span></div>}
+          <div className="start-foot"><button className="s1-btn primary big" disabled={sortOk !== STORM_SORT.length} onClick={() => finish(coins, { picks: pick, firstTry: first, sortFirst })}>Finish the storm <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
         </>
       )}
-      <div className="start-foot"><button className="s1-btn primary big" disabled={imp == null} onClick={() => finish(24 + (imp === 0 ? 4 : 0), { pick, imp: imp === 0 })}>Finish <span className="coin-tag"><Coins size={15} /> +{24 + (imp === 0 ? 4 : 0)}</span></button></div>
     </ActShell>
   );
 }
@@ -2414,9 +2488,12 @@ const DESK2_R = [
   { tag: "Buy", q: "The house sells at $4,150. US$300 cost…", answer: 1245000, money: true, hint: "300 × 4,150", explain: "$1,245,000." },
   { tag: "Sell", q: "The house buys at $3,950. You sell US$120. You receive…", answer: 474000, money: true, hint: "120 × 3,950", explain: "$474,000." },
   { tag: "Spread", q: "Sell price $4,150, buy price $3,950. Spread per dollar?", answer: 200, money: true, hint: "4,150 − 3,950", explain: "$200." },
-  { tag: "Spread %", q: "That spread as a % of a $4,000 TRM?", answer: 5, unit: "%", tol: 0.1, hint: "200 ÷ 4,000", explain: "5% — a hidden cost every round trip." },
+  { tag: "Spread %", q: "That spread as a % of a $4,000 TRM?", answer: 5, unit: "%", tol: 0.1, hint: "200 ÷ 4,000 × 100", explain: "5% — a hidden cost every round trip." },
+  { tag: "Round trip", q: "You buy US$500 at $4,150 and sell them back the same day at $3,950. How many pesos do you lose?", answer: 100000, money: true, hint: "500 × (4,150 − 3,950)", explain: "$100,000 lost only in the spread — don't change money twice!" },
+  { tag: "Card abroad", q: "In Miami you pay US$200 with your card. The bank uses TRM $4,000 + a 3% fee. Cost in pesos?", answer: 824000, money: true, hint: "200 × 4,000 × 1.03", explain: "800,000 + 24,000 = $824,000." },
   { tag: "Compare", q: "A: $4,200 with no fee. B: $4,140 + $15,000 fee. You buy US$400. Cheaper?", options: ["B: $1,671,000 vs. $1,680,000.", "A: $1,680,000 vs. $1,671,000.", "A, a fixed fee always costs more.", "They cost the same."], correct: 0, explain: "A: 1,680,000. B: 400 × 4,140 + 15,000 = 1,671,000." },
 ];
+const DESK_INTRO = <><Brief91 k="c3_desk" /><div className="g10-formula">Buy US$ → US$ × <b>sell price</b> · Sell US$ → US$ × <b>buy price</b><br />Spread = sell − buy · Spread % = spread ÷ TRM × 100 · Fee % → × (1 + fee)</div></>;
 
 /* ---------- C4 · Wall Street Tycoon · Page 15 ---------- */
 const TYC = [
@@ -2437,7 +2514,7 @@ function WallStreetTycoon({ existing, onSave, onExit }) {
   const run = (alloc, upto) => { let h = Object.fromEntries(TYC.map((c) => [c.k, alloc[c.k] * 10])); const hist = [sumH(h)]; for (let i = 0; i <= upto; i++) { h = applyR(h, TYC_R[i].r); hist.push(sumH(h)); } return { h, hist }; };
   const etfAl = Object.fromEntries(TYC.map((c) => [c.k, 100 / 6]));
   const mine = run(al, round), etf = run(etfAl, round);
-  const G = [W_PASSIVE, W_REASON];
+  const G = [W_PASSIVE, W_REASON, W_TOPIC("Use 2 words of the topic", ["etf", "diversif", "compan", "bankrupt", "basket", "risk", "sector", "spread"], 2, "ETF · diversified · bankrupt · risk"), W_NUMBERS(1)];
   if (st.done) return <Reward title="Tycoon of the year! 🏙️" subtitle={`You: ${usd0(mine.hist[mine.hist.length - 1])} · ETF: ${usd0(etf.hist[etf.hist.length - 1])}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Building2 size={22} strokeWidth={2.1} />} title="Wall Street Tycoon 🏙️ · Page 15" subtitle="US$1,000 · 6 fictional companies. Pick your stocks — then compare with an ETF that holds all six." onExit={onExit}>
@@ -2466,11 +2543,46 @@ function WallStreetTycoon({ existing, onSave, onExit }) {
   );
 }
 const FRAC_R = [
-  { tag: "Fraction", q: "One share of a big company costs US$500. With US$50 you buy how many shares?", answer: 0.1, unit: "shares", tol: 0.001, hint: "50 ÷ 500", explain: "0.1 share — a fractional share." },
-  { tag: "Fraction", q: "You own 0.25 shares of a US$800 stock. Value?", answer: 200, unit: "US$", hint: "0.25 × 800", explain: "US$200." },
-  { tag: "Gain", q: "Your 0.25 shares: the price goes from US$800 to US$880. Gain in US$?", answer: 20, unit: "US$", hint: "0.25 × 80", explain: "US$20 (+10%)." },
+  { tag: "Fraction", q: "One share of a big company costs US$500. With US$50 you buy how many shares?", answer: 0.1, unit: "shares", tol: 0.001, hint: "money ÷ price → 50 ÷ 500", explain: "0.1 share — a fractional share." },
+  { tag: "Value", q: "You own 0.25 shares of a US$800 stock. Value?", answer: 200, unit: "US$", hint: "shares × price → 0.25 × 800", explain: "US$200." },
+  { tag: "Gain", q: "Your 0.25 shares: the price goes from US$800 to US$880. Gain in US$?", answer: 20, unit: "US$", hint: "0.25 × (880 − 800)", explain: "US$20 (+10%)." },
+  { tag: "Loss", q: "You bought 0.2 shares at US$450. Now the price is US$405. Gain or loss in US$? (use − for a loss)", answer: -9, unit: "US$", hint: "0.2 × (405 − 450)", explain: "−US$9 (−10%). Shares can fall too." },
+  { tag: "Ownership", q: "A company has 2,000,000 shares. You own 5,000. What % of the company do you own?", answer: 0.25, unit: "%", tol: 0.01, hint: "5,000 ÷ 2,000,000 × 100", explain: "0.25% — you are a (tiny) owner of the company!" },
+  { tag: "Dividend", q: "The company pays a dividend of US$6 per share per year. You own 0.5 shares. How much do you receive?", answer: 3, unit: "US$", hint: "0.5 × 6", explain: "US$3 — dividends are paid in proportion to your shares, even fractions." },
   { tag: "Diversify", q: "With US$100, which gives more diversification?", options: ["Fractions of an ETF with 500 companies.", "One full share of a cheap company.", "Shares of the 3 biggest tech companies.", "100 dollars in one crypto coin."], correct: 0, explain: "Fractions of an ETF = hundreds of companies with little money." },
 ];
+const FRAC_READ = [
+  { h: "🧩 What is a share?", p: "A share (also called a stock) is a small piece of a company. If a company is divided into 1,000,000 shares and you own 1,000 of them, you own 0.1% of the company. Shareholders are owners: when the company grows, their pieces become more valuable." },
+  { h: "💸 How do shareholders make money?", p: "In two ways. First, a capital gain: you buy a share at US$100 and the price rises to US$120, so you win US$20. Second, dividends: some companies share part of their profits with their owners, for example US$2 per share every year. But prices can also fall — a share is not a savings account." },
+  { h: "🍕 Why fractional shares?", p: "Shares of big companies can cost US$400 or more. Many apps now let you buy a FRACTION: with US$40 you can buy 0.1 of a US$400 share. You receive 0.1 of the gains, 0.1 of the losses and 0.1 of the dividends. Small money, real ownership." },
+  { h: "🧺 Shares vs. ETF", p: "One company can fail (remember ChipNova in Wall Street Tycoon). An ETF share holds a little bit of hundreds of companies. With fractions of an ETF, a teenager with US$100 can be the owner of a small piece of 500 companies." },
+];
+const FRAC_CHECK = { q: "Valentina owns 0.5 shares of a US$300 company. The price goes up to US$330 and the company pays US$4 per share in dividends. What does she receive?", options: ["A gain of US$15 and a dividend of US$2.", "A gain of US$30 and a dividend of US$4.", "Only the dividend: fractions don't gain.", "Nothing until she owns a full share."], correct: 0, explain: "0.5 × 30 = US$15 of gain and 0.5 × 4 = US$2 of dividend: fractions receive their part of everything." };
+function FractionLab({ onSave, onExit }) {
+  const [stage, setStage] = useState(0);
+  const [okRead, setOkRead] = useState(false);
+  const [st, finish] = useFinish(onSave);
+  if (st.done) return <Reward title="Fraction investor! 🍕" subtitle="Small money, real ownership." coins={st.coins} saving={st.saving} onExit={onExit} />;
+  return (
+    <ActShell icon={<Calculator size={22} strokeWidth={2.1} />} title="Fractional Shares 🍕" subtitle="Mini reading → 7 problems. Own a piece of an expensive company." onExit={onExit}>
+      <Brief91 k="c4_fraction" />
+      <div className="g10-steps4"><span className={stage === 0 ? "now" : "done"}>📖 Read</span><span className={stage === 1 ? "now" : ""}>🧮 Solve</span></div>
+      {stage === 0 ? (
+        <>
+          <div className="g10-mini-read">{FRAC_READ.map((b) => <section key={b.h}><h4>{b.h}</h4><p>{b.p}</p></section>)}</div>
+          <div className="g10-formula">Shares = money ÷ price · Value = shares × price<br />Gain = shares × (new price − old price) · Dividend = shares × dividend per share<br />Ownership % = your shares ÷ total shares × 100</div>
+          <PickOne tag="Check your reading" q={FRAC_CHECK.q} options={FRAC_CHECK.options} correct={FRAC_CHECK.correct} explain={FRAC_CHECK.explain} onRight={() => setOkRead(true)} />
+          <div className="start-foot"><button className="s1-btn primary big" disabled={!okRead} onClick={() => setStage(1)}>Start the 7 problems <ChevronRight size={18} /></button></div>
+        </>
+      ) : (
+        <>
+          <div className="g10-formula">Shares = money ÷ price · Value = shares × price · Gain = shares × (new − old) · Dividend = shares × dividend · Ownership % = yours ÷ total × 100</div>
+          <RoundsRunner rounds={FRAC_R} doneLabel="Finish" onDone={(r) => finish(r.firstTry * 3 + 8, { firstTry: r.firstTry, total: r.total, answers: r.answers })} />
+        </>
+      )}
+    </ActShell>
+  );
+}
 
 /* ---------- C5 · Scam City (FOMO) · Page 16 ---------- */
 const SCAM_STATS = [{ k: "money", l: "My savings", e: "💰", start: 70 }, { k: "safe", l: "Safety", e: "🛡️", start: 60 }];
@@ -2485,7 +2597,7 @@ function ScamCity({ existing, onSave, onExit }) {
   const [res, setRes] = useState(null);
   const [text, setText] = useState(existing?.text || "");
   const [st, finish] = useFinish(onSave);
-  const G = [W_CONTRAST, W_RISK];
+  const G = [W_CONTRAST, W_RISK, W_TOPIC("Use 3 words of the topic", ["stablecoin", "bitcoin", "1:1", "dollar", "volatil", "reserve", "peg", "scam", "guarante", "supervis", "red flag", "ponzi"], 3, "stablecoin · bitcoin · volatile · reserves")];
   if (st.done) return <Reward title="Scam detective! 🕵️" subtitle={`${res?.good || 0} safe decisions`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<ShieldAlert size={22} strokeWidth={2.1} />} title="Scam City 🕵️ · Page 16" subtitle="5 offers. Some are scams, some are real but risky. You have 20 seconds each — FOMO mode is ON." onExit={onExit}>
@@ -2522,7 +2634,7 @@ function BusinessJudge({ existing, onSave, onExit }) {
   const flows = (p) => (crisis && p.k !== "cdt" ? p.f.map((c, t) => (t === 0 ? c : Math.round(c * 0.8))) : p.f);
   const calc = PROJ.map((p) => { const f = flows(p); return { ...p, fl: f, npv: npvOf(0.12, f), irr: irrOf(f), pb: paybackOf(f) }; });
   const best = calc.slice().sort((a, b) => b.npv - a.npv)[0];
-  const G = [W_RECOMMEND, W_NUMBERS(2)];
+  const G = [W_RECOMMEND, W_NUMBERS(2), W_TOPIC("Use 2 words of the topic", ["npv", "irr", "payback", "cdt", "alternative", "crisis", "discount"], 2, "NPV · IRR · payback · CDT")];
   if (st.done) return <Reward title="Verdict delivered! ⚖️" subtitle="You judge projects like a CFO." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Gavel size={22} strokeWidth={2.1} />} title="The Business Judge ⚖️ · Page 17" subtitle="Your uncle has $10,000,000. Three projects. Discount rate: 12% (his best alternative)." onExit={onExit}>
@@ -2556,35 +2668,43 @@ function BusinessJudge({ existing, onSave, onExit }) {
 }
 
 /* ---------- C7 · Portfolio Rescue ---------- */
-const RESCUE_LOG = [["Jan", "Bought 3 MegaTech at US$300", "−US$900"], ["Feb", "Paid a 'premium advisor' fee", "−US$60"], ["Mar", "MegaTech fell to US$180 — sold all in panic", "+US$540"], ["Apr", "Bought 0.01 bitcoin at the top: US$600", "−US$600"], ["May", "Bitcoin fell — still holding, now worth", "US$390"], ["May", "Cash left in the account", "US$40"]];
+const RESCUE_LOG = [["Start", "Deposited in the account", "US$1,000"], ["Jan", "Bought 3 MegaTech at US$300", "−US$900"], ["Feb", "Paid a 'premium advisor' fee", "−US$60"], ["Mar", "MegaTech fell to US$180 — sold all 3 in panic", "+US$540"], ["Apr", "Bought bitcoin at the top with the US$540", "−US$540"], ["May", "Bitcoin fell — still holding it, now worth", "US$390"], ["May", "Cash left in the account", "US$40"]];
 const RESCUE_ERR = [
-  { t: "90% of the money in ONE stock (no diversification).", bad: true }, { t: "Panic selling after a fall.", bad: true },
-  { t: "Paying a high fee for 'premium advice'.", bad: true }, { t: "Buying an asset after a huge rise because of FOMO.", bad: true },
+  { t: "90% of the money in ONE stock (no diversification).", bad: true, fix: "Spread the money: an ETF holds hundreds of companies." }, { t: "Panic selling after a fall.", bad: true, fix: "Check the plan and the horizon before selling." },
+  { t: "Paying a high fee for 'premium advice'.", bad: true, fix: "Compare fees: 6% is huge before you even invest." }, { t: "Buying an asset after a huge rise because of FOMO.", bad: true, fix: "Never buy because 'everybody is buying'." },
   { t: "Keeping a small amount of cash.", bad: false }, { t: "Writing every move in a log.", bad: false },
+];
+const RESCUE_R = [
+  { tag: "NAV", q: "Today the portfolio has bitcoin worth US$390 and US$40 cash. NAV?", answer: 430, unit: "US$", hint: "NAV = value of everything you own → 390 + 40", explain: "NAV = US$430." },
+  { tag: "P&L", q: "The investor started with US$1,000. P&L?", answer: -570, unit: "US$", hint: "P&L = NAV − invested → 430 − 1,000", explain: "−US$570." },
+  { tag: "ROI", q: "ROI in %?", answer: -57, unit: "%", tol: 0.1, hint: "ROI = P&L ÷ invested × 100 → −570 ÷ 1,000 × 100", explain: "−57%." },
+  { tag: "Realized", q: "Realized loss on MegaTech (bought for US$900, sold for US$540)?", answer: -360, unit: "US$", hint: "sold − bought → 540 − 900", explain: "−US$360 REALIZED: it is locked in because he sold." },
+  { tag: "Unrealized", q: "Bitcoin was bought for US$540 and is worth US$390 now (not sold). Unrealized gain or loss?", answer: -150, unit: "US$", hint: "value now − cost → 390 − 540", explain: "−US$150 UNREALIZED: it can still change, because he still holds it." },
+  { tag: "Fees", q: "The advisor fee (US$60) as a % of the initial US$1,000?", answer: 6, unit: "%", tol: 0.1, hint: "60 ÷ 1,000 × 100", explain: "6% lost before investing anything!" },
+  { tag: "Check", q: "Add the three pieces: realized (−360) + unrealized (−150) + fees (−60) = ?", answer: -570, unit: "US$", hint: "−360 − 150 − 60", explain: "−US$570 = the P&L. The audit closes: every dollar is explained." },
 ];
 function PortfolioRescue({ onSave, onExit }) {
   const [stage, setStage] = useState(0);
   const [first, setFirst] = useState(0);
   const [sel, setSel] = useState([]);
   const [st, finish] = useFinish(onSave);
-  const rounds = [
-    { tag: "NAV", q: "Today the portfolio has bitcoin worth US$390 and US$40 cash. NAV?", visual: <MiniTable head={["Month", "Move", "Cash flow"]} rows={RESCUE_LOG} />, answer: 430, unit: "US$", hint: "390 + 40", explain: "NAV = US$430." },
-    { tag: "P&L", q: "The investor started with US$1,000. P&L?", answer: -570, unit: "US$", hint: "430 − 1,000", explain: "−US$570." },
-    { tag: "ROI", q: "ROI in %?", answer: -57, unit: "%", tol: 0.1, hint: "−570 ÷ 1,000 × 100", explain: "−57%." },
-    { tag: "Realized", q: "Realized loss on MegaTech (bought 900, sold 540)?", answer: -360, unit: "US$", hint: "540 − 900", explain: "−US$360 realized: locked in by selling." },
-  ];
   const errs = RESCUE_ERR.filter((e) => e.bad).map((e) => e.t);
   const okSel = sel.length === 4 && sel.every((t) => errs.includes(t));
-  if (st.done) return <Reward title="Portfolio rescued! 🛟" subtitle="You found the mistakes — and how to avoid them." coins={st.coins} saving={st.saving} onExit={onExit} />;
+  const coins = 16 + first * 2;
+  if (st.done) return <Reward title="Portfolio rescued! 🛟" subtitle={`${first}/7 calculations on the first try`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
-    <ActShell icon={<LifeBuoy size={22} strokeWidth={2.1} />} title="Portfolio Rescue 🛟" subtitle="An investor lost money. Audit the log: calculate NAV, P&L and ROI — and find the 4 mistakes." onExit={onExit}>
+    <ActShell icon={<LifeBuoy size={22} strokeWidth={2.1} />} title="Portfolio Rescue 🛟" subtitle="An investor lost money. Audit the log: NAV, P&L, ROI, realized vs. unrealized — then find the 4 mistakes." onExit={onExit}>
       <Brief91 k="c7_rescue" />
-      {stage === 0 ? <RoundsRunner rounds={rounds} doneLabel="Find the mistakes" onDone={(r) => { setFirst(r.firstTry); setStage(1); }} /> : (
+      <div className="g10-steps4"><span className={stage === 0 ? "now" : "done"}>🧮 Audit (7)</span><span className={stage === 1 ? "now" : ""}>🚩 Mistakes</span></div>
+      <div className="start-block"><h3>📒 The investor's log</h3><MiniTable head={["Month", "Move", "Cash flow / value"]} rows={RESCUE_LOG} /></div>
+      <div className="g10-formula"><b>NAV</b> = value of everything you own (assets + cash)<br /><b>P&L</b> = NAV − money invested · <b>ROI</b> = P&L ÷ money invested × 100<br /><b>Realized</b> = sold − bought · <b>Unrealized</b> = value now − cost (not sold yet)</div>
+      {stage === 0 ? <RoundsRunner rounds={RESCUE_R} doneLabel="Find the mistakes" onDone={(r) => { setFirst(r.firstTry); setStage(1); }} /> : (
         <>
+          <p className="quiz-q">Mark the 4 mistakes (careful: 2 are good habits):</p>
           <div className="g10-qpick">{RESCUE_ERR.map((e) => { const on = sel.includes(e.t); return <button key={e.t} type="button" className={`${on ? "on" : ""} ${on && !e.bad ? "bad" : ""}`} onClick={() => setSel(on ? sel.filter((x) => x !== e.t) : sel.length < 4 ? [...sel, e.t] : sel)}>{on ? (e.bad ? "🚩 " : "✗ ") : ""}{e.t}</button>; })}</div>
           {sel.length === 4 && !okSel && <p className="p1-hint">💡 One of those is a GOOD habit. Change it.</p>}
-          {okSel && <div className="p1-banner good"><span>🛟 Rescue plan: diversify with an ETF, keep fees low, never sell in panic, and never buy because of FOMO.</span></div>}
-          <div className="start-foot"><button className="s1-btn primary big" disabled={!okSel} onClick={() => finish(18 + first * 3, { firstTry: first })}>Finish the rescue <span className="coin-tag"><Coins size={15} /> +{18 + first * 3}</span></button></div>
+          {okSel && <div className="start-block"><h3>🛟 The rescue plan</h3><MiniTable head={["Mistake", "How to fix it"]} rows={RESCUE_ERR.filter((e) => e.bad).map((e) => [`🚩 ${e.t}`, `✅ ${e.fix}`])} /></div>}
+          <div className="start-foot"><button className="s1-btn primary big" disabled={!okSel} onClick={() => finish(coins, { firstTry: first })}>Finish the rescue <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
         </>
       )}
     </ActShell>
@@ -2596,7 +2716,7 @@ function InvestDashboard({ resp, existing, onSave, onExit }) {
   const P = portOf(resp);
   const [text, setText] = useState(existing?.text || "");
   const [st, finish] = useFinish(onSave);
-  const G = [W_NUMBERS(2), W_CAUSE];
+  const G = [W_NUMBERS(2), W_CAUSE, W_TOPIC("Use NAV, P&L or ROI (2)", ["nav", "p&l", "roi", "invested", "asset"], 2, "NAV · P&L · ROI")];
   const rows = ASSETS10.map((x) => { const inv = (P.alloc[x.k] || 0) * 10; const now = P.h[x.k]; return [`${x.e} ${x.l}`, inv, now, r2(now - inv), inv ? r2(((now - inv) / inv) * 100) : 0]; });
   const csv = () => downloadCSV([["Asset", "Invested (US$)", "Value now (US$)", "P&L (US$)", "ROI %"], ...rows, ["TOTAL", 1000, P.nav, P.pnl, P.roi], [], ["Week", "NAV"], ...P.hist.map((h) => [h.l, h.v])], "My_Investment_Dashboard.csv");
   if (st.done) return <Reward title="Dashboard ready! 📊" subtitle={`NAV ${usd0(P.nav)} · ROI ${pctTxt(P.roi)}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
@@ -2616,32 +2736,82 @@ function InvestDashboard({ resp, existing, onSave, onExit }) {
   );
 }
 
-/* ---------- C8 · Shareholder Pitch (proyecto grande) ---------- */
-const RUB_SH = [["coh", "Profile & allocation coherent", "risk fits the profile"], ["hedge", "Dollar hedge & diversification", "explained with examples"], ["spec", "Speculation vs. scam vs. investing", "clear differences"], ["nums", "Correct numbers", "NAV, P&L, ROI"], ["eng", "Professional financial English", "clear and confident"]];
+/* ---------- C8 · Shareholder Pitch (proyecto grande) ----------
+   1) Tablero de evidencias: cada línea del diploma sale de una actividad real.
+   2) Preguntas difíciles de los accionistas (análisis con el tema, no solo gramática).
+   3) Guion + Present + jurado + certificado con SUS números. */
+const RUB_SH = [["coh", "Profile & allocation coherent", "risk fits the profile"], ["hedge", "Dollar hedge & diversification", "explained with HIS/HER numbers"], ["qa", "Answers to the shareholders", "clear, with data"], ["nums", "Correct numbers", "NAV, P&L, ROI"], ["eng", "Professional financial English", "clear and confident"]];
+const evidenceOf = (r) => {
+  const P = portOf(r); const al = P.alloc || {}; const usdShare = 100 - (al.col || 0);
+  const held = ASSETS10.filter((x) => (al[x.k] || 0) > 0).length; const maxOne = Math.max(0, ...Object.values(al));
+  const storm = r.c3_storm, scam = r.c5_scam, ty = r.c4_tycoon, jd = r.c6_judge;
+  return [
+    { k: "manage", e: "📦", t: "Managed a US$1,000 portfolio", ok: !!r.c1_allocate && P.done >= 4, d: `${P.done}/5 Market Weeks · NAV ${usd0(P.nav)} · ROI ${pctTxt(P.roi)}`, fix: "Open the Market Weeks (classes 2–6).", cert: `managed a simulated US$1,000 portfolio for ${P.done} Market Weeks (NAV ${usd0(P.nav)}, ROI ${pctTxt(P.roi)})` },
+    { k: "hedge", e: "💱", t: "Hedged currency risk", ok: !!r.c1_allocate && usdShare >= 50 && !!storm, d: `${usdShare}% of the fund in dollar assets${storm ? ` · Dollar Storm: ${storm.firstTry ?? "✓"}${storm.firstTry != null ? "/4 cases on the first try" : ""}` : " · Dollar Storm pending"}`, fix: "Class 3: The Dollar Storm (and keep 50%+ in dollar assets).", cert: `kept ${usdShare}% of the fund in dollar assets as a currency hedge` },
+    { k: "div", e: "🧺", t: "Diversified the fund", ok: held >= 4 && maxOne <= 50, d: `${held} assets · biggest position ${maxOne}%${ty ? ` · Tycoon: my stocks ${usd0(ty.final)} vs. ETF ${usd0(ty.etf)}` : ""}`, fix: "Your allocation needs 4+ assets and none above 50%.", cert: `diversified across ${held} assets (no position above ${maxOne}%)` },
+    { k: "scam", e: "🕵️", t: "Avoided scams under pressure", ok: (scam?.good || 0) >= 4, d: scam ? `${scam.good}/5 safe decisions in Scam City (FOMO mode)` : "Scam City pending", fix: "Class 5: Scam City (4 of 5 safe decisions).", cert: `made ${scam?.good || 0}/5 safe decisions against scams in FOMO mode` },
+    { k: "npv", e: "⚖️", t: "Judged a project with NPV", ok: !!jd, d: jd ? `Recommended the ${PROJ.find((p) => p.k === jd.pick)?.l.toLowerCase()} after a crisis test` : "The Business Judge pending", fix: "Class 6: The Business Judge.", cert: "judged investment projects with NPV, IRR and payback" },
+    { k: "nums", e: "📊", t: "Reported NAV, P&L and ROI", ok: !!r.c7_dashboard && !!r.c7_rescue, d: r.c7_dashboard ? `Dashboard: NAV ${usd0(r.c7_dashboard.nav)} · Rescue: ${r.c7_rescue?.firstTry ?? 0} calculations on the first try` : "Dashboard / Rescue pending", fix: "Class 7: Portfolio Rescue + Dashboard.", cert: "audited a portfolio and reported NAV, P&L and ROI with formulas" },
+  ];
+};
+const joinAnd = (a) => (a.length <= 1 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a[a.length - 1]}`);
+const SH_QA = (r, P) => {
+  const w5 = r.c6_week5?.decision; const usdShare = 100 - ((P.alloc || {}).col || 0);
+  return [
+    { k: "qa1", e: "💱", q: `“The peso could devalue again. You have ${usdShare}% in dollar assets. How is our money protected — and what is the risk?”`, goals: [W_TOPIC("Use 2 currency words", ["dollar", "peso", "hedge", "devalu", "trm", "usd", "exchange"], 2, "dollar · peso · hedge · devalue"), W_NUMBERS(1), W_REASON], ph: "If the peso devalues, our dollar assets are worth more pesos because… However, …" },
+    { k: "qa2", e: "🌪️", q: w5 ? `“In the global shock (Week 5) you decided to ${w5 === "sell" ? "SELL" : w5 === "hold" ? "HOLD" : "REBALANCE"}. Why? Would you do it again?”` : "“If the market falls 12% tomorrow, will you hold, sell or rebalance? Why?”", goals: [W_TOPIC("Use 2 words of the topic", ["panic", "recover", "plan", "rebalanc", "hold", "sell", "shock", "loss", "horizon"], 2, "panic · recover · plan · horizon"), W_REASON], ph: "I decided to … because my plan… The market…" },
+    { k: "qa3", e: "📊", q: `“Your ROI is ${pctTxt(P.roi)}. Is that good? Compare it with a CDT at 10% E.A. and explain the risk you took.”`, goals: [W_TOPIC("Use 2 words of the topic", ["roi", "nav", "p&l", "cdt", "inflation", "risk", "return"], 2, "ROI · NAV · CDT · risk"), W_COMPARE, W_NUMBERS(2)], ph: "My ROI was … in 5 weeks, while a CDT pays … a year. My fund is riskier than…" },
+  ];
+};
 function ShareholderPitch({ resp, studentName, userData, API_URL, existing, onSave, onExit }) {
   const r = resp || {}; const P = portOf(r); const prof = PROFILES[r.c1_dna?.profile || "mod"];
   const w5 = r.c6_week5?.decision; const jd = r.c6_judge;
   const ready = !!r.c1_allocate && P.done >= 3;
   const top = ASSETS10.slice().sort((a, b) => (P.alloc[b.k] || 0) - (P.alloc[a.k] || 0)).slice(0, 2);
+  const ev = evidenceOf(r); const got = ev.filter((x) => x.ok);
+  const QA = SH_QA(r, P);
+  const [qa, setQa] = useState(() => Object.fromEntries(QA.map((x) => [x.k, existing?.qa?.[x.k] || ""])));
+  const [stage, setStage] = useState(existing?.qa ? 1 : 0);
+  const qaOk = QA.every((x) => goalsOk(qa[x.k], 20, 70, x.goals));
+  if (stage === 0) {
+    return (
+      <ActShell icon={<Mic size={22} strokeWidth={2.1} />} title="Shareholder Pitch 🌍 · Part 1 · Evidence & hard questions" subtitle="Before you present, prove what your certificate will say — with YOUR data." onExit={onExit}>
+        <Brief91 k="c8_pitch" />
+        <div className="g10-steps4"><span className="now">🔎 Evidence</span><span className="now">🦈 Q&A</span><span>🎤 Present</span><span>🏅 Certificate</span></div>
+        {!ready && <div className="p1-banner bad"><span>You need your allocation (Class 1) and at least 3 Market Weeks.</span></div>}
+        <div className="start-block"><h3>🔎 My evidence board · {got.length}/{ev.length} lines unlocked</h3>
+          <p className="start-tip">Each line of your Global Investor certificate comes from a real activity. Missing lines don't appear on the certificate — go back and earn them!</p>
+          <div className="g10-evid">{ev.map((x) => <div key={x.k} className={x.ok ? "ok" : "no"}><em>{x.ok ? "✅" : "🔒"}</em><div><b>{x.e} {x.t}</b><span>{x.d}</span>{!x.ok && <i>To unlock: {x.fix}</i>}</div></div>)}</div>
+        </div>
+        <div className="start-block g10-boss"><h3>🦈 The shareholders' hard questions</h3><p className="start-tip">Real managers must defend their numbers. Answer each question with the topic words, your numbers and a reason (20–70 words each).</p>
+          {QA.map((x) => <div key={x.k} className="g10-qa"><p className="quiz-q">{x.e} {x.q}</p><WordField value={qa[x.k]} onChange={(v) => setQa({ ...qa, [x.k]: v })} min={20} max={70} rows={3} goals={x.goals} placeholder={x.ph} /></div>)}
+        </div>
+        <div className="start-foot"><button className="s1-btn primary big" disabled={!ready || !qaOk} onClick={() => setStage(1)}>{qaOk ? "Build my presentation 🎤" : "Answer the 3 questions"} <ChevronRight size={18} /></button></div>
+      </ActShell>
+    );
+  }
   const chapters = (v) => [
     { e: "🧬", t: "My profile", s: r.c1_dna ? [`I am a ${prof.l.split(" ")[0].toLowerCase()} investor.`, r.c1_allocate ? `My portfolio risk is ${r.c1_allocate.risk} out of 5.` : ""].filter(Boolean) : [] },
     { e: "🥧", t: "My allocation", s: r.c1_allocate ? [`I invested US$1,000: ${ASSETS10.filter((x) => P.alloc[x.k]).map((x) => `${P.alloc[x.k]}% in ${x.l}`).join(", ")}.`, `My biggest positions were ${top.map((x) => x.l).join(" and ")}.`] : [] },
     { e: "🌪️", t: "My Market Weeks", s: [r.c3_week2 ? "When the peso devalued, my dollar assets protected me — that's a hedge." : "", r.c4_week3 ? "When NovaTech collapsed, diversification limited the damage." : "", r.c5_week4 ? "In the crypto crash, I saw the difference between bitcoin and a stablecoin." : "", w5 ? `In the global shock, I decided to ${w5 === "sell" ? "sell — and I learned what panic costs" : w5 === "hold" ? "hold my plan" : "rebalance"}.` : ""].filter(Boolean) },
     { e: "📊", t: "My results", s: P.done ? [`My NAV is ${usd0(P.nav)}: a P&L of ${P.pnl >= 0 ? "+" : ""}${usd0(P.pnl)} and an ROI of ${pctTxt(P.roi)}.`] : [] },
     { e: "⚖️", t: "A project I would finance", s: jd ? [`With NPV analysis at 12%, I recommended the ${PROJ.find((p) => p.k === jd.pick)?.l.toLowerCase()}.`] : [] },
+    { e: "🦈", t: "The shareholders asked me", s: QA.map((x) => `${x.e} ${dot(capF(qa[x.k] || ""))}`) },
+    { e: "🔎", t: "My evidence", s: got.map((x) => `✅ ${x.t}: ${x.d}.`), empty: "Earn evidence lines in the activities of the period." },
     { e: "🎯", t: "My next move", s: v.next ? [dot(capF(v.next))] : [] },
   ];
-  const publish = async (v) => { try { const d = await fairPost(API_URL, userData, "10-SH", "fair_publish", { company: { name: `${studentName.split(" ")[0]}'s Fund`, logo: "🌍", lines: [`${prof.l} · ROI ${pctTxt(P.roi)}`, `Top: ${top.map((x) => x.l).join(" + ")}`, v.next || ""].filter(Boolean), nums: [{ l: "NAV", v: usd0(P.nav) }, { l: "ROI", v: pctTxt(P.roi) }] } }); return d.status !== "error"; } catch (e) { return false; } };
+  const publish = async (v) => { try { const d = await fairPost(API_URL, userData, "10-SH", "fair_publish", { company: { name: `${studentName.split(" ")[0]}'s Fund`, logo: "🌍", lines: [`${prof.l} · ROI ${pctTxt(P.roi)}`, `Top: ${top.map((x) => x.l).join(" + ")}`, `Evidence: ${got.length}/${ev.length}`, v.next || ""].filter(Boolean), nums: [{ l: "NAV", v: usd0(P.nav) }, { l: "ROI", v: pctTxt(P.roi) }] } }); return d.status !== "error"; } catch (e) { return false; } };
+  const certText = got.length ? `${joinAnd(got.map((x) => x.cert))}, as a ${prof.l.split(" ")[0].toLowerCase()} investor.` : `started a simulated US$1,000 global portfolio as a ${prof.l.split(" ")[0].toLowerCase()} investor.`;
   return (
-    <PitchStudio icon={<Mic size={22} strokeWidth={2.1} />} title="Shareholder Pitch 🌍 · THE BIG PROJECT" subtitle="You are the portfolio manager. Present your fund to the shareholders." brief={<Brief91 k="c8_pitch" />}
-      how={<>Your script builds itself from your profile, allocation, Market Weeks and project verdict. Add your next move and your closing line, press <b>Present</b> (2–3 minutes) and publish your fund for the championship.</>}
+    <PitchStudio icon={<Mic size={22} strokeWidth={2.1} />} title="Shareholder Pitch 🌍 · Part 2 · Present" subtitle="You are the portfolio manager. Present your fund — with your evidence and your answers." brief={<div className="p3-card-actions"><button className="s1-btn ghost" onClick={() => setStage(0)}><ChevronLeft size={16} /> Edit evidence & answers</button></div>}
+      how={<>Your script builds itself from your profile, allocation, Market Weeks, project verdict, <b>your answers to the shareholders</b> and your <b>evidence board</b> ({got.length}/{ev.length}). Add your next move and closing line, press <b>Present</b> (3–4 minutes) and publish your fund.</>}
       id="g10-share" ready={ready} readyMsg="You need your allocation (Class 1) and at least 3 Market Weeks."
       cover={{ tag: "INVESTOR DAY · GRADE 10 · INSTITUTO CREAR", title: `🌍 ${studentName.split(" ")[0]}'s Global Fund`, sub: `Portfolio manager: ${studentName}`, say: `Good morning, shareholders. I'm ${studentName.split(" ")[0]}, and this is how I managed your US$1,000.`, end: (v) => `${v.close ? dot(capF(v.close)) : "…"} Thank you for your trust.` }}
-      kpis={[{ l: "🧬 Profile", v: prof.l }, { l: "📦 NAV", v: usd0(P.nav) }, { l: "📈 P&L", v: `${P.pnl >= 0 ? "+" : ""}${usd0(P.pnl)}`, c: P.pnl >= 0 ? "pos" : "neg" }, { l: "🎯 ROI", v: pctTxt(P.roi), c: P.roi >= 0 ? "pos" : "neg" }]}
+      kpis={[{ l: "🧬 Profile", v: prof.l }, { l: "📦 NAV", v: usd0(P.nav) }, { l: "📈 P&L", v: `${P.pnl >= 0 ? "+" : ""}${usd0(P.pnl)}`, c: P.pnl >= 0 ? "pos" : "neg" }, { l: "🎯 ROI", v: pctTxt(P.roi), c: P.roi >= 0 ? "pos" : "neg" }, { l: "🔎 Evidence", v: `${got.length}/${ev.length}` }]}
       chapters={chapters} inputs={[{ k: "next", l: "🎯 My next move as a manager:", ph: "Next quarter I will rebalance to…", min: 8 }, { k: "close", l: "💡 My closing line:", ph: "Investing is a plan, not a bet…", min: 6 }]}
       rubric={RUB_SH} existing={existing} onPublish={publish} publishLabel="Publish my fund for the championship"
-      cert={{ e: "🌍", title: "Global Investor", name: studentName, text: `managed a simulated US$1,000 global portfolio as a ${prof.l.split(" ")[0].toLowerCase()} investor, hedged currency risk, diversified, avoided scams and explained NAV, P&L and ROI.` }}
-      extraData={{ nav: P.nav, roi: P.roi }} coins={60} onSave={onSave} onExit={onExit} />
+      cert={{ e: "🌍", title: "Global Investor", name: studentName, text: certText }}
+      extraData={{ nav: P.nav, roi: P.roi, qa, evidence: got.map((x) => x.k) }} coins={50 + got.length * 2} onSave={onSave} onExit={onExit} />
   );
 }
 
@@ -2663,24 +2833,24 @@ const GUIDE = {
   c1_ladder: { goal: "Order 6 products from the lowest to the highest risk.", steps: ["Tap a card, then tap a step of the ladder.", "Check your order.", "Fix the cards that come back."], win: [["Base", "+20 🪙"], ["Fewer mistakes", "more coins"]] },
   c1_allocate: { goal: "THE BIG PROJECT starts: split US$1,000 (simulated) among 6 assets, coherent with your profile. This is Future Page 13.", steps: ["Use the bars (steps of 5%).", "Watch the risk and expected-return gauges.", "No asset above 60%.", "Write Page 13 with 'If the market falls, I will…'."], win: [["Future Page 13 saved", "+30 🪙"], ["Risk coherent with your profile", "+6 🪙"]] },
   c2_read: B_READ("Choose where your money 'sleeps': safety, liquidity, return — and Fogafín.", "Next: Bank Builder."),
-  c2_bank: { goal: "Give each of 3 goals the right product, survive an emergency and write about your safe base. This is Future Page 14.", steps: ["Compare the 5 products.", "Choose a product for each goal.", "Trigger the emergency.", "Write Page 14 with superlatives."], win: [["Base (emergency money must be liquid)", "+22 🪙"], ["Each point of fit (max 6)", "+2 🪙"]] },
+  c2_bank: { goal: "Give each of 3 goals the right product, survive an emergency, prove your choices with facts and write about your safe base. This is Future Page 14.", steps: ["Compare the 5 products (rate, liquidity, safety).", "Choose a product for each goal.", "Trigger the emergency.", "Fact check: 4 questions about the table.", "Write Page 14: superlatives + topic words + YOUR products."], win: [["Base", "+18 🪙"], ["Each point of fit (max 6)", "+2 🪙"], ["Each fact check right on the first try", "+2 🪙"]], tip: "A superlative alone is not enough: explain safety, liquidity and return." },
   c2_real: { goal: "Calculate the real return: interest − inflation (and the exact formula).", steps: ["Subtract inflation from the rate.", "Use (1 + rate) ÷ (1 + inflation) − 1 for the exact value.", "Read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c2_week1: B_WEEK(1), c3_week2: B_WEEK(2), c4_week3: B_WEEK(3), c5_week4: B_WEEK(4), c6_week5: B_WEEK(5, "The shock: hold, sell or rebalance?"),
   c3_listen: B_LISTEN("Listen to Sara and Tomás comparing two exchange houses: TRM, spread and hidden costs."),
-  c3_storm: { goal: "Protect a US$1,000 trip from the dollar's ups and downs: compare three strategies in three futures.", steps: ["Choose a strategy BEFORE seeing the future.", "Compare the cost in 3 scenarios.", "Solve the importer case."], win: [["Finishing", "+24 🪙"], ["Importer case right", "+4 🪙"]], tip: "Hedging = certainty, not the cheapest result every time." },
-  c3_desk: { goal: "Exchange Desk 2.0: buy, sell, spreads and fees — like a professional.", steps: ["Calculate each operation.", "Compare two houses with fees."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
+  c3_storm: { goal: "Live 4 real dollar cases (a trip, an importer, an exporter, a family abroad), then decide who wins and who loses when the peso devalues.", steps: ["Read the case: does this person PAY or RECEIVE dollars?", "Choose a strategy BEFORE the future is revealed.", "Compare the 3 futures and the range.", "Calculate the case.", "Final challenge: winners & losers."], win: [["Base", "+10 🪙"], ["Each case calculated on the first try", "+3 🪙"], ["Each winner/loser right on the first check", "+1 🪙"]], tip: "Hedging = certainty, not the cheapest result every time." },
+  c3_desk: { goal: "Exchange Desk 2.0: buy, sell, spreads, round trips, card fees and fixed fees — like a professional.", steps: ["Read the formula box.", "Calculate 7 operations.", "Compare two houses with fees."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+6 🪙"]] },
   c4_video: B_VIDEO("Learn what an ETF is — the child of an index fund and a stock.", "Next: Wall Street Tycoon."),
   c4_tycoon: { goal: "Pick stocks of 6 fictional companies and compete against an ETF of all six — through a bankruptcy. This is Future Page 15.", steps: ["Split US$1,000 (steps of 10%).", "Live 3 rounds of news.", "Compare your stocks vs. the ETF.", "Write Page 15 in the passive voice."], win: TPAGE("15", "25–70", "the passive + a reason", 30) },
-  c4_fraction: { goal: "Buy pieces of expensive shares with little money: fractional shares.", steps: ["Divide money by price.", "Calculate value and gains."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
+  c4_fraction: { goal: "Understand what a share is and buy pieces of expensive shares with little money.", steps: ["Read the mini reading: share, gain, dividend, fraction.", "Answer the reading check.", "Solve 7 problems with the formulas."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c5_video: B_VIDEO("Understand stablecoins: how they keep their value and the new rules (GENIUS Act, MiCA).", "Next: the DMG case."),
   c5_read: B_READ("Learn from a real Colombian case how pyramid and Ponzi schemes work — and their red flags.", "Next: Scam City."),
   c5_scam: { goal: "Survive Scam City: 5 offers, 20 seconds each, FOMO mode ON. This is Future Page 16.", steps: ["Read each offer.", "Decide before the timer ends (if time runs out, panic decides for you!).", "Watch your savings and safety.", "Write Page 16 with a contrast and a risk."], win: [["Base", "+20 🪙"], ["Each safe decision", "+3 🪙"]] },
   c6_read: B_READ("Learn NPV, IRR and payback with three worked projects.", "Next: the Business Judge."),
   c6_judge: { goal: "Judge 3 projects with NPV, IRR and payback — then survive a crisis and give your verdict. This is Future Page 17.", steps: ["Guess with your instinct.", "Calculate and compare.", "Apply the crisis.", "Write your verdict (recommend + 2 numbers)."], win: TPAGE("17", "30–80", "a recommendation + 2 numbers", 28) },
   c7_brief: B_BRIEF("Learn NAV, P&L and ROI — the three numbers every portfolio manager reports.", "Next: Portfolio Rescue."),
-  c7_rescue: { goal: "Audit a portfolio that lost money: calculate NAV, P&L and ROI, then find the 4 mistakes.", steps: ["Solve 4 calculations with the log.", "Mark the 4 mistakes (careful: 2 are good habits)."], win: [["Base", "+18 🪙"], ["Each calculation right on the first try", "+3 🪙"]] },
+  c7_rescue: { goal: "Audit a portfolio that lost money: NAV, P&L, ROI, realized vs. unrealized and fees — then find the 4 mistakes and their fixes.", steps: ["Read the log and the formula box.", "Solve 7 calculations.", "Mark the 4 mistakes (careful: 2 are good habits)."], win: [["Base", "+16 🪙"], ["Each calculation right on the first try", "+2 🪙"]] },
   c7_dashboard: { goal: "Your Investment Dashboard: NAV, P&L, ROI per asset, a green/red chart and a CSV file. This is Future Page 18.", steps: ["Check your numbers.", "Download the CSV.", "Write Page 18 with 2 numbers and a cause."], win: TPAGE("18", "30–80", "2 numbers + cause and effect", 34) },
-  c8_pitch: { goal: "THE BIG PROJECT: present your fund to the shareholders as a portfolio manager.", steps: ["Check your auto-built script.", "Write your next move and your closing line.", "Present (2–3 minutes).", "Publish your fund for the championship.", "Your classmate-jury rates you."], win: [["Script + jury complete", "required"], ["Global Investor certificate", "+60 🪙"]] },
+  c8_pitch: { goal: "THE BIG PROJECT: prove your evidence, answer the shareholders' hard questions and present your fund as a portfolio manager.", steps: ["Check your evidence board: each certificate line comes from a real activity.", "Answer 3 hard questions with topic words and YOUR numbers.", "Check your auto-built script, add your next move and closing line.", "Present (3–4 minutes) and publish your fund.", "Your classmate-jury rates you."], win: [["Evidence + answers + jury", "required"], ["Global Investor certificate", "+50 🪙"], ["Each evidence line unlocked", "+2 🪙"]], tip: "Only the evidence you earned appears on your certificate." },
   c8_walk: { goal: "Global Investor Championship: evaluate your classmates' funds and invest 100 coins in the best managers.", steps: ["Open a fund.", "Write the question you asked the manager.", "Choose a category and invest.", "Evaluate at least 2 funds."], win: [["Base", "+20 🪙"], ["Each fund evaluated (up to 5)", "+4 🪙"]] },
   c8_boss: { goal: "Beat the Period 3 boss and unlock your third Future Me Card: My Investor Card.", steps: ["Part 1: 5 missions.", "Part 2: 10 questions.", "Read your feedback by topic."], win: [["70% or more", "Future Me Card 📈"], ["Each question right", "+4 🪙"], ["Each mission on the first try", "+4 🪙"]] },
 };
@@ -2697,20 +2867,20 @@ const G10P3_WEEKS = [
   ] },
   { n: 2, title: "Where My Money Lives", e: "🛏️", blurb: "Safety, liquidity and return — accounts, cajitas, CDTs and Fogafín.", skills: ["Reading", "Builder", "Week 1"], acts: [
     A10("c2_read", "Reading: Where Does Your Money Sleep? 📖", "8 questions.", <BookOpen size={22} />, 42, "quizzes"),
-    A10("c2_bank", "Bank Builder 🏗️ · Page 14", "3 goals · 5 products · 1 emergency.", <Building2 size={22} />, 34, "aprendi"),
+    A10("c2_bank", "Bank Builder 🏗️ · Page 14", "3 goals · emergency · fact check · Page 14.", <Building2 size={22} />, 34, "aprendi"),
     A10("c2_real", "Real Return Rounds 🫧", "Rate − inflation.", <Percent size={22} />, 23, "aprendi"),
     A10("c2_week1", "Market Week 1 🌤️", "Your portfolio meets the market.", <Activity size={22} />, 20, "aprendi"),
   ] },
   { n: 3, title: "Dollar Hedging & Forex", e: "💱", blurb: "Why people buy dollars — and how to protect a plan from the exchange rate.", skills: ["Listening", "Storm", "Week 2"], acts: [
     A10("c3_listen", "Listening: Dollars for Miami 🎧", "8 questions.", <Headphones size={22} />, 42, "quizzes"),
-    A10("c3_storm", "The Dollar Storm 🌪️", "3 strategies · 3 futures.", <Umbrella size={22} />, 28, "aprendi"),
-    A10("c3_desk", "Exchange Desk 2.0 💵", "5 operations.", <Banknote size={22} />, 23, "aprendi"),
+    A10("c3_storm", "The Dollar Storm 🌪️", "4 real cases · winners & losers.", <Umbrella size={22} />, 28, "aprendi"),
+    A10("c3_desk", "Exchange Desk 2.0 💵", "7 operations with formulas.", <Banknote size={22} />, 23, "aprendi"),
     A10("c3_week2", "Market Week 2 💱", "The peso devalues.", <Activity size={22} />, 20, "aprendi"),
   ] },
   { n: 4, title: "Stocks, ETFs & Fractional Shares", e: "🧺", blurb: "Own a piece of 500 companies — and survive a bankruptcy.", skills: ["Video", "Tycoon", "Week 3"], acts: [
     A10("c4_video", "Video: WTF Is an ETF? 🎬", "Bloomberg · 8 random questions (70%).", <Video size={22} />, 42, "quizzes"),
     A10("c4_tycoon", "Wall Street Tycoon 🏙️ · Page 15", "Your stocks vs. the ETF.", <Building2 size={22} />, 30, "aprendi"),
-    A10("c4_fraction", "Fractional Shares 🍕", "Pieces of expensive shares.", <Calculator size={22} />, 20, "aprendi"),
+    A10("c4_fraction", "Fractional Shares 🍕", "Mini reading + 7 problems.", <Calculator size={22} />, 20, "aprendi"),
     A10("c4_week3", "Market Week 3 🚨", "A company collapses.", <Activity size={22} />, 20, "aprendi"),
   ] },
   { n: 5, title: "Crypto vs. Stablecoins & Scams", e: "🪙", blurb: "Volatility, stablecoins, pyramids — and decisions under pressure.", skills: ["Video", "Case", "Scam City"], acts: [
@@ -2726,11 +2896,11 @@ const G10P3_WEEKS = [
   ] },
   { n: 7, title: "P&L Audit & Dashboard", e: "📊", blurb: "NAV, P&L, ROI — rescue a bad portfolio and build your dashboard.", skills: ["Explainer", "Rescue", "Dashboard"], acts: [
     A10("c7_brief", "Explainer: NAV, P&L & ROI 💡", "6 questions.", <BookOpen size={22} />, 34, "quizzes"),
-    A10("c7_rescue", "Portfolio Rescue 🛟", "Audit · 4 mistakes.", <LifeBuoy size={22} />, 30, "aprendi"),
+    A10("c7_rescue", "Portfolio Rescue 🛟", "Log audit · 7 calculations · 4 mistakes.", <LifeBuoy size={22} />, 30, "aprendi"),
     A10("c7_dashboard", "My Investment Dashboard 📊 · Page 18", "NAV · P&L · ROI · CSV.", <BarChart3 size={22} />, 34, "aprendi"),
   ] },
   { n: 8, title: "Investor Day", e: "🏆", blurb: "Your Shareholder Pitch, the championship and the boss.", skills: ["Pitch", "Championship", "Boss"], acts: [
-    A10("c8_pitch", "Shareholder Pitch 🌍 · THE BIG PROJECT", "Present + jury + certificate.", <Mic size={22} />, 60, "aprendi"),
+    A10("c8_pitch", "Shareholder Pitch 🌍 · THE BIG PROJECT", "Evidence · shareholders' Q&A · present · certificate.", <Mic size={22} />, 60, "aprendi"),
     A10("c8_walk", "Global Investor Championship 🏆", "Invest in classmates' funds.", <Trophy size={22} />, 40, "aprendi"),
     A10("c8_boss", "Boss P3 + Future Me Card ⚔️", "5 missions + 10 questions (70%).", <Swords size={22} />, 70, "quizzes"),
   ] },
@@ -2773,11 +2943,11 @@ const CFG103 = {
       case "c2_week1": return wk(1);
       case "c3_listen": return L.listen("c3_listen", audioDollarsMiami, "Dollars for Miami", "Two exchange houses, two very different prices.", SCRIPT_MIAMI, Q_MIAMI);
       case "c3_storm": return <DollarStorm {...P} />;
-      case "c3_desk": return <NumberRounds icon={<Banknote size={22} strokeWidth={2.1} />} title="Exchange Desk 2.0 💵" subtitle="Buy, sell, spreads and fees." intro={<Brief91 k="c3_desk" />} rounds={DESK2_R} coinsPer={3} bonus={8} doneTitle="Forex pro! 💵" {...P} />;
+      case "c3_desk": return <NumberRounds icon={<Banknote size={22} strokeWidth={2.1} />} title="Exchange Desk 2.0 💵" subtitle="Buy, sell, spreads and fees." intro={DESK_INTRO} rounds={DESK2_R} coinsPer={3} bonus={6} doneTitle="Forex pro! 💵" {...P} />;
       case "c3_week2": return wk(2);
       case "c4_video": return L.video("c4_video", VID_ETF10, "WTF Is an ETF?", VQ_ETF10);
       case "c4_tycoon": return <WallStreetTycoon existing={ctx.existing} {...P} />;
-      case "c4_fraction": return <NumberRounds title="Fractional Shares 🍕" subtitle="Buy a piece of an expensive share." intro={<Brief91 k="c4_fraction" />} rounds={FRAC_R} coinsPer={3} bonus={8} {...P} />;
+      case "c4_fraction": return <FractionLab {...P} />;
       case "c4_week3": return wk(3);
       case "c5_video": return L.video("c5_video", VID_STABLE10, "Stablecoins, Explained", VQ_STABLE10);
       case "c5_read": return L.reading("c5_read", "Too Good to Be True: the DMG Case", "How pyramid schemes trapped thousands of Colombians — and how to spot them today.", READ_DMG, GLOSS_DMG, Q_DMG, "🚩");
