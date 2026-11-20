@@ -1,0 +1,175 @@
+/* =====================================================================
+   ONCE · PERIODO 4 · Game Zone & Graduation 🎮🎓
+   Se importa DESPUÉS de once1.css (usa sus variables .g11).
+   ===================================================================== */
+
+/* ---------- Tarjeta de pregunta (todos los juegos) ---------- */
+.g11-qcard { background: #fff; border: 2px solid var(--g11-plum-2); border-radius: 20px; padding: 14px; margin: 10px 0; box-shadow: 0 8px 22px rgba(42,24,40,.08); }
+.g11-qhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 0 6px; }
+.g11-qhead span { font-size: .7rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; color: var(--g11-copper); }
+.g11-qhead b { font-family: var(--font-display); font-variant-numeric: tabular-nums; background: var(--g11-sage-soft); color: var(--green-deep); border-radius: 999px; padding: 3px 10px; }
+.g11-qhead b.neg { background: #fff1ec; color: var(--coral); animation: g11-pulse .8s infinite; }
+@keyframes g11-pulse { 50% { transform: scale(1.08); } }
+.g11-qcard .p1-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+.quiz-opt.g11-gone { opacity: .25; }
+
+/* ---------- Question Forge ---------- */
+.g11-opt-edit { display: flex; gap: 6px; align-items: center; margin: 6px 0; }
+.g11-opt-edit button { flex: 0 0 40px; height: 40px; border-radius: 10px; border: 2px solid var(--line); background: #fff; font-size: 1.1rem; cursor: pointer; }
+.g11-opt-edit.on button { border-color: var(--g11-sage); background: var(--g11-sage-soft); }
+.g11-opt-edit.on .start-input { border-color: var(--g11-sage); }
+.g11-opt-edit .start-input { flex: 1; min-width: 0; }
+
+/* ---------- Millionaire ---------- */
+.g11-mill { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 760px) { .g11-mill { grid-template-columns: 1fr; } .g11-ladder { order: 2; } }
+.g11-ladder { display: grid; gap: 3px; background: linear-gradient(170deg, var(--g11-ink), var(--g11-plum)); border-radius: 18px; padding: 10px; }
+.g11-ladder > div { display: flex; justify-content: space-between; gap: 6px; padding: 5px 10px; border-radius: 10px; color: rgba(255,255,255,.65); font-size: .8rem; }
+.g11-ladder > div span { font-weight: 900; color: var(--g11-gold); }
+.g11-ladder > div b { font-variant-numeric: tabular-nums; }
+.g11-ladder > div.safe { color: #fff; font-weight: 800; }
+.g11-ladder > div.safe b::after { content: " 🛟"; }
+.g11-ladder > div.done { color: #b8e3c2; }
+.g11-ladder > div.on { background: var(--g11-gold); color: var(--g11-ink); font-weight: 900; }
+.g11-ladder > div.on span { color: var(--g11-ink); }
+.g11-mill-main { min-width: 0; }
+.g11-mill-start, .g11-mill-end { text-align: center; background: radial-gradient(circle at 50% 0, rgba(224,160,58,.35), transparent 60%), var(--g11-plum); color: #fff; border-radius: 22px; padding: 28px 18px; display: grid; gap: 8px; justify-items: center; }
+.g11-mill-start em, .g11-mill-end em { font-style: normal; font-size: 3.4rem; }
+.g11-mill-start h3, .g11-mill-end h3 { color: #fff; margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
+.g11-mill-start p, .g11-mill-end p { margin: 0; opacity: .9; }
+.g11-mill-end.bad { background: radial-gradient(circle at 50% 0, rgba(200,86,58,.4), transparent 60%), var(--g11-ink); }
+.g11-mill-end .s1-btn.ghost { background: #fff; color: var(--g11-ink); }
+.g11-lifes { display: flex; flex-wrap: wrap; gap: 6px; }
+.g11-lifes button { border: 2px solid var(--g11-gold); background: #fffaf0; color: var(--g11-ink); border-radius: 999px; padding: 8px 14px; font-weight: 900; cursor: pointer; }
+.g11-lifes button:disabled { opacity: .35; text-decoration: line-through; cursor: not-allowed; }
+.g11-lifes button.walk { margin-left: auto; border-color: var(--g11-sage); background: var(--g11-sage-soft); }
+.g11-poll { display: grid; gap: 4px; margin-top: 10px; background: var(--g11-cream); border-radius: 14px; padding: 10px; }
+.g11-poll > div { display: grid; grid-template-columns: minmax(0, 1fr) 120px 44px; gap: 8px; align-items: center; font-size: .8rem; }
+.g11-poll span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g11-poll i { display: block; height: 12px; background: var(--g11-copper); border-radius: 999px; min-width: 2px; }
+.g11-poll b { text-align: right; }
+
+/* ---------- Battleship ---------- */
+.g11-bs-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 10px 0; }
+@media (max-width: 760px) { .g11-bs-two { grid-template-columns: 1fr; } }
+.g11-bs-wrap { background: linear-gradient(170deg, #2f4a3a, #1f3229); border-radius: 18px; padding: 10px; transition: box-shadow .2s; }
+.g11-bs-wrap.glow { box-shadow: 0 0 0 4px var(--g11-gold), 0 0 26px rgba(224,160,58,.6); }
+.g11-bs-wrap > small { display: block; color: #f3c78f; font-weight: 900; font-size: .78rem; margin: 0 0 6px; }
+.g11-bs { display: grid; grid-template-columns: 20px repeat(6, minmax(0, 1fr)); gap: 4px; }
+.g11-bs .c { display: grid; place-items: center; font-size: .66rem; font-weight: 900; color: rgba(255,255,255,.6); }
+.g11-bs button { aspect-ratio: 1 / 1; border-radius: 8px; border: 1px solid rgba(255,255,255,.12); background: rgba(127,159,122,.28); color: #fff; font-size: 1.05rem; display: grid; place-items: center; cursor: default; padding: 0; }
+.g11-bs button:not(:disabled) { cursor: crosshair; background: rgba(224,160,58,.22); }
+.g11-bs button:not(:disabled):hover { background: var(--g11-gold); }
+.g11-bs button.ship { background: #8a6a4a; }
+.g11-bs button.miss { background: rgba(255,255,255,.08); color: rgba(255,255,255,.6); }
+.g11-bs button.hit { background: #c8563a; }
+.g11-bs button.sunk { background: #5a1f1f; }
+.g11-bs-msg { text-align: center; font-weight: 800; color: var(--g11-plum); background: var(--g11-cream); border-radius: 12px; padding: 8px 12px; margin: 6px 0; }
+.g11-bs-code { display: grid; justify-items: center; gap: 2px; background: var(--g11-plum); color: #fff; border-radius: 18px; padding: 12px; }
+.g11-bs-code span { font-size: .66rem; font-weight: 900; letter-spacing: .14em; color: #f3c78f; }
+.g11-bs-code b { font-family: var(--font-display); font-size: 2rem; letter-spacing: .2em; }
+.g11-bs-code small { opacity: .85; }
+
+/* ---------- Escape Room ---------- */
+.g11-vault-intro { text-align: center; background: radial-gradient(circle at 50% 0, rgba(224,160,58,.3), transparent 60%), var(--g11-ink); color: #fff; border-radius: 22px; padding: 26px 18px; display: grid; gap: 8px; justify-items: center; }
+.g11-vault-intro em { font-style: normal; font-size: 3.4rem; }
+.g11-vault-intro h3 { color: #fff; margin: 0; font-family: var(--font-display); }
+.g11-vault-intro p { margin: 0; opacity: .9; max-width: 560px; }
+.g11-vault-intro .start-tip { color: #f3c78f; }
+.g11-vault-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; background: var(--g11-ink); color: #fff; border-radius: 16px; padding: 10px 14px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.g11-digits { display: flex; gap: 6px; justify-content: center; }
+.g11-digits b { width: 36px; height: 44px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.25); font-family: var(--font-display); font-size: 1.3rem; color: #fff; }
+.g11-digits b.on { background: var(--g11-gold); border-color: var(--g11-gold); color: var(--g11-ink); }
+.g11-rooms { display: flex; justify-content: center; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+.g11-rooms span { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 1.3rem; background: #f3eef2; opacity: .55; }
+.g11-rooms span.done { background: var(--g11-sage-soft); opacity: 1; }
+.g11-rooms span.on { background: var(--g11-copper-soft); opacity: 1; box-shadow: 0 0 0 3px var(--g11-copper); }
+.g11-lock { border: 3px solid var(--g11-ink); background: linear-gradient(170deg, #fff, var(--g11-cream)); }
+.g11-lock p { font-size: 1.02rem; line-height: 1.5; }
+.g11-lock.shake { animation: g11-shake .45s; border-color: var(--coral); }
+@keyframes g11-shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.g11-code { font-family: var(--font-display); font-size: 1.4rem !important; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
+.g11-lockcard { background: var(--g11-cream); border: 3px dashed var(--g11-ink); border-radius: 18px; padding: 18px; display: grid; gap: 8px; }
+.g11-lockcard small { font-size: .66rem; font-weight: 900; letter-spacing: .14em; color: var(--g11-copper); }
+.g11-lockcard h3 { margin: 0; color: var(--g11-plum); }
+.g11-lockcard p { margin: 0; line-height: 1.5; }
+.g11-lockcard .g11-digits { justify-content: flex-start; }
+.g11-lockcard .g11-digits b { background: #fff; border-color: var(--g11-ink); color: var(--g11-ink); }
+.g11-lockcard i { font-style: normal; font-size: .82rem; border-top: 2px dashed #d9cbbd; padding-top: 8px; color: var(--muted); }
+
+/* ---------- CREAR City ---------- */
+.g11-city { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(6, minmax(78px, auto)); gap: 4px; background: var(--g11-cream); border-radius: 20px; padding: 6px; }
+.g11-sq { position: relative; background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 4px; display: grid; justify-items: center; align-content: start; text-align: center; gap: 1px; min-width: 0; overflow: hidden; }
+.g11-sq em { font-style: normal; font-size: 1.3rem; line-height: 1.1; }
+.g11-sq b { font-size: .64rem; line-height: 1.1; color: var(--g11-ink); }
+.g11-sq small { font-size: .56rem; color: var(--muted); line-height: 1.1; }
+.g11-sq .toks { position: absolute; bottom: 2px; left: 0; right: 0; display: flex; justify-content: center; gap: 1px; font-size: 1.05rem; }
+.g11-sq.k-start { background: var(--g11-sage-soft); }
+.g11-sq.k-q { background: #f7f0fb; }
+.g11-sq.k-ev, .g11-sq.k-scam, .g11-sq.k-tax { background: #fff1ec; }
+.g11-sq.k-cdt, .g11-sq.k-etf { background: #fffaf0; }
+.g11-sq.own { border-width: 3px; }
+.g11-sq.own0 { border-color: #c8743a; } .g11-sq.own1 { border-color: #5a2e55; } .g11-sq.own2 { border-color: #3c9d5d; } .g11-sq.own3 { border-color: #e0a03a; }
+.g11-city-mid { grid-row: 2 / 6; grid-column: 2 / 6; background: #fff; border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow: auto; }
+.g11-city-mid .g11-qcard { margin: 0; padding: 10px; }
+.g11-turn { display: flex; align-items: center; gap: 8px; }
+.g11-turn span { font-size: 1.8rem; }
+.g11-turn b { font-family: var(--font-display); color: var(--g11-plum); }
+.g11-turn i { margin-left: auto; font-style: normal; font-weight: 900; background: var(--g11-gold); border-radius: 10px; padding: 4px 10px; }
+.g11-pend { background: var(--g11-cream); border-radius: 12px; padding: 10px; }
+.g11-pend p { margin: 0 0 6px; }
+.g11-city-log { margin-top: auto; display: grid; gap: 2px; font-size: .76rem; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 6px; }
+.g11-city-log p { margin: 0; }
+.g11-city-log p:last-child { color: var(--g11-ink); font-weight: 800; }
+.g11-city-end h3 { margin: 0 0 6px; color: var(--g11-plum); }
+.g11-city-end p { margin: 2px 0; }
+@media (max-width: 640px) { .g11-city { grid-template-rows: repeat(6, minmax(60px, auto)); } .g11-sq b, .g11-sq small { display: none; } .g11-sq em { font-size: 1.1rem; } .g11-city-mid { padding: 6px; } }
+.g11-players { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 10px 0; }
+.g11-players > div { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 8px 10px; display: grid; gap: 2px; font-size: .8rem; }
+.g11-players > div.on { border-color: var(--g11-copper); background: var(--g11-copper-soft); }
+.g11-players > div.out { opacity: .45; text-decoration: line-through; }
+.g11-players > div > b { font-size: .95rem; }
+.g11-tok { font-size: 1.6rem; }
+
+/* ---------- Card Duel ---------- */
+.g11-duel { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 12px 0; flex-wrap: wrap; }
+.g11-duel .vs { font-family: var(--font-display); font-size: 1.5rem; color: var(--g11-copper); }
+.g11-card { width: 190px; min-height: 230px; background: linear-gradient(170deg, #fff, var(--g11-cream)); border: 3px solid var(--g11-plum-2); border-radius: 18px; padding: 12px; display: grid; gap: 6px; justify-items: center; align-content: start; box-shadow: 0 10px 24px rgba(42,24,40,.15); }
+.g11-card em { font-style: normal; font-size: 2.6rem; }
+.g11-card > b { font-family: var(--font-display); color: var(--g11-plum); text-align: center; }
+.g11-card span { width: 100%; display: flex; justify-content: space-between; font-size: .84rem; font-weight: 800; padding: 4px 8px; border-radius: 10px; background: #fff; }
+.g11-card span i { font-style: normal; font-family: var(--font-display); color: var(--g11-copper); }
+.g11-card span.on { background: var(--g11-gold); }
+.g11-card.back { background: repeating-linear-gradient(45deg, var(--g11-plum), var(--g11-plum) 10px, var(--g11-plum-2) 10px, var(--g11-plum-2) 20px); place-content: center; }
+.g11-card.back em { color: #fff; font-size: 3.2rem; }
+
+/* ---------- Grand Tournament ---------- */
+.g11-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 6px; margin: 0 0 10px; }
+@media (max-width: 640px) { .g11-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.g11-stages > div { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 8px; display: grid; gap: 2px; justify-items: center; text-align: center; }
+.g11-stages > div.on { border-color: var(--g11-copper); background: var(--g11-copper-soft); }
+.g11-stages > div.done { border-color: var(--g11-sage); background: var(--g11-sage-soft); }
+.g11-stages em { font-style: normal; font-size: 1.4rem; }
+.g11-stages b { font-size: .86rem; }
+.g11-stages small { font-size: .66rem; color: var(--muted); }
+.g11-stages .g11-score { background: var(--g11-plum); border-color: var(--g11-plum); color: #fff; min-width: 100px; }
+.g11-stages .g11-score small { color: #f3c78f; font-weight: 900; letter-spacing: .1em; }
+.g11-stages .g11-score b { font-family: var(--font-display); font-size: 1.6rem; }
+
+/* ---------- Hall of Fame ---------- */
+.g11-hof { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 0 0 12px; }
+.g11-hof > div { background: linear-gradient(170deg, #fff, var(--g11-cream)); border: 2px solid var(--g11-gold); border-radius: 18px; padding: 12px; display: grid; gap: 6px; align-content: start; }
+.g11-hof h3 { margin: 0; color: var(--g11-plum); font-size: 1rem; }
+.g11-hof ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.g11-hof li { display: flex; justify-content: space-between; gap: 6px; font-size: .84rem; padding: 4px 6px; border-radius: 8px; }
+.g11-hof li.me { background: var(--g11-copper-soft); font-weight: 900; }
+.g11-hof small { font-size: .76rem; color: var(--muted); border-top: 1px dashed #d9cbbd; padding-top: 6px; }
+
+/* ---------- Mi año · carta ---------- */
+.g11-wlogo { display: grid; place-items: center; margin: 6px 0; }
+.g11-letter { background: #fffdf7; background-image: repeating-linear-gradient(transparent 0 31px, #efe3d0 31px 32px); border: 2px solid #e6d6bf; border-left: 6px solid var(--g11-copper); border-radius: 16px; padding: 20px 22px; margin: 12px 0; display: grid; gap: 8px; font-family: Georgia, "Times New Roman", serif; }
+.g11-letter small { font-family: var(--font-body); font-size: .64rem; font-weight: 900; letter-spacing: .14em; color: var(--g11-copper); }
+.g11-letter h3 { margin: 0; color: var(--g11-plum); font-family: Georgia, serif; }
+.g11-letter p { margin: 0; line-height: 2; white-space: pre-wrap; }
+.g11-letter b { justify-self: end; color: var(--g11-ink); }
+.g11-letter i { justify-self: end; font-style: normal; font-family: var(--font-body); font-size: .8rem; font-weight: 900; color: var(--g11-sage); }

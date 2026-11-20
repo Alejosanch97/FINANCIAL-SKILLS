@@ -1,0 +1,192 @@
+/* =====================================================================
+   ONCE · BASE "FOUNDER YEAR" 🚀 + PERIODO 1 · Startup Studio: Build It
+   La importan los 4 periodos de 11° (piezas compartidas .g11-*).
+   Usa la base de 6°–10° (semana1, periodo*, septimo*, octavo*, noveno*, decimo1, decimo3).
+   Paleta propia de 11°: berenjena · cobre · crema · salvia (sin azules).
+   ===================================================================== */
+.g11 {
+  --g11-plum: #3b1f3a; --g11-plum-2: #5a2e55; --g11-copper: #c8743a; --g11-copper-soft: #fbe9dc;
+  --g11-cream: #f7f1e3; --g11-sage: #7f9f7a; --g11-sage-soft: #eef4ec; --g11-gold: #e0a03a; --g11-ink: #2a1828;
+}
+
+/* ---------- HÉROE DE CADA PERIODO ---------- */
+.g11-hero { background-image: radial-gradient(circle at 88% 16%, rgba(200,116,58,.40), transparent 42%), radial-gradient(circle at 8% 96%, rgba(127,159,122,.36), transparent 44%); }
+.g11-hero1 { background-color: #fff8f1; }
+.g11-hero2 { background-image: radial-gradient(circle at 86% 18%, rgba(90,46,85,.34), transparent 42%), radial-gradient(circle at 6% 94%, rgba(224,160,58,.34), transparent 42%); }
+.g11-hero3 { background-image: radial-gradient(circle at 90% 14%, rgba(127,159,122,.46), transparent 40%), radial-gradient(circle at 10% 90%, rgba(200,116,58,.32), transparent 46%); }
+.g11-hero4 { background-image: radial-gradient(circle at 84% 20%, rgba(224,160,58,.42), transparent 40%), radial-gradient(circle at 6% 94%, rgba(90,46,85,.32), transparent 44%); }
+.g114 .g10-route { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+@media (max-width: 640px) { .g114 .g10-route { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------- UTILIDADES ---------- */
+.g11-gap { margin-top: 8px; }
+.g11-inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+.g11-inline > .start-input, .g11-inline > select { flex: 1 1 160px; min-width: 0; }
+.g11-inline label { flex: 1 1 160px; display: grid; gap: 4px; font-size: .8rem; font-weight: 800; color: var(--muted); }
+.g11-big { display: block; font-family: var(--font-display); font-size: 2.4rem; color: var(--g11-plum); line-height: 1.1; }
+.g11-placed { border-style: solid !important; }
+.g11-toggle { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .92rem; margin: 8px 0; cursor: pointer; }
+.g11-toggle input { width: 20px; height: 20px; accent-color: var(--g11-copper); }
+.g11-statement { background: var(--g11-copper-soft); border-left: 5px solid var(--g11-copper); border-radius: 12px; padding: 12px 14px; font-weight: 700; color: var(--g11-ink); margin: 10px 0; line-height: 1.45; }
+.g11-need { display: block; font-style: normal; font-size: .8rem; font-weight: 800; color: var(--coral); margin-top: 4px; }
+.g11-issues { margin: 8px 0 0; padding-left: 18px; color: var(--coral); font-size: .86rem; font-weight: 700; display: grid; gap: 4px; }
+.g11-rules { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; }
+.g11-rules span { font-size: .8rem; font-weight: 800; padding: 5px 10px; border-radius: 999px; background: #f3eef2; color: var(--muted); }
+.g11-rules span.on { background: var(--g11-sage-soft); color: var(--green-deep); }
+ul.g11-rules { display: grid; gap: 6px; padding-left: 18px; font-size: .9rem; line-height: 1.4; }
+ul.g11-rules li { display: list-item; }
+
+/* ---------- PANEL DEL FUNDADOR ---------- */
+.g11-panel { background: linear-gradient(150deg, #2a1828, #4a2545 55%, #7a3f2a); }
+.g11-panel .g10-panel-me em { border-color: rgba(224,160,58,.8); }
+.g11-panel .g10-panel-me .g11-logo { flex: 0 0 auto; }
+.g11-panel .g10-panel-me small { color: #f3c78f; }
+
+/* ---------- PERIÓDICO · THE CREAR TIMES ---------- */
+.g11-news-head { display: grid; gap: 2px; border-top: 4px double var(--g11-ink); border-bottom: 1px solid var(--g11-ink); padding: 8px 0 10px; margin: 0 0 12px; text-align: center; }
+.g11-news-head b { font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.4rem, 4vw, 2.1rem); letter-spacing: .06em; color: var(--g11-ink); }
+.g11-news-head span { font-size: .72rem; font-weight: 900; letter-spacing: .14em; color: var(--g11-copper); text-transform: uppercase; }
+.g11-news-head i { font-family: Georgia, serif; font-size: 1.02rem; color: var(--g11-plum-2); }
+
+/* ---------- EQUIPO ---------- */
+.g11-teamcard { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 12px; background: linear-gradient(140deg, var(--g11-plum), var(--g11-plum-2)); color: #fff; border-radius: 20px; padding: 16px; margin: 0 0 14px; }
+@media (max-width: 640px) { .g11-teamcard { grid-template-columns: 1fr; } }
+.g11-teamcard > div:first-child { background: rgba(255,255,255,.1); border: 2px dashed rgba(243,199,143,.7); border-radius: 16px; padding: 12px; text-align: center; }
+.g11-teamcard small { display: block; font-size: .66rem; font-weight: 900; letter-spacing: .14em; color: #f3c78f; }
+.g11-teamcard b { display: block; font-family: var(--font-display); font-size: 2rem; letter-spacing: .18em; }
+.g11-teamcard span { font-size: .8rem; opacity: .85; }
+.g11-teamcard h3 { color: #fff; margin: 0 0 4px; }
+.g11-teamcard p { margin: 0 0 6px; opacity: .9; }
+.g11-teamcard .p1-link { color: #f3c78f; }
+.g11-teamcard .start-input { margin-bottom: 6px; }
+.g11-sync { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; background: var(--g11-sage-soft); border: 1px solid #cfe0cb; border-radius: 14px; padding: 10px 12px; margin: 0 0 12px; font-size: .88rem; }
+
+/* ---------- TEAM ZONE (metas físicas del día) ---------- */
+.g11-zone-top { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: linear-gradient(130deg, var(--g11-copper), #a85a2c); color: #fff; border-radius: 20px; padding: 14px 16px; margin: 0 0 12px; }
+.g11-zone-top small { display: block; font-size: .66rem; font-weight: 900; letter-spacing: .14em; opacity: .9; }
+.g11-zone-top b { display: block; font-family: var(--font-display); font-size: 1.3rem; }
+.g11-zone-top span { display: block; font-size: .84rem; opacity: .92; }
+.g11-timer { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,.16); border-radius: 16px; padding: 8px 10px; }
+.g11-timer b { font-family: var(--font-display); font-size: 1.7rem; font-variant-numeric: tabular-nums; min-width: 84px; text-align: center; }
+.g11-timer .s1-btn { background: #fff; color: var(--g11-ink); }
+.g11-timer .p1-link { color: #fff; }
+.g11-goals-bar { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+.g11-goals-bar span { font-size: .7rem; font-weight: 900; letter-spacing: .12em; color: var(--g11-plum-2); white-space: nowrap; }
+.g11-goals-bar i { flex: 1; height: 10px; background: #efe6ee; border-radius: 999px; overflow: hidden; }
+.g11-goals-bar i b { display: block; height: 100%; background: linear-gradient(90deg, var(--g11-sage), var(--green)); border-radius: 999px; transition: width .4s; }
+.g11-goals-bar em { font-style: normal; font-weight: 900; color: var(--g11-plum); }
+.g11-goals { display: grid; gap: 10px; margin: 0 0 12px; }
+.g11-goal { display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 2px solid var(--line); border-radius: 18px; padding: 12px; transition: border-color .2s, background .2s; }
+.g11-goal.ok { border-color: var(--g11-sage); background: var(--g11-sage-soft); }
+.g11-check { flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--g11-copper); background: #fff; color: var(--g11-copper); font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; cursor: pointer; }
+.g11-check.on { background: var(--g11-sage); border-color: var(--g11-sage); color: #fff; }
+.g11-goal-main { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.g11-goal-main > b { font-size: .98rem; color: var(--g11-ink); }
+.g11-goal-main > small { color: var(--muted); }
+.g11-rows { display: grid; gap: 6px; overflow-x: auto; }
+.g11-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(110px, 1fr); gap: 6px; }
+.g11-row.head span { font-size: .7rem; font-weight: 900; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; padding: 0 4px; }
+.g11-row .start-input { padding: 8px 10px; font-size: .9rem; }
+
+/* ---------- WHAT I CAN DO NOW ---------- */
+.g11-can { display: grid; gap: 8px; margin: 0 0 10px; }
+.g11-can > div { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 10px 12px; }
+.g11-can > div.ok { border-color: #cfe0cb; background: linear-gradient(90deg, var(--g11-sage-soft), #fff 60%); }
+.g11-can > div.no { opacity: .85; }
+.g11-can em { font-style: normal; font-size: 1.4rem; }
+.g11-can b { display: block; font-size: .95rem; color: var(--g11-ink); }
+.g11-can span { display: block; font-size: .8rem; color: var(--muted); margin-top: 2px; }
+.g11-faces { display: flex; gap: 4px; }
+.g11-faces button { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--line); background: #fff; font-size: 1.2rem; cursor: pointer; opacity: .55; }
+.g11-faces button.on { opacity: 1; border-color: var(--g11-copper); background: var(--g11-copper-soft); transform: scale(1.06); }
+@media (max-width: 640px) { .g11-can > div { grid-template-columns: 30px minmax(0, 1fr); } .g11-faces { grid-column: 1 / -1; justify-content: flex-end; } }
+
+/* ---------- LOGO (forma + color + símbolo + nombre) ---------- */
+.g11-logo { --lg-s: 96px; width: var(--lg-s); height: var(--lg-s); background: var(--lg-bg); color: var(--lg-fg); display: grid; place-items: center; align-content: center; gap: 2px; text-align: center; box-shadow: 0 6px 18px rgba(42,24,40,.18); flex: 0 0 auto; overflow: hidden; }
+.g11-logo em { font-style: normal; font-size: calc(var(--lg-s) * .36); line-height: 1; }
+.g11-logo b { font-size: calc(var(--lg-s) * .12); line-height: 1.05; max-width: 86%; overflow-wrap: anywhere; }
+.g11-logo.shape-circle { border-radius: 50%; }
+.g11-logo.shape-round { border-radius: 24%; }
+.g11-logo.shape-hex { clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%); }
+.g11-logo.shape-shield { border-radius: 18% 18% 50% 50% / 14% 14% 60% 60%; }
+.g11-logo.shape-leaf { border-radius: 8% 60% 8% 60%; }
+.g11-logo.shape-ticket { border-radius: 14%; -webkit-mask: radial-gradient(circle at 0 50%, transparent 12%, #000 12.5%) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 12%, #000 12.5%) right / 51% 100% no-repeat; mask: radial-gradient(circle at 0 50%, transparent 12%, #000 12.5%) left / 51% 100% no-repeat, radial-gradient(circle at 100% 50%, transparent 12%, #000 12.5%) right / 51% 100% no-repeat; }
+.g11-logo.font-bold b { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
+.g11-logo.font-serif b { font-family: Georgia, "Times New Roman", serif; font-weight: 700; }
+.g11-logo.font-round b { font-family: var(--font-body); font-weight: 800; border-radius: 999px; }
+.g11-logo.font-hand b { font-family: "Comic Sans MS", "Segoe Print", cursive; font-weight: 700; }
+.g11-logo-stage { display: grid; place-items: center; background: repeating-conic-gradient(#faf6ef 0 25%, #fff 0 50%) 50% / 24px 24px; }
+.g11-logo-png { padding: 24px; display: grid; place-items: center; }
+.g11-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+.g11-swatches button { width: 38px; height: 38px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--line); cursor: pointer; }
+.g11-swatches button.on { box-shadow: 0 0 0 3px var(--g11-copper); transform: scale(1.1); }
+
+/* ---------- P1 · PROBLEMAS Y CLIENTES ---------- */
+.g11-hunt .g10-event-head { position: relative; }
+.g11-score { margin-left: auto; align-self: center; font-family: var(--font-display); font-weight: 900; color: #fff; background: var(--g11-copper); border-radius: 999px; padding: 4px 12px; font-size: 1.05rem; }
+.g11-mini-score { font-size: .72rem; color: var(--g11-copper); margin-left: 6px; }
+.g11-rates { display: grid; gap: 6px; margin-top: 8px; }
+.g11-rate { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.g11-rate small { flex: 0 0 120px; font-weight: 800; color: var(--muted); font-size: .78rem; }
+.g11-rate button { width: 36px; height: 36px; border-radius: 10px; border: 2px solid var(--line); background: #fff; font-weight: 900; cursor: pointer; color: var(--g11-ink); }
+.g11-rate button.on { background: var(--g11-copper); border-color: var(--g11-copper); color: #fff; }
+.g11-customer { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; align-items: center; background: var(--g11-cream); border-radius: 18px; padding: 12px 14px; margin: 0 0 10px; }
+.g11-customer > em { font-style: normal; font-size: 2.4rem; }
+.g11-customer b { display: block; font-family: var(--font-display); color: var(--g11-plum); }
+.g11-customer span { font-size: .84rem; color: var(--muted); }
+.g11-insights { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.g11-insights i { font-style: normal; font-size: .8rem; font-weight: 700; padding: 6px 10px; border-radius: 12px; background: #fff; border: 1px dashed #d9cbbd; color: var(--muted); }
+.g11-insights i.on { border: 1px solid var(--g11-sage); background: var(--g11-sage-soft); color: var(--green-deep); }
+.g11-chat { display: grid; gap: 8px; margin: 10px 0; }
+.g11-chat > div { display: grid; gap: 4px; }
+.g11-chat p { margin: 0; padding: 9px 12px; border-radius: 16px; max-width: 85%; font-size: .9rem; line-height: 1.4; }
+.g11-chat .me { justify-self: end; background: var(--g11-plum-2); color: #fff; border-bottom-right-radius: 4px; }
+.g11-chat .them { justify-self: start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.g11-chat .them.warn { background: #fff6ec; border-color: #f0c9a6; }
+.g11-persona { background: #fff; border: 2px solid var(--g11-plum-2); border-radius: 20px; padding: 16px; display: grid; gap: 6px; text-align: left; }
+.g11-persona > em { font-style: normal; font-size: 3rem; justify-self: center; }
+.g11-persona > b { font-family: var(--font-display); font-size: 1.2rem; color: var(--g11-plum); text-align: center; }
+.g11-persona > small { justify-self: center; font-size: .7rem; font-weight: 900; letter-spacing: .1em; color: #fff; background: var(--g11-copper); padding: 3px 10px; border-radius: 999px; }
+.g11-persona p { margin: 0; font-size: .86rem; line-height: 1.4; }
+.g11-persona p i { display: block; font-style: normal; font-size: .7rem; font-weight: 900; color: var(--g11-copper); letter-spacing: .06em; }
+
+/* ---------- P1 · ETIQUETA Y NOMBRES ---------- */
+.g11-label { --lb-bg: #f7f1e3; --lb-fg: #3b1f3a; background: var(--lb-bg); color: var(--lb-fg); border-radius: 22px; padding: 22px 18px; display: grid; gap: 6px; justify-items: center; text-align: center; min-height: 260px; box-shadow: 0 10px 26px rgba(42,24,40,.18); border: 3px solid rgba(255,255,255,.5); }
+.g11-label > em { font-style: normal; font-size: 3.4rem; }
+.g11-label > b { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.1; }
+.g11-label > span { font-size: .9rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; opacity: .85; }
+.g11-label > div { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.g11-label > div i { font-style: normal; font-size: .72rem; font-weight: 900; padding: 4px 9px; border-radius: 999px; border: 1.5px solid currentColor; }
+.g11-label > small { margin-top: auto; font-size: .76rem; opacity: .8; }
+.g11-names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 640px) { .g11-names { grid-template-columns: 1fr; } }
+.g11-names > div { background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 10px; display: grid; gap: 8px; }
+.g11-names > div.on { border-color: var(--g11-gold); background: #fffaf0; }
+.g11-namefoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.g11-namefoot b { font-family: var(--font-display); color: var(--g11-plum); }
+
+/* ---------- P1 · CANALES, EMBUDO Y POST ---------- */
+.g11-channels { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+.g11-channels > div { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: center; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 10px; }
+.g11-channels em { font-style: normal; font-size: 1.7rem; grid-row: span 2; }
+.g11-channels b { font-size: .92rem; color: var(--g11-ink); }
+.g11-channels small { font-size: .74rem; color: var(--muted); }
+.g11-channels .g11-qty { grid-column: 1 / -1; justify-self: end; }
+.g11-qty { display: inline-flex; align-items: center; gap: 6px; }
+.g11-qty button { width: 34px; height: 34px; border-radius: 10px; border: 2px solid var(--line); background: #fff; display: grid; place-items: center; cursor: pointer; color: var(--g11-ink); }
+.g11-qty button:disabled { opacity: .35; cursor: not-allowed; }
+.g11-qty b { min-width: 40px; text-align: center; font-family: var(--font-display); color: var(--g11-plum); }
+.g11-funnel { display: grid; gap: 6px; justify-items: center; }
+.g11-funnel > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 12px; color: #fff; background: linear-gradient(90deg, var(--g11-plum-2), var(--g11-copper)); min-width: 160px; }
+.g11-funnel > div:nth-child(2) { background: linear-gradient(90deg, #6f3a62, #c8743a); }
+.g11-funnel > div:nth-child(3) { background: linear-gradient(90deg, #8c4a5f, #d38a45); }
+.g11-funnel > div:nth-child(4) { background: linear-gradient(90deg, var(--g11-sage), var(--green)); }
+.g11-funnel span { font-weight: 800; font-size: .86rem; }
+.g11-funnel b { font-family: var(--font-display); font-size: 1.1rem; }
+.g11-post { background: #fff; }
+.g11-post-img { position: relative; aspect-ratio: 1 / 1; background: var(--lg-bg); color: var(--lg-fg); display: grid; place-items: center; align-content: center; gap: 6px; text-align: center; padding: 16px; }
+.g11-post-img em { font-style: normal; font-size: 3.6rem; }
+.g11-post-img b { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; }
+.g11-post-img i { font-style: normal; font-weight: 900; background: var(--lg-fg); color: var(--lg-bg); border-radius: 999px; padding: 4px 12px; font-size: .84rem; }
+.g11-post-logo { position: absolute; right: 10px; bottom: 10px; }
+.g11-post > p { margin: 0; padding: 10px 12px; font-size: .86rem; line-height: 1.4; }

@@ -1,0 +1,47 @@
+/* =====================================================================
+   ONCE · PERIODO 2 · Shark Tank: Fund It & Value It 🦈
+   Se importa DESPUÉS de once1.css (usa sus variables .g11).
+   ===================================================================== */
+
+/* ---------- P&L ---------- */
+.g11-pl { border: 2px solid var(--g11-plum-2); }
+.g11-pl h3 { color: var(--g11-plum); }
+.g11-pl .p1-mini-table tr:nth-child(3) td, .g11-pl table tr:nth-child(3) td { font-weight: 900; }
+
+/* ---------- Plan de caja: filas con entrada/salida ---------- */
+.g11-io { border: 2px solid var(--line); border-radius: 10px; background: #fff; font-weight: 900; font-size: .78rem; cursor: pointer; padding: 6px 8px; white-space: nowrap; }
+.g11-io.in { background: var(--g11-sage-soft); border-color: var(--g11-sage); color: var(--green-deep); }
+.g11-io.out { background: #fff1ec; border-color: #e9b4a0; color: var(--coral); }
+
+/* ---------- Financiación ---------- */
+.g11-fund { border-left: 6px solid var(--g11-copper); }
+.g11-fund .g10-event-head em { background: var(--g11-copper-soft); }
+
+/* ---------- Cap table ---------- */
+.g11-caps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 760px) { .g11-caps { grid-template-columns: 1fr; } }
+.g11-caps .start-block { margin: 0; }
+.g11-caps h3 { font-size: .9rem; letter-spacing: .08em; text-transform: uppercase; color: var(--g11-copper); }
+
+/* ---------- Impacto (KPIs ODS) ---------- */
+.g11-kpis-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.g11-kpis-pick > div { background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 8px; display: grid; gap: 6px; }
+.g11-kpis-pick > div.on { border-color: var(--g11-sage); background: var(--g11-sage-soft); }
+.g11-kpis-pick > div > button { display: flex; align-items: center; gap: 10px; background: none; border: none; text-align: left; cursor: pointer; padding: 4px; font-family: var(--font-body); color: var(--g11-ink); }
+.g11-kpis-pick em { font-style: normal; font-size: 1.6rem; }
+.g11-kpis-pick b { font-size: .9rem; }
+.g11-kpis-pick small { flex-basis: 100%; font-size: .74rem; color: var(--muted); }
+
+/* ---------- Pitch deck ---------- */
+.g11-deck { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 640px) { .g11-deck { grid-template-columns: 1fr; } }
+.g11-deck-list { display: grid; gap: 6px; }
+@media (max-width: 640px) { .g11-deck-list { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.g11-deck-list button { border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 8px 6px; font-weight: 900; cursor: pointer; color: var(--g11-ink); }
+.g11-deck-list button.ok { border-color: var(--g11-sage); background: var(--g11-sage-soft); }
+.g11-deck-list button.on { border-color: var(--g11-copper); box-shadow: 0 0 0 3px rgba(200,116,58,.2); }
+.g11-slide { aspect-ratio: 16 / 9; background: linear-gradient(140deg, var(--g11-plum), var(--g11-plum-2) 60%, #7a3f2a); color: #fff; border-radius: 18px; padding: clamp(14px, 3vw, 28px); display: grid; align-content: center; gap: 8px; margin: 0 0 10px; position: relative; overflow: hidden; }
+.g11-slide em { font-style: normal; font-size: clamp(2rem, 5vw, 3rem); }
+.g11-slide h2 { margin: 0; font-family: var(--font-display); font-size: clamp(1.1rem, 3vw, 1.8rem); line-height: 1.15; color: #fff; }
+.g11-slide p { margin: 0; font-size: clamp(.82rem, 2vw, 1rem); opacity: .9; }
+.g11-slide small { position: absolute; right: 14px; bottom: 10px; font-size: .7rem; font-weight: 800; letter-spacing: .08em; opacity: .7; }

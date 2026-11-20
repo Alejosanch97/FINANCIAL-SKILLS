@@ -37,6 +37,10 @@ import { Periodo1G10 } from "./Periodo1G10";
 import { Periodo2G10 } from "./Periodo2G10";
 import { Periodo3G10 } from "./Periodo3G10";
 import { Periodo4G10 } from "./Periodo4G10";
+import { Periodo1G11 } from "./Periodo1G11";
+import { Periodo2G11 } from "./Periodo2G11";
+import { Periodo3G11 } from "./Periodo3G11";
+import { Periodo4G11 } from "./Periodo4G11";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // ajusta la ruta si tu proyecto la tiene distinta
 
 // 👇 PEGA AQUÍ LA MISMA URL DE APPS SCRIPT QUE EN Home.jsx
@@ -1050,6 +1054,47 @@ export const Dashboard = ({ onLogout }) => {
           </button>
         )}
 
+                {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g11p1" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g11p1"); setNavOpen(false); loadSemanaFull("11P1"); }}
+            aria-current={activeTab === "g11p1" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Rocket size={18} strokeWidth={2.2} /></span>
+            Periodo 1 · Grado 11
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g11p2" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g11p2"); setNavOpen(false); loadSemanaFull("11P2"); loadSemanaFull("11P1"); }}
+            aria-current={activeTab === "g11p2" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Coins size={18} strokeWidth={2.2} /></span>
+            Periodo 2 · Grado 11
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g11p3" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g11p3"); setNavOpen(false); loadSemanaFull("11P3"); loadSemanaFull("11P2"); loadSemanaFull("11P1"); }}
+            aria-current={activeTab === "g11p3" ? "page" : undefined}
+          >
+            <span className="nav-ico"><TrendingUp size={18} strokeWidth={2.2} /></span>
+            Periodo 3 · Grado 11
+          </button>
+        )}
+        {isAdmin && (
+          <button
+            className={`fin-nav-btn ${activeTab === "g11p4" ? "active" : ""}`}
+            onClick={() => { setActiveTab("g11p4"); setNavOpen(false); loadSemanaFull("11P4"); loadSemanaFull("11P3"); loadSemanaFull("11P2"); loadSemanaFull("11P1"); }}
+            aria-current={activeTab === "g11p4" ? "page" : undefined}
+          >
+            <span className="nav-ico"><Trophy size={18} strokeWidth={2.2} /></span>
+            Periodo 4 · Grado 11
+          </button>
+        )}
+
         <div className="fin-nav-label">Your route</div>
         <nav className="fin-route" aria-label="Course weeks">
           {WEEKS.map((w) => {
@@ -1202,6 +1247,20 @@ export const Dashboard = ({ onLogout }) => {
         )}
         {activeTab === "g10p4" && isAdmin && (
           <Periodo4G10 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["10P4"]} onBack={() => setActiveTab("overview")} />
+        )}
+
+        {/* ===== GRADO 11 · FOUNDER YEAR (solo admin, vista de prueba) ===== */}
+        {activeTab === "g11p1" && isAdmin && (
+          <Periodo1G11 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["11P1"]} onBack={() => setActiveTab("overview")} />
+        )}
+        {activeTab === "g11p2" && isAdmin && (
+          <Periodo2G11 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["11P2"]} onBack={() => setActiveTab("overview")} />
+        )}
+        {activeTab === "g11p3" && isAdmin && (
+          <Periodo3G11 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["11P3"]} onBack={() => setActiveTab("overview")} />
+        )}
+        {activeTab === "g11p4" && isAdmin && (
+          <Periodo4G11 userData={userData} API_URL={API_URL} existingRow={store.semanas?.["11P4"]} onBack={() => setActiveTab("overview")} />
         )}
 
         {/* ===== PERIODO 4 · GRADO 9 (solo admin, vista de prueba) ===== */}
