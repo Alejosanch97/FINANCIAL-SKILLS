@@ -2032,7 +2032,7 @@ function TeamZone({ icon, title, subtitle, brief, goals, minutes = 30, coins = 2
         const o = g[x.k]; const ok = o.done && evOk(x);
         return (
           <div key={x.k} className={`g11-goal ${ok ? "ok" : ""}`}>
-            <button type="button" className={`g11-check ${o.done ? "on" : ""}`} onClick={() => up(x.k, { done: !o.done })} aria-label="mark as done">{o.done ? "✓" : i + 1}</button>
+            <button type="button" className={`g11-check ${o.done ? "on" : ""} ${!o.done && evOk(x) ? "ready" : ""}`} onClick={() => up(x.k, { done: !o.done })} aria-label="mark as done">{o.done ? "✓" : i + 1}</button>
             <div className="g11-goal-main">
               <b>{x.e || "🎯"} {x.t}</b>{x.d && <small>{x.d}</small>}
               {x.cols ? (
@@ -2047,12 +2047,13 @@ function TeamZone({ icon, title, subtitle, brief, goals, minutes = 30, coins = 2
                 <input className="start-input" value={o.ev} placeholder={x.ph || "Evidence: what exactly did you do?"} onChange={(e) => { up(x.k, { ev: e.target.value }); if (onData) onData(x.k, e.target.value); }} />
               )}
               {o.done && !evOk(x) && <i className="g11-need">✋ Add the evidence to complete this goal.</i>}
+              {!o.done && evOk(x) && <i className="g11-need tap">👆 Evidence ready! Tap the number {i + 1} to mark this goal as DONE.</i>}
             </div>
           </div>
         );
       })}</div>
       {extra}
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!okAll} onClick={() => finish(coins, { goals: g, minutesUsed: Math.round((minutes * 60 - left) / 60) })}>{okAll ? "Our mission is complete" : `Complete all goals with evidence (${doneN}/${goals.length})`} <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!okAll} onClick={() => finish(coins, { goals: g, minutesUsed: Math.round((minutes * 60 - left) / 60) })}>{okAll ? "Our mission is complete" : `Tap each goal number to mark it done (${doneN}/${goals.length})`} <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
     </ActShell>
   );
 }
@@ -2184,6 +2185,43 @@ function QAStage({ title, intro, evidence, qa, setQa, items, ready, readyMsg, on
 
 /* ---------- Juego genérico de decisiones por días (Launch Week, Cash Flow…) ---------- */
 const fmtM = (v) => cop(v);
+/* =====================================================================
+   AYUDAS DE CONTEXTO (todos los periodos): guía "antes de empezar", fórmula por pregunta
+   y ejemplo resuelto para las lecturas.
+   ===================================================================== */
+function Guide11({ title = "📘 Before you start: what you need to know", intro, items = [], open: startOpen = true }) {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <div className={`g11-guide ${open ? "open" : ""}`}>
+      <button type="button" className="g11-guide-head" onClick={() => setOpen(!open)}><b>{title}</b><span>{open ? "Hide ▲" : "Show ▼"}</span></button>
+      {open && <div className="g11-guide-body">
+        {intro && <p className="g11-guide-intro">{intro}</p>}
+        <div className="g11-guide-grid">{items.map((x, i) => (
+          <div key={i} className="g11-guide-item">
+            <b>{x.e} {x.t}</b>
+            {x.d && <p>{x.d}</p>}
+            {x.f && <div className="g10-formula">{x.f}</div>}
+            {x.ex && <div className="g11-ex"><small>EXAMPLE</small>{Array.isArray(x.ex) ? <ol>{x.ex.map((s, j) => <li key={j}>{s}</li>)}</ol> : <p>{x.ex}</p>}</div>}
+          </div>
+        ))}</div>
+      </div>}
+    </div>
+  );
+}
+/* Fórmula + pasos dentro de cada problema (RoundsRunner muestra r.visual) */
+const F11 = (f, steps) => <div className="g11-rhelp"><div className="g10-formula">{f}</div>{steps && <ol>{steps.map((s, i) => <li key={i}>{s}</li>)}</ol>}</div>;
+/* Ejemplo resuelto dentro de una lectura */
+function Calc11({ title, formula, steps = [], result }) {
+  return (
+    <div className="g11-calc">
+      <small>🧮 WORKED EXAMPLE</small>
+      <b>{title}</b>
+      {formula && <div className="g10-formula">{formula}</div>}
+      <ol>{steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+      {result && <p className="g11-calc-res">✅ {result}</p>}
+    </div>
+  );
+}
 
 /* =====================================================================
    11° · PERIODO 3 · INVESTOR LAB 18+ & LIFE PLAN — LECTURAS Y VIDEOS
@@ -2255,6 +2293,8 @@ const READ_MAP = [
   { h: "The new investor at 18" },
   { p: "In Colombia, when you turn 18 and get your cédula, you can open accounts and investment products in your own name. Digital banks and apps make it possible to start with very small amounts. That is great news — and also a risk: social media is full of 'gurus' who promise impossible returns. Knowing the map is your first defense." },
   { list: ["Emergency money → liquid and safe (cajita, savings account).", "Goals in 1–3 years → predictable (CDT, short-term funds).", "Goals in 5+ years → growth with diversification (ETFs).", "Speculation → only money you can lose, and only a small part."] },
+  { h: "Risk and return with numbers" },
+  { node: <Calc11 key="c" title="$1,000,000 for one year: a CDT vs. an S&P 500 ETF" formula="Value at the end = money × (1 + return)" steps={["CDT at 10%: 1,000,000 × 1.10 = $1,100,000 — you KNOW it from day 1 (low risk).", "ETF in a good year (+25%): 1,000,000 × 1.25 = $1,250,000.", "ETF in a bad year (−18%): 1,000,000 × 0.82 = $820,000.", "Over many years the ETF usually wins, but in ONE year it can lose. That uncertainty is RISK.", "Liquidity: the CDT is locked until its date; the ETF can be sold in a few days."]} result="Higher expected return = bigger ups and downs. Choose by WHEN you need the money." /> },
   { h: "What this means for your Investor Lab" },
   { p: "This period you will manage a simulated portfolio with REAL data from 2015 to 2024, test what inflation does to your money, analyze companies, study famous bankruptcies and build your own investment playbook for the day you turn 18. Start by placing every asset on the map." },
 ];
@@ -2284,6 +2324,10 @@ const READ_INFL = [
   { list: ["Rate 12%, inflation 9% → real return ≈ 2.75%.", "Rate 4%, inflation 9% → real return ≈ −4.6%.", "Cash at home, inflation 13% → real return ≈ −11.5%."] },
   { h: "Who wins and who loses" },
   { p: "Inflation hurts people who keep cash and people with fixed incomes, like many retirees. It can help people with debts at fixed rates, because they pay back with money that is worth less. Assets like stocks, real estate or dollars sometimes protect purchasing power over long periods — but not every year, and not always." },
+  { h: "The calculations, step by step" },
+  { node: <Calc11 key="r" title="Real return: did your money really grow?" formula="Real return = (1 + nominal rate) ÷ (1 + inflation) − 1" steps={["2022: a CDT paid 9% and inflation was 13.12%.", "1.09 ÷ 1.1312 = 0.9636", "0.9636 − 1 = −0.036 → −3.6%"]} result="You earned 9% in pesos but LOST 3.6% of purchasing power." /> },
+  { node: <Calc11 key="c" title="Cash under the mattress in 2022" formula="What your money can buy = money ÷ (1 + inflation)" steps={["$1,000,000 at home all year.", "1,000,000 ÷ 1.1312 = $884,016 of 2021 purchasing power."]} result="In one year it lost about $116,000 without anybody touching it." /> },
+  { node: <Calc11 key="t" title="Ten years of inflation (2015–2024)" formula="Total price change = (1 + i₁) × (1 + i₂) × … × (1 + i₁₀)" steps={["1.0677 × 1.0575 × 1.0409 × … × 1.0520 ≈ 1.757 → prices rose about 75%.", "$1,000,000 ÷ 1.757 ≈ $569,000 of 2015 purchasing power."]} result="To beat inflation you need a REAL return above zero." /> },
   { h: "What this means for you" },
   { p: "Inflation is the first enemy of a saver. Before you choose any investment, ask: will this beat inflation over my time horizon? This week you will run ten years of REAL Colombian data and see which 'homes' protected the money — and which ones lost it." },
 ];
@@ -2317,6 +2361,8 @@ const READ_COMPANY = [
   { box: "🔎 The 5 numbers: REVENUE GROWTH · NET MARGIN · DEBT · P/E · CASH FLOW. Read them together, compare with competitors and look at several years — never just one." },
   { h: "Price vs. value" },
   { p: "The famous investor Warren Buffett often repeats an idea from his teacher Benjamin Graham: 'Price is what you pay; value is what you get.' A great company can be a bad investment if you pay too much for it, and an average company can be a good investment at a low price. Analysts try to estimate value and then wait for a reasonable price." },
+  { h: "The five numbers, calculated" },
+  { node: <Calc11 key="c" title="A company you could buy" formula="Growth = (new − old) ÷ old · Net margin = profit ÷ sales · EPS = profit ÷ shares · P/E = price ÷ EPS" steps={["Sales went from $80M to $92M: (92 − 80) ÷ 80 = 0.15 → 15% growth.", "Profit $6M on sales of $50M: 6 ÷ 50 = 0.12 → 12% net margin.", "Profit $20M and 10M shares: 20 ÷ 10 = $2 earnings per share (EPS).", "Share price $36: 36 ÷ 2 = 18 → P/E 18× (you pay 18 years of today's profit).", "Debt and cash flow: compare debt with profit, and check that the cash from operations is POSITIVE."]} result="Good sign: growth + margin + low debt + positive cash flow + a P/E that is not crazy." /> },
   { h: "What this means for you" },
   { p: "This week you will analyze fictional companies with these five numbers and then research a real company on your tablet. Then you will discover why most professionals still recommend something simpler for most people: buying many companies at once through an ETF." },
 ];
@@ -2346,6 +2392,8 @@ const READ_COLLAPSE = [
   { box: "🚩 Common red flags: numbers nobody can explain · huge debt · promises of easy, guaranteed profits · clients' money mixed with the company's money · employees or clients putting ALL their savings in one place · celebrity marketing instead of transparent information." },
   { h: "The lesson of diversification" },
   { p: "In all four cases, the people who lost the most were those with all or most of their money in ONE company or ONE platform. An investor who owned an index fund with 500 companies barely noticed Enron's collapse, because it was a tiny part of the basket. Diversification does not prevent crises, but it prevents one disaster from destroying everything you have." },
+  { h: "Diversification in numbers" },
+  { node: <Calc11 key="d" title="$10,000,000 when ONE company goes to zero" formula="Loss = money in that company = total ÷ number of companies (equal parts)" steps={["All in ONE company: you lose 10,000,000 → $0 left.", "ETF of 50 equal companies: each one is 10,000,000 ÷ 50 = $200,000.", "One goes to zero → you lose $200,000 = 2%. The other 49 keep working.", "Enron employee: 60% of $50,000,000 in her company → 50,000,000 × 0.6 = $30,000,000 lost (plus her job)."]} result="Diversification doesn't avoid bad companies — it makes them small." /> },
   { h: "What this means for you" },
   { p: "This week you will become a bankruptcy detective: you will read the data of companies before their fall and look for red flags. Then you will compare what happens to an investor with one stock and an investor with an ETF when a company goes to zero." },
 ];
@@ -2376,6 +2424,8 @@ const READ_AT18 = [
   { p: "Financial planners recommend comparing two scenarios: the 'dream' option and a 'possible' option that your family can afford with less debt. Calculate the full cost of the career, not just one semester; tuition usually rises every year. Then build a funding plan and calculate the gap — the money you still don't have. A gap is not a reason to give up; it is a number you can work on: more savings, a scholarship, a different city or a technical program first." },
   { h: "Your first credit" },
   { p: "A small credit card used carefully — small purchases, paid in full every month — can start a good credit history in the credit bureaus. Paying late, lending your name for someone else's debt or using the whole limit can damage it for years." },
+  { h: "Your university budget, step by step" },
+  { node: <Calc11 key="u" title="5 semesters at a university with tuition of $6,000,000" formula="Cost per semester = tuition + living costs × 6 months · Gap = total cost − your funding" steps={["Tuition rises about 8% a year: semesters 1–2 $6,000,000 · 3–4 $6,480,000 · 5 $6,998,400.", "Living (transport + food + materials) $800,000 a month × 6 = $4,800,000 per semester.", "Total 5 semesters = 31,958,400 tuition + 24,000,000 living ≈ $55,958,400.", "Funding: family $1,000,000 × 30 months + savings $3,000,000 + 25% scholarship (6,000,000 × 5 × 0.25 = 7,500,000) = $40,500,000.", "Gap = 55,958,400 − 40,500,000 ≈ $15,458,400 → you need a job, a bigger scholarship or a student loan."]} result="You can't plan a dream without the numbers behind it." /> },
   { h: "What this means for you" },
   { p: "This week you will research real universities and careers on your tablet, calculate five semesters of costs in two scenarios and design what you will do with your first 1,000,000 pesos at 18. It's not a game anymore: it's the plan for the next chapter of your life." },
 ];
@@ -2400,6 +2450,100 @@ const inflPath = (from = 0, to = 10) => { const out = [1]; for (let i = from; i 
 const cagr = (mult, years) => (years > 0 ? (Math.pow(mult, 1 / years) - 1) * 100 : 0);
 const mCOP = (v) => `$${(v / 1000000).toFixed(v >= 10000000 ? 1 : 2)}M`;
 
+
+/* =====================================================================
+   GUÍAS "ANTES DE EMPEZAR" · Periodo 3 (contexto + fórmula + ejemplo)
+   ===================================================================== */
+const GD3_MAP = { intro: "Every investment answers 3 questions. You will place 10 assets on a map using them — first think, then compare with the experts.", items: [
+  { e: "🎢", t: "Risk (→ right)", d: "How much the value can go up and DOWN. 1 = almost never falls · 5 = can lose a lot (or everything) in a short time.", ex: "Cash at home: 1 · Bitcoin: 5" },
+  { e: "📈", t: "Return (↑ up)", d: "How much you EXPECT to earn over many years (not guaranteed).", ex: "A CDT: 2 · An S&P 500 ETF: 4" },
+  { e: "💧", t: "Liquidity (1–5)", d: "How fast you can turn it into cash without losing value.", ex: "Savings account: 5 (today) · CDT: 1 (locked until the date) · House: 1" },
+  { e: "👆", t: "How to play", d: "Tap an asset (chips at the top), then tap its square on the map. Then rate its liquidity on the right." },
+] };
+const GD3_ALLOC = { intro: "You get $10,000,000 of PLAY money. Split it in % among 7 assets. Don't peek at the future: in Class 6 this exact mix will travel through the REAL years 2015–2024.", items: [
+  { e: "🥧", t: "Your mix", d: "Each slider is a % of the $10,000,000. The total must be 100% and no asset more than 50%.", ex: "30% CDT = $3,000,000 · 40% S&P 500 = $4,000,000 · 30% dollars = $3,000,000" },
+  { e: "🎢", t: "Portfolio risk (1–5)", f: "Portfolio risk = Σ (% of each asset × its risk)", ex: "0.30 × 1 (CDT) + 0.40 × 4 (S&P) + 0.30 × 3 (USD) = 0.3 + 1.6 + 0.9 = 2.8" },
+  { e: "🧬", t: "Fit your profile", d: "Your Investor DNA gives a target risk range (e.g. Moderate 2.2–3.4). Stay inside it." },
+] };
+const GD3_SIM = { intro: "Real Colombian data. Choose a start year: the app puts $1,000,000 in each asset and lets it grow with what REALLY happened until 2024. Then compare with prices (inflation).", items: [
+  { e: "📊", t: "How to read the chart", d: "Each line = what $1,000,000 became. The grey line = what you need just to buy the same things as at the start (prices)." },
+  { e: "🧮", t: "Real value", f: "Real value = final value ÷ price growth", ex: ["Start 2015: prices grew ×1.757 until 2024.", "Cash: 1,000,000 ÷ 1.757 = $569,000 → lost purchasing power ❌", "An asset that ended with $2,500,000: 2,500,000 ÷ 1.757 = $1,423,000 → beat inflation ✅"] },
+  { e: "🎯", t: "Your task", d: "Press 'Check' and mark EVERY asset whose real value is above $1,000,000. Then write what the data says." },
+] };
+const GD3_PICK = { intro: "Eight fictional companies, five numbers each. You build a 3-company portfolio (100%, steps of 10%) and then jump 3 years to see what happened.", items: [
+  { e: "📈", t: "Sales growth", d: "How fast sales grow per year. Higher is good, if profit follows." },
+  { e: "💰", t: "Net margin", d: "% of sales that stays as profit. Negative = the company loses money.", f: "Net margin = profit ÷ sales × 100" },
+  { e: "🏦", t: "Debt", d: "Low / Medium / High. High debt is dangerous when interest rates rise." },
+  { e: "📐", t: "P/E", d: "Price ÷ earnings per share: how many years of profit you pay. Very high = big expectations; '—' = no profit.", ex: "P/E 10 = cheap-ish · P/E 60 = very expensive" },
+  { e: "💧", t: "Cash flow (+ / −)", d: "Does the business bring real cash in? '−' with high debt is a red flag." },
+] };
+const GD3_RES = { intro: "Use your tablet to research two REAL companies. Search the company name + “stock” in Google, or open finance.yahoo.com and type the ticker.", items: [
+  { e: "🔤", t: "Ticker & exchange", d: "The short code of the share.", ex: "Apple = AAPL (NASDAQ) · Ecopetrol = ECOPETROL (BVC) / EC (NYSE) · Bancolombia = CIB (NYSE)" },
+  { e: "💲", t: "Price & P/E", d: "On Yahoo Finance: the big number is the price; 'PE Ratio (TTM)' is the P/E." },
+  { e: "📈", t: "1-year change", d: "In the chart choose '1Y' and read the % (it can be negative)." },
+  { e: "⚠️", t: "One big risk", d: "Think: what could go wrong? A single product, debt, oil prices, competition, regulation…" },
+  { e: "🔗", t: "Source & date", ex: "“Yahoo Finance · 23 Nov 2026” — prices change every second!" },
+] };
+const GD3_DET = { intro: "Four companies. Read the 3 years of numbers and the news like a detective, mark the flags you see, then predict: will it survive 2 more years?", items: [
+  { e: "🚩", t: "Red flags in the numbers", ex: ["Debt grows much faster than sales: sales ×1.9 but debt ×3.4", "Profit rises but cash from operations is negative (profit only on paper)", "Clients' money used for the company's own bets"] },
+  { e: "🚩", t: "Red flags in the news", ex: ["The auditor resigned", "Executives sell their shares", "Promises of guaranteed high returns"] },
+  { e: "✅", t: "Green flags", ex: ["Stable sales and margins", "Low debt and positive cash flow every year"] },
+  { e: "🧮", t: "How to compare", f: "Growth = year 3 ÷ year 1", ex: "PowerNet: sales 19 ÷ 10 = 1.9× · debt 27 ÷ 8 = 3.4× → debt grows much faster 🚩" },
+] };
+const GD3_ONE = { intro: "Diversification is the only 'free lunch' in investing. Choose ONE company for all your money — then see what happens when one company of the market goes to zero.", items: [
+  { e: "🎯", t: "One stock", f: "If it goes to zero: money left = $0" },
+  { e: "🧺", t: "ETF of 50", f: "Each company = total ÷ 50", ex: "10,000,000 ÷ 50 = $200,000 per company → one zero costs only 2%" },
+] };
+const GD3_ETF = { intro: "An ETF is a basket of many companies that you buy in ONE purchase. You will design your own: choose 10 of 15 companies (equal weights) and a yearly fee.", items: [
+  { e: "🧺", t: "Sectors", d: "Tech, Health, Energy, Finance, Consumer, Industry, Utilities. Each sector has good and bad years at different times. More sectors = smoother ride." },
+  { e: "💸", t: "Fee", d: "The % the ETF charges every year, even in bad years.", f: "Value after a year = value × (1 + return) × (1 − fee)", ex: "1,000,000 × 1.10 × (1 − 0.01) = $1,089,000 vs. with 0.1%: $1,098,900" },
+  { e: "🏁", t: "The race", d: "Your ETF competes with the full index (all 15, fee 0.05%) for 5 years. Watch out: one company may go bankrupt!" },
+] };
+const GD3_FEES = { intro: "A fee looks tiny (1%, 2%) but it is charged EVERY year on ALL your money — and it also stops that money from growing. Move the sliders and watch 30 years.", items: [
+  { e: "🧮", t: "How it works", f: "Real growth ≈ return − fee", ex: "Return 8% with fee 2% → you grow about 6% · with fee 0.1% → about 7.9%" },
+  { e: "📈", t: "Read the chart", d: "Three lines = the same monthly investment with fees of 0.1%, 1% and 2%. The gap at year 30 is money you paid in fees." },
+] };
+const GD3_SUM = { intro: "Build ONE table with everything about investing. Choose a value for each cell, then check with the experts and fix the red ones.", items: [
+  { e: "🎢", t: "Risk", d: "How much it can fall: Low · Medium · High · Extreme." },
+  { e: "💧", t: "Liquidity", d: "When you get your cash: Same day · Days · Locked (until a date)." },
+  { e: "⏳", t: "Best for", d: "Emergencies · Goals in 1–3 years · Goals in 5+ years · Only money I can lose." },
+  { e: "🪪", t: "How at 18", d: "Where you buy it: bank/fintech app, a stockbroker or platform, a crypto exchange, or buy & store." },
+] };
+const GD3_TM = { intro: "Travel back in time with $10,000,000 and REAL data. Two ways to invest: everything on day 1 (lump sum) or the same amount every year (DCA).", items: [
+  { e: "💰", t: "All at once", ex: "Start 2018 → $10,000,000 invested in January 2018." },
+  { e: "📆", t: "A part every year (DCA)", f: "Each year = total ÷ number of years", ex: "Start 2018 (7 years) → 10,000,000 ÷ 7 = $1,428,571 every January" },
+  { e: "🧮", t: "The table", d: "End 2024 = final value · Real = final value ÷ price growth (in start-year pesos) · Worst year = the biggest fall in one year." },
+] };
+const GD3_CRASH = { intro: "You have $10,000,000 in an S&P 500 ETF and live a REAL crash month by month. BEFORE each month, decide what to do. Then the month's real % is applied.", items: [
+  { e: "🧘", t: "Hold", d: "Keep your money in the ETF. You feel the falls AND the recoveries." },
+  { e: "🏃", t: "Sell all", d: "Move everything to cash: you stop falling, but you also miss the recovery." },
+  { e: "🛒", t: "Buy back", d: "Move your cash back into the ETF." },
+  { e: "🧮", t: "How a month works", f: "New value = value × (1 + month %)", ex: "October 2008: −16.9% → 7,000,000 × 0.831 = $5,817,000" },
+] };
+const GD3_LAB = { intro: "The mix you chose in Class 1 now travels through the REAL years 2015–2024. You don't decide anything — you read the results and tell the story.", items: [
+  { e: "⚖️", t: "Rebalancing", d: "Every January, sell a bit of what grew and buy what fell, to go back to your original %. It controls risk.", ex: "You wanted 40% S&P; it grew to 55% → sell 15% and buy the others." },
+  { e: "📈", t: "Per year (CAGR)", f: "CAGR = (final ÷ initial)^(1 ÷ 10) − 1" },
+  { e: "🔥", t: "Real value", f: "Real = final ÷ 1.757 (price growth 2015–2024)" },
+] };
+const GD3_UNI = { intro: "Use your tablet. Research TWO options: your DREAM one and a POSSIBLE one (public university, SENA, a technical program, another city…).", items: [
+  { e: "🔎", t: "Where to look", d: "The official website of the university: search “valor matrícula [program]”, “derechos pecuniarios”, “becas”. Public universities charge by family income (estrato) — use the value for a family like yours." },
+  { e: "✍️", t: "How to write numbers", d: "Tuition per SEMESTER, without dots or $.", ex: "22000000 (not 22.000.000) · semesters: 10" },
+  { e: "🎖️", t: "Scholarships", ex: "“Top Saber 11 scores: 50%” · “Generación E” · “ICETEX Tú Eliges”" },
+] };
+const GD3_BUD = { intro: "Your two universities from the University Hunter. The app calculates the first 5 semesters (2.5 years): tuition + living costs, then subtracts your funding and shows the GAP.", items: [
+  { e: "📈", t: "Tuition increase", d: "Tuition usually rises every year (about 5–10%).", f: "Year 2 tuition = tuition × (1 + increase)", ex: "6,000,000 × 1.08 = $6,480,000" },
+  { e: "🏠", t: "Living costs", f: "Per semester = monthly living costs × 6", ex: "Transport 250,000 + food 400,000 + materials 150,000 = 800,000 × 6 = $4,800,000" },
+  { e: "💰", t: "Funding (30 months)", f: "Family × 30 + savings + scholarship % × tuition × 5 + job × 30", ex: "1,000,000 × 30 + 3,000,000 + 25% × 6,000,000 × 5 = 30M + 3M + 7.5M = $40,500,000" },
+  { e: "🕳️", t: "Gap and loan", f: "Gap = total cost − funding  ·  if it's a loan: payment ≈ gap × 0.01 ÷ (1 − 1.01^−60)", ex: "Gap $15,000,000 → about $334,000 a month for 5 years" },
+] };
+const GD3_FIRST = { intro: "Imagine you receive $1,000,000 at 18 (a gift, your first salary, your savings). Plan it BEFORE it arrives: split it into 7 boxes.", items: [
+  { e: "🚑", t: "Emergency (≥ 20%)", d: "Money for surprises, in a supervised cajita or savings account — liquid and safe." },
+  { e: "🎯", t: "Goal with a date", d: "Something you'll pay in 1–2 years (a course, a laptop) → a CDT." },
+  { e: "🧺", t: "ETF", d: "Long-term growth (5+ years)." },
+  { e: "🎲", t: "Speculation (≤ 10%)", d: "Only money you can lose completely (crypto, meme coins)." },
+  { e: "🧮", t: "After 1 year", f: "Each box × (1 + its yearly return) — learning and fun don't grow in money", ex: "250,000 in an ETF at 9% → 272,500" },
+] };
+
 /* ---------- C1 · Asset Map (riesgo × retorno + liquidez) ---------- */
 const MAP_ASSETS = [
   { k: "cash", e: "🛏️", l: "Cash at home", r: 1, t: 1, q: 5 }, { k: "acc", e: "📲", l: "Cajita / savings", r: 1, t: 2, q: 5 }, { k: "cdt", e: "📜", l: "CDT 1 year", r: 1, t: 2, q: 1 },
@@ -2418,7 +2562,7 @@ function AssetMap({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Asset map drawn! 🗺️" subtitle={`${score}/10 close to the experts`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<MapIcon size={22} strokeWidth={2.1} />} title="Asset Map Builder 🗺️" subtitle="Tap an asset, then tap its place on the map (risk → / return ↑). Then rate its liquidity." onExit={onExit}>
-      <Brief91 k="c1_map" />
+      <Brief91 k="c1_map" /><Guide11 {...GD3_MAP} />
       <div className="g10-chips">{MAP_ASSETS.map((a) => <button key={a.k} type="button" className={`${sel === a.k ? "on" : ""} ${pos[a.k] ? "g11-placed" : ""}`} onClick={() => setSel(a.k)}>{a.e} {a.l}</button>)}</div>
       <div className="g10-two">
         <div className="g11-map"><span className="y">RETURN ↑</span><span className="x">RISK →</span>
@@ -2481,7 +2625,7 @@ function LabPortfolio({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Lab portfolio opened! 🧪" subtitle={`$10,000,000 · risk ${risk}/5`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<PieChart size={22} strokeWidth={2.1} />} title="Investor Lab · $10,000,000 🧪" subtitle="Your simulated portfolio will travel through REAL data 2015–2024 in Class 6. Split it now — no peeking!" onExit={onExit}>
-      <Brief91 k="c1_alloc" />
+      <Brief91 k="c1_alloc" /><Guide11 {...GD3_ALLOC} />
       <div className="g10-dna small"><em>{P.l.split(" ").pop()}</em><div><small>MY PROFILE</small><b>{P.l}</b><p>Target risk {P.lo}–{P.hi}</p></div></div>
       <AllocBars items={ASSET11.map((x) => ({ ...x, d: `risk ${RISK11[x.k]}/5` }))} vals={al} set={setAl} step={5} />
       <div className="g10-two"><div className="start-block"><Gauge91 label="Portfolio risk (1–5)" value={risk} max={5} unit="" target={P.hi} targetLabel="your max" good={coherent} /><div className="g91-mini"><span className={coherent ? "pos" : "neg"}>Fits my profile <b>{coherent ? "✓" : "✗"}</b></span><span className={maxOne <= 50 ? "pos" : "neg"}>Max 50% in one <b>{maxOne <= 50 ? "✓" : "✗"}</b></span></div></div>
@@ -2507,7 +2651,7 @@ function InflationSim({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Inflation attacked! 🔥" subtitle={`${YEARS[from]}–2024 · ${truth.length} assets beat inflation`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Flame size={22} strokeWidth={2.1} />} title="Inflation Simulator 🔥 · Real data" subtitle="$1,000,000 in each asset since the year you choose. Inflation = Colombian DANE data. Who kept the purchasing power?" onExit={onExit}>
-      <Brief91 k="c2_sim" />
+      <Brief91 k="c2_sim" /><Guide11 {...GD3_SIM} />
       <div className="g10-chips">{YEARS.slice(0, 9).map((y, i) => <button key={y} type="button" className={from === i ? "on" : ""} onClick={() => { setFrom(i); setChecked(false); }}>Start Jan {y}</button>)}</div>
       <ChartCard title={`Value of $1,000,000 (pesos) · ${YEARS[from]}–2024`} legend={[...res.filter((x) => x.k !== "btc").map((x) => ({ name: x.l, color: x.c })), { name: "Inflation (prices)", color: "#5f5a6b" }]}><LineChart labels={["start", ...YEARS.slice(from)]} series={[...res.filter((x) => x.k !== "btc").map((x) => ({ name: x.l, values: x.p.map((v) => Math.round(v * 1000000)), color: x.c })), { name: "Prices", values: ip.map((v) => Math.round(v * 1000000)), color: "#5f5a6b" }]} /></ChartCard>
       <MiniTable head={["Asset", "Value at the end", "Per year", "Real (after inflation)"]} rows={res.map((x) => [`${x.e} ${x.l}`, cop(x.m * 1000000), pctTxt(cagr(x.m, yrs)), checked ? `${x.real >= 1 ? "✅" : "❌"} ${cop(x.real * 1000000)}` : "?"])} />
@@ -2520,11 +2664,11 @@ function InflationSim({ existing, onSave, onExit }) {
   );
 }
 const BEAT_R = [
-  { tag: "Real return", q: "2022: a CDT paid about 9% and inflation was 13.12%. Real return (%, 1 decimal)?", answer: -3.6, unit: "%", tol: 0.2, hint: "(1.09 ÷ 1.1312) − 1", explain: "≈ −3.6%: even a CDT lost purchasing power." },
-  { tag: "Real return", q: "2023: a CDT paid about 12.5% and inflation was 9.28%. Real return?", answer: 2.9, unit: "%", tol: 0.2, hint: "(1.125 ÷ 1.0928) − 1", explain: "≈ +2.9%." },
-  { tag: "Cash", q: "2022: cash at home (0%) with 13.12% inflation. Real return?", answer: -11.6, unit: "%", tol: 0.2, hint: "(1 ÷ 1.1312) − 1", explain: "≈ −11.6% in one year." },
-  { tag: "Prices", q: "A basket cost $500,000 in Dec 2021. Inflation 2022: 13.12%. Price in Dec 2022?", answer: 565600, money: true, tol: 100, hint: "500,000 × 1.1312", explain: "$565,600." },
-  { tag: "Dollar", q: "TRM went from $3,981 (end 2021) to $4,810 (end 2022). Change of the dollar in pesos?", answer: 20.8, unit: "%", tol: 0.2, hint: "4,810 ÷ 3,981 − 1", explain: "≈ +20.8%: dollars protected savers in 2022." },
+  { tag: "Real return", q: "2022: a CDT paid about 9% and inflation was 13.12%. Real return (%, 1 decimal)?", answer: -3.6, unit: "%", tol: 0.2, hint: "(1.09 ÷ 1.1312) − 1", visual: F11("Real return = (1 + rate) ÷ (1 + inflation) − 1", ["Rate 9% → 1.09 · inflation 13.12% → 1.1312", "1.09 ÷ 1.1312 = ?", "Subtract 1 and × 100 (it can be negative!)"]), explain: "≈ −3.6%: even a CDT lost purchasing power." },
+  { tag: "Real return", q: "2023: a CDT paid about 12.5% and inflation was 9.28%. Real return?", answer: 2.9, unit: "%", tol: 0.2, hint: "(1.125 ÷ 1.0928) − 1", visual: F11("Real return = (1 + rate) ÷ (1 + inflation) − 1", ["Rate 12.5% → 1.125 · inflation 9.28% → 1.0928", "1.125 ÷ 1.0928 − 1 = ?  (× 100)"]), explain: "≈ +2.9%." },
+  { tag: "Cash", q: "2022: cash at home (0%) with 13.12% inflation. Real return?", answer: -11.6, unit: "%", tol: 0.2, hint: "(1 ÷ 1.1312) − 1", visual: F11("Real return = (1 + rate) ÷ (1 + inflation) − 1", ["Cash earns 0% → 1.00", "1 ÷ 1.1312 − 1 = ?  (× 100)"]), explain: "≈ −11.6% in one year." },
+  { tag: "Prices", q: "A basket cost $500,000 in Dec 2021. Inflation 2022: 13.12%. Price in Dec 2022?", answer: 565600, money: true, tol: 100, hint: "500,000 × 1.1312", visual: F11("New price = old price × (1 + inflation)", ["Old price = 500,000 · inflation 13.12% → 1.1312", "500,000 × 1.1312 = ?"]), explain: "$565,600." },
+  { tag: "Dollar", q: "TRM went from $3,981 (end 2021) to $4,810 (end 2022). Change of the dollar in pesos?", answer: 20.8, unit: "%", tol: 0.2, hint: "4,810 ÷ 3,981 − 1", visual: F11("Change % = (new ÷ old − 1) × 100", ["Old = 3,981 · new = 4,810", "4,810 ÷ 3,981 − 1 = ?  (× 100)"]), explain: "≈ +20.8%: dollars protected savers in 2022." },
   { tag: "Decide", q: "Inflation 9%. Which option protects purchasing power?", options: ["A cajita at 11% E.A.", "A savings account at 1%.", "Cash under the mattress.", "A 'guaranteed' 10% monthly app."], correct: 0, explain: "Above inflation and supervised." },
 ];
 
@@ -2551,7 +2695,7 @@ function StockPicker({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Analyst mode! 🔎" subtitle={`Your 3 years: ${pctTxt(ret, 0)} · equal-weight basket ${pctTxt(etf, 0)}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Search size={22} strokeWidth={2.1} />} title="Stock Picker 🔎" subtitle="8 fictional companies, 5 numbers each. Build a 3-company portfolio (steps of 10%) — then see 3 years later." onExit={onExit}>
-      <Brief91 k="c3_picker" />
+      <Brief91 k="c3_picker" /><Guide11 {...GD3_PICK} />
       <MiniTable head={["Company", "Sales growth", "Net margin", "Debt", "P/E", "Cash flow"]} rows={PICK_CO.map((c) => [`${c.e} ${c.n} · ${c.sec}`, `${c.g}%`, `${c.m}%`, c.debt, c.pe ?? "— (loss)", c.cf])} />
       <div className="start-block"><h3>Your portfolio (max 3 companies, 100%)</h3><div className="g11-picks">{PICK_CO.map((c) => <div key={c.k}><b>{c.e} {c.n}</b><div className="g11-qty"><button type="button" disabled={shown} onClick={() => setW({ ...w, [c.k]: Math.max(0, (w[c.k] || 0) - 10) })}><Minus size={14} /></button><b>{w[c.k] || 0}%</b><button type="button" disabled={shown || sum >= 100 || (!w[c.k] && picks.length >= 3)} onClick={() => setW({ ...w, [c.k]: (w[c.k] || 0) + 10 })}><Plus size={14} /></button></div></div>)}</div></div>
       {!shown ? <div className="start-foot"><button className="s1-btn primary big" disabled={sum !== 100} onClick={() => setShown(true)}>{sum === 100 ? "Jump 3 years ⏩" : `Assign 100% (${sum}%)`}</button></div> : (
@@ -2578,7 +2722,7 @@ function CompanyResearch({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Research done! 🧾" subtitle={`${c[0].name} vs. ${c[1].name}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Globe size={22} strokeWidth={2.1} />} title="Real Company Research 🧾" subtitle="Use your tablet (Yahoo Finance, Google Finance, the company's website) to research TWO real companies." onExit={onExit}>
-      <Brief91 k="c3_research" />
+      <Brief91 k="c3_research" /><Guide11 {...GD3_RES} />
       <div className="g10-two">{c.map((x, i) => <div key={i} className="start-block"><h3>Company {i + 1}</h3>{RES_F.map(([k, l, ph]) => <div key={k} className="p3-sentence edit"><span>{l}</span><input className="start-input" value={x[k] || ""} placeholder={ph} onChange={(e) => setC(c.map((y, j) => (j === i ? { ...y, [k]: e.target.value } : y)))} /></div>)}</div>)}</div>
       <div className="start-block"><h3>✍️ Which one would you rather own for 10 years — and why?</h3><WordField value={text} onChange={setText} min={35} max={90} goals={G} placeholder="I would rather own… because its P/E is lower than… However, its biggest risk is…" /></div>
       <div className="start-foot"><button className="s1-btn primary big" disabled={!ok} onClick={() => finish(30, { c, text })}>Save my research <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
@@ -2586,11 +2730,11 @@ function CompanyResearch({ existing, onSave, onExit }) {
   );
 }
 const RATIO_R = [
-  { tag: "Net margin", q: "Sales $50 million, net profit $6 million. Net margin?", answer: 12, unit: "%", tol: 0.1, hint: "6 ÷ 50 × 100", explain: "12%." },
-  { tag: "Growth", q: "Sales went from $80M to $92M. Growth?", answer: 15, unit: "%", tol: 0.1, hint: "(92 − 80) ÷ 80", explain: "15%." },
-  { tag: "EPS", q: "Profit $20M and 10M shares. Earnings per share?", answer: 2, unit: "$ per share", hint: "20 ÷ 10", explain: "$2 per share." },
-  { tag: "P/E", q: "Share price $36, earnings per share $2. P/E?", answer: 18, unit: "×", hint: "36 ÷ 2", explain: "18×." },
-  { tag: "Compare", q: "Two similar companies: P/E 12 and P/E 40, same growth. The P/E 40 one is…", options: ["more expensive relative to its profits.", "safer because it is more expensive.", "cheaper, because 40 is a bigger number than 12.", "impossible to compare."], correct: 0, explain: "You pay more for each peso of profit." },
+  { tag: "Net margin", q: "Sales $50 million, net profit $6 million. Net margin?", answer: 12, unit: "%", tol: 0.1, hint: "6 ÷ 50 × 100", visual: F11("Net margin = net profit ÷ sales × 100", ["Profit = 6 · sales = 50 (both in millions)", "6 ÷ 50 × 100 = ?"]), explain: "12%." },
+  { tag: "Growth", q: "Sales went from $80M to $92M. Growth?", answer: 15, unit: "%", tol: 0.1, hint: "(92 − 80) ÷ 80", visual: F11("Growth % = (new − old) ÷ old × 100", ["Old = 80 · new = 92", "(92 − 80) ÷ 80 × 100 = ?"]), explain: "15%." },
+  { tag: "EPS", q: "Profit $20M and 10M shares. Earnings per share?", answer: 2, unit: "$ per share", hint: "20 ÷ 10", visual: F11("EPS (earnings per share) = profit ÷ number of shares", ["20 million ÷ 10 million = ?"]), explain: "$2 per share." },
+  { tag: "P/E", q: "Share price $36, earnings per share $2. P/E?", answer: 18, unit: "×", hint: "36 ÷ 2", visual: F11("P/E = share price ÷ EPS  (how many years of profit you pay)", ["36 ÷ 2 = ?"]), explain: "18×." },
+  { tag: "Compare", visual: F11("P/E = price ÷ earnings per share", ["P/E 12 → you pay $12 for each $1 of yearly profit", "P/E 40 → you pay $40 for each $1 of yearly profit"]), q: "Two similar companies: P/E 12 and P/E 40, same growth. The P/E 40 one is…", options: ["more expensive relative to its profits.", "safer because it is more expensive.", "cheaper, because 40 is a bigger number than 12.", "impossible to compare."], correct: 0, explain: "You pay more for each peso of profit." },
   { tag: "Debt", q: "Which company suffers most when interest rates rise?", options: ["The one with high debt.", "The one with no debt.", "The one with the highest margin.", "The one with the most cash."], correct: 0, explain: "More interest to pay." },
 ];
 
@@ -2615,7 +2759,7 @@ function BankruptcyDetective({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Detective of the year! 🕵️" subtitle={`${total} points`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<ShieldAlert size={22} strokeWidth={2.1} />} title="Bankruptcy Detective 🕵️" subtitle="4 dossiers. Mark the red (and green) flags, then predict: will it survive 2 years?" onExit={onExit}>
-      <Brief91 k="c4_detective" />
+      <Brief91 k="c4_detective" /><Guide11 {...GD3_DET} />
       {!done ? (
         <div className="start-block g10-event">
           <div className="g10-event-head"><em>{D.e}</em><div><b>Dossier {i + 1}/4 · {D.n}</b><p>📰 {D.news}</p></div></div>
@@ -2646,14 +2790,14 @@ function OneVsMany({ existing, onSave, onExit }) {
   const fail = "PowerNet"; const amt = 10000000;
   const one = pick === fail ? 0 : amt * 1.18; const etf = amt * (1 + (49 * 0.18 - 1) / 50);
   const ROUNDS = [
-    { tag: "One company", q: "$10,000,000 in ONE company that goes to zero. What's left?", answer: 0, money: true, hint: "100% of the money in it", explain: "$0. Everything." },
-    { tag: "ETF", q: "The same $10,000,000 in an ETF of 50 equal companies. One goes to zero. How much do you lose from that company?", answer: 200000, money: true, hint: "10,000,000 ÷ 50", explain: "$200,000 — 2%." },
-    { tag: "Employee", q: "An employee has 60% of her $50,000,000 savings in her own company's shares. The company collapses. She loses…", answer: 30000000, money: true, hint: "50,000,000 × 0.6", explain: "$30,000,000 — and her job. Never put all your eggs in your employer's basket." },
+    { tag: "One company", q: "$10,000,000 in ONE company that goes to zero. What's left?", answer: 0, money: true, hint: "100% of the money in it", visual: F11("What is left = money × (1 − loss %)", ["The company goes to zero → loss = 100%", "10,000,000 × (1 − 1) = ?"]), explain: "$0. Everything." },
+    { tag: "ETF", q: "The same $10,000,000 in an ETF of 50 equal companies. One goes to zero. How much do you lose from that company?", answer: 200000, money: true, hint: "10,000,000 ÷ 50", visual: F11("Money in each company = total ÷ number of companies", ["10,000,000 ÷ 50 = ? → that is the only part you lose"]), explain: "$200,000 — 2%." },
+    { tag: "Employee", q: "An employee has 60% of her $50,000,000 savings in her own company's shares. The company collapses. She loses…", answer: 30000000, money: true, hint: "50,000,000 × 0.6", visual: F11("Loss = savings × % in that company", ["50,000,000 × 60% (0.6) = ?"]), explain: "$30,000,000 — and her job. Never put all your eggs in your employer's basket." },
   ];
   if (st.done) return <Reward title="Diversification proven! 🧺" subtitle="One disaster, two very different stories." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Layers size={22} strokeWidth={2.1} />} title="One Stock vs. an ETF 🧺" subtitle="Bet $10,000,000 on ONE company… or buy all 50. Then one company goes to zero." onExit={onExit}>
-      <Brief91 k="c4_impact" />
+      <Brief91 k="c4_impact" /><Guide11 {...GD3_ONE} />
       {!run ? <><p className="quiz-q">Choose ONE company for all your money:</p><div className="g10-ab four">{CO.map(([e, n]) => <button key={n} type="button" className={pick === n ? "on" : ""} onClick={() => setPick(n)}><em>{e}</em><b>{n}</b></button>)}</div><div className="start-foot"><button className="s1-btn primary big" disabled={!pick} onClick={() => setRun(true)}>Run 3 years ⏩</button></div></> : (
         <>
           <div className="p1-banner bad"><span>💥 PowerNet hid its debts and went to ZERO. The other companies grew about 18%.</span></div>
@@ -2701,7 +2845,7 @@ function ETFBuilder({ existing, onSave, onExit }) {
   if (st.done) return <Reward title={`${name} ETF launched! 🧺`} subtitle={`${sectors.length} sectors · 5 years ${pctTxt((mine[5] - 1) * 100, 0)}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Layers size={22} strokeWidth={2.1} />} title="ETF Builder 🧺" subtitle="Create your own ETF: choose 10 of 15 companies (equal weights) and a fee. Compete with the full index for 5 years." onExit={onExit}>
-      <Brief91 k="c5_build" />
+      <Brief91 k="c5_build" /><Guide11 {...GD3_ETF} />
       <div className="g10-chips">{UNIV.map((u) => <button key={u.k} type="button" disabled={shown} className={sel.includes(u.k) ? "on" : ""} onClick={() => setSel(sel.includes(u.k) ? sel.filter((x) => x !== u.k) : sel.length < 10 ? [...sel, u.k] : sel)}>{u.e} {u.n} <i className="g11-sec">{u.s}</i></button>)}</div>
       <div className="g10-two"><div className="start-block"><input className="start-input g11-gap" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name of your ETF (e.g. CREAR Future 10)" /><Ctl l="Annual fee" v={fee} set={setFee} mn={0.05} mx={2} stp={0.05} fmt={(x) => `${x.toFixed(2)}%`} /><div className="g91-mini"><span>Companies <b>{sel.length}/10</b></span><span className={sectors.length >= 5 ? "pos" : "neg"}>Sectors <b>{sectors.length}/7</b></span></div></div>
         <div className="start-block">{shown ? <><ChartCard title="Growth of $1 (5 years)" legend={[{ name: name || "My ETF", color: "#e0a03a" }, { name: "Full index (15)", color: "#3c9d5d" }]}><LineChart money={false} labels={["Y0", "Y1", "Y2", "Y3", "Y4", "Y5"]} series={[{ name: "Mine", values: mine.map((v) => r2(v)), color: "#e0a03a" }, { name: "Index", values: idx.map((v) => r2(v)), color: "#3c9d5d" }]} /></ChartCard>{sel.includes(BUST) && <p className="g91-note neg">💥 RoboAI went bankrupt in year 3 — it was 10% of your ETF.</p>}</> : <p className="start-tip">💡 More sectors = less risk from one bad sector. Lower fee = more money for you every year.</p>}</div></div>
@@ -2719,14 +2863,14 @@ function FeeImpact({ existing, onSave, onExit }) {
   const fv = (fee) => { const m = Math.pow(1 + (ret - fee) / 100, 1 / 12) - 1; const out = [0]; let v = 0; for (let y = 1; y <= 30; y++) { for (let k = 0; k < 12; k++) v = v * (1 + m) + monthly; out.push(v); } return out; };
   const a = fv(0.1), b = fv(1), c = fv(2);
   const R = [
-    { tag: "Fees", q: `After 30 years, how much more do you have with a 0.1% fee than with 2%? (rounded to millions)`, answer: Math.round((a[30] - c[30]) / 1000000), unit: "million", tol: 1, hint: "Look at the chart's last point", explain: `About ${mCOP(a[30] - c[30])} — paid only in fees.` },
-    { tag: "Fees", q: "A 1.5% fee on $20,000,000 costs per year…", answer: 300000, money: true, hint: "20,000,000 × 0.015", explain: "$300,000 every year — even in bad years." },
+    { tag: "Fees", q: `After 30 years, how much more do you have with a 0.1% fee than with 2%? (rounded to millions)`, answer: Math.round((a[30] - c[30]) / 1000000), unit: "million", tol: 1, hint: "Look at the chart's last point", visual: F11("Difference = value with 0.1% − value with 2% (year 30)", ["Read the KPIs: Fee 0.1% and Fee 2%", "Subtract them and write the result in MILLIONS (e.g. 950 = $950 million)"]), explain: `About ${mCOP(a[30] - c[30])} — paid only in fees.` },
+    { tag: "Fees", q: "A 1.5% fee on $20,000,000 costs per year…", answer: 300000, money: true, hint: "20,000,000 × 0.015", visual: F11("Yearly fee = money invested × fee %", ["1.5% = 0.015", "20,000,000 × 0.015 = ?"]), explain: "$300,000 every year — even in bad years." },
     { tag: "Choose", q: "Two S&P 500 ETFs: fee 0.03% and fee 0.9%. Same index. Choose…", options: ["0.03% — same companies, less cost.", "0.9% — more expensive means better.", "Both are equal.", "Neither: ETFs are risky."], correct: 0, explain: "Same basket: the cheapest wins." },
   ];
   if (st.done) return <Reward title="Fee detective! 🔍" subtitle={`Fees could cost you ${mCOP(a[30] - c[30])}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Percent size={22} strokeWidth={2.1} />} title="The Silent Thief: Fees 🔍" subtitle="Invest every month for 30 years. Change only the fee. Watch what happens." onExit={onExit}>
-      <Brief91 k="c5_fees" />
+      <Brief91 k="c5_fees" /><Guide11 {...GD3_FEES} />
       <div className="g10-two"><div className="start-block"><Ctl l="Monthly investment" v={monthly} set={setMonthly} mn={50000} mx={1000000} stp={50000} fmt={cop} /><Ctl l="Return before fees" v={ret} set={setRet} mn={3} mx={12} stp={0.5} fmt={(x) => `${x}%`} /><div className="g10-kpis"><div><small>Fee 0.1%</small><b>{mCOP(a[30])}</b></div><div><small>Fee 1%</small><b>{mCOP(b[30])}</b></div><div><small>Fee 2%</small><b className="neg">{mCOP(c[30])}</b></div></div></div>
         <div className="start-block"><ChartCard title="30 years of investing" legend={[{ name: "0.1%", color: "#3c9d5d" }, { name: "1%", color: "#e0a03a" }, { name: "2%", color: "#c8563a" }]}><LineChart labels={a.map((_, k) => (k % 5 === 0 ? `Y${k}` : ""))} series={[{ name: "0.1%", values: a.map(Math.round), color: "#3c9d5d" }, { name: "1%", values: b.map(Math.round), color: "#e0a03a" }, { name: "2%", values: c.map(Math.round), color: "#c8563a" }]} /></ChartCard></div></div>
       {!r ? <RoundsRunner rounds={R} doneLabel="Finish" onDone={setR} /> : <div className="start-foot"><button className="s1-btn primary big" onClick={() => finish(18 + r.firstTry * 3, { monthly, ret, lost: Math.round(a[30] - c[30]) })}>Save <span className="coin-tag"><Coins size={15} /> +{18 + r.firstTry * 3}</span></button></div>}
@@ -2757,7 +2901,7 @@ function BigSummary({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Your Big Investment Summary! 📘" subtitle={`${right}/${cells} cells like the experts`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<BookOpen size={22} strokeWidth={2.1} />} title="My Big Investment Summary 📘" subtitle="Everything about investing in ONE table — built by you. Then write your 3 golden rules." onExit={onExit}>
-      <Brief91 k="c5_summary" />
+      <Brief91 k="c5_summary" /><Guide11 {...GD3_SUM} />
       <div className="g11-summary" id="g11-summary"><div className="g11-sum-row head"><span>Asset</span>{SUM_COLS.map(([c, l]) => <span key={c}>{l}</span>)}</div>
         {SUM_ROWS.map((r) => <div key={r.k} className="g11-sum-row"><b>{r.e} {r.l}</b>{SUM_COLS.map(([c, , opts]) => { const val = v[r.k]?.[c] || ""; return <select key={c} className={`start-input ${checked ? (val === r.a[c] ? "ok" : "no") : ""}`} value={val} onChange={(e) => { setV({ ...v, [r.k]: { ...(v[r.k] || {}), [c]: e.target.value } }); setChecked(false); }}><option value="">—</option>{opts.map((o) => <option key={o} value={o}>{o}</option>)}</select>; })}</div>)}
         {rules.some((x) => x) && <div className="g11-sum-rules"><b>⭐ My golden rules</b>{rules.filter(Boolean).map((x, i) => <p key={i}>{i + 1}. {x}</p>)}</div>}
@@ -2783,7 +2927,7 @@ function TimeMachine({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Time traveler! ⏳" subtitle={`${YEARS[from]}–2024 · ${mode === "lump" ? "all at once" : "a part every year"}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Hourglass size={22} strokeWidth={2.1} />} title="Time Machine ⏳ · Real 2015–2024" subtitle="$10,000,000 in pesos. Invest everything at once — or a part every year (DCA). Real historical data (approximate)." onExit={onExit}>
-      <Brief91 k="c6_machine" />
+      <Brief91 k="c6_machine" /><Guide11 {...GD3_TM} />
       <div className="g10-chips">{YEARS.slice(0, 9).map((y, i) => <button key={y} type="button" className={from === i ? "on" : ""} onClick={() => setFrom(i)}>{y}</button>)}</div>
       <div className="g10-ab four"><button type="button" className={mode === "lump" ? "on" : ""} onClick={() => setMode("lump")}><em>💰</em><b>All at once</b><span>lump sum in {YEARS[from]}</span></button><button type="button" className={mode === "dca" ? "on" : ""} onClick={() => setMode("dca")}><em>📆</em><b>A part every year</b><span>DCA: {cop(total / yrs)}/year</span></button></div>
       <ChartCard title="Value in pesos" legend={res.filter((x) => x.k !== "btc").map((x) => ({ name: x.l, color: x.c }))}><LineChart labels={["start", ...YEARS.slice(from)]} series={res.filter((x) => x.k !== "btc").map((x) => ({ name: x.l, values: x.v.map(Math.round), color: x.c }))} /></ChartCard>
@@ -2814,7 +2958,7 @@ function CrashSurvival({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="You survived the crash! 🌪️" subtitle={`You: ${mCOP(inv + cash)} · just holding: ${mCOP(hold)}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<TrendingDown size={22} strokeWidth={2.1} />} title="Crash Survival 🌪️" subtitle="$10,000,000 in an S&P 500 ETF. Live a real crash month by month: hold, sell — or buy back." onExit={onExit}>
-      <Brief91 k="c6_crash" />
+      <Brief91 k="c6_crash" /><Guide11 {...GD3_CRASH} />
       {!C ? <div className="g10-ab four">{Object.entries(CRASH).map(([k, x]) => <button key={k} type="button" onClick={() => setC(k)}><em>{k === "2008" ? "🏦" : "🦠"}</em><b>{x.l}</b><span>{x.r.length} months</span></button>)}</div> : (
         <>
           <div className="g10-kpis"><div><small>📈 In the ETF</small><b>{mCOP(inv)}</b></div><div><small>💵 In cash</small><b>{mCOP(cash)}</b></div><div><small>💼 Total</small><b className={inv + cash >= 10000000 ? "pos" : "neg"}>{mCOP(inv + cash)}</b></div></div>
@@ -2841,7 +2985,7 @@ function LabRun({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Ten years managed! 🧪" subtitle={`${mCOP(p[10])} · ${pctTxt(cagr(p[10] / T, 10))} per year`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<LineIcon size={22} strokeWidth={2.1} />} title="My Lab Portfolio · 2015–2024 🧪" subtitle="The mix you chose in Class 1 travels through ten real years." onExit={onExit}>
-      <Brief91 k="c6_portfolio" />
+      <Brief91 k="c6_portfolio" /><Guide11 {...GD3_LAB} />
       {sample && <div className="p1-banner bad"><span>You didn't open your Lab portfolio in Class 1 — this is a sample mix.</span></div>}
       <div className="g91-mini">{ASSET11.filter((a) => al[a.k]).map((a) => <span key={a.k}>{a.e} {a.l} <b>{al[a.k]}%</b></span>)}</div>
       <label className="g11-toggle"><input type="checkbox" checked={reb} onChange={(e) => setReb(e.target.checked)} /> ⚖️ Rebalance every January (back to my %)</label>
@@ -2853,11 +2997,11 @@ function LabRun({ resp, existing, onSave, onExit }) {
   );
 }
 const CAGR_R = [
-  { tag: "CAGR", q: "$10M became $20M in 10 years. Annual growth (CAGR, %, 1 decimal)?", answer: 7.2, unit: "%", tol: 0.1, hint: "2^(1/10) − 1", explain: "≈ 7.2% a year (Rule of 72!)." },
-  { tag: "Real", q: "Your portfolio grew 9% a year; inflation 5.5% a year. Real growth ≈ ? (%, 1 decimal)", answer: 3.3, unit: "%", tol: 0.1, hint: "1.09 ÷ 1.055 − 1", explain: "≈ 3.3% a year." },
-  { tag: "DCA", q: "You invest $1,000,000 every year for 5 years. Total invested?", answer: 5000000, money: true, hint: "5 × 1,000,000", explain: "$5,000,000." },
-  { tag: "Drawdown", q: "A portfolio fell from $12M to $8.4M. Drawdown (%)?", answer: 30, unit: "%", tol: 0.1, hint: "(12 − 8.4) ÷ 12", explain: "30%." },
-  { tag: "Recovery", q: "After falling 50%, how much must it rise to go back to the start?", answer: 100, unit: "%", hint: "from 50 back to 100", explain: "+100%! Losses hurt more than gains help." },
+  { tag: "CAGR", q: "$10M became $20M in 10 years. Annual growth (CAGR, %, 1 decimal)?", answer: 7.2, unit: "%", tol: 0.1, hint: "2^(1/10) − 1", visual: F11("CAGR = (final ÷ initial)^(1 ÷ years) − 1", ["20 ÷ 10 = 2 · years = 10", "2^(1/10) → calculator: 2 xʸ 0.1 = 1.0718", "1.0718 − 1 = ?  (× 100)"]), explain: "≈ 7.2% a year (Rule of 72!)." },
+  { tag: "Real", q: "Your portfolio grew 9% a year; inflation 5.5% a year. Real growth ≈ ? (%, 1 decimal)", answer: 3.3, unit: "%", tol: 0.1, hint: "1.09 ÷ 1.055 − 1", visual: F11("Real growth = (1 + growth) ÷ (1 + inflation) − 1", ["1.09 ÷ 1.055 − 1 = ?  (× 100)"]), explain: "≈ 3.3% a year." },
+  { tag: "DCA", q: "You invest $1,000,000 every year for 5 years. Total invested?", answer: 5000000, money: true, hint: "5 × 1,000,000", visual: F11("DCA total invested = amount each time × number of times", ["5 × 1,000,000 = ?"]), explain: "$5,000,000." },
+  { tag: "Drawdown", q: "A portfolio fell from $12M to $8.4M. Drawdown (%)?", answer: 30, unit: "%", tol: 0.1, hint: "(12 − 8.4) ÷ 12", visual: F11("Drawdown % = (peak − bottom) ÷ peak × 100", ["Peak = 12 · bottom = 8.4", "(12 − 8.4) ÷ 12 × 100 = ?"]), explain: "30%." },
+  { tag: "Recovery", q: "After falling 50%, how much must it rise to go back to the start?", answer: 100, unit: "%", hint: "from 50 back to 100", visual: F11("Gain needed = loss ÷ (1 − loss)", ["$100 falls 50% → $50", "From 50 back to 100 you must add 50 → 50 ÷ 50 × 100 = ?"]), explain: "+100%! Losses hurt more than gains help." },
   { tag: "Decide", q: "During a crash, the best evidence-based behavior for a long-term investor is usually…", options: ["follow the plan and rebalance.", "sell everything immediately.", "borrow money to buy crypto.", "stop looking at money forever."], correct: 0, explain: "Discipline beats panic (no guarantees)." },
 ];
 
@@ -2871,7 +3015,7 @@ function UniHunter({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Universities researched! 🎓" subtitle={`${u[0].uni} · ${u[1].uni}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<GraduationCap size={22} strokeWidth={2.1} />} title="University Hunter 🎓" subtitle="Use your tablet: research your DREAM option and a POSSIBLE option (cheaper, public, technical or another city). Real data only." onExit={onExit}>
-      <Brief91 k="c7_uni" />
+      <Brief91 k="c7_uni" /><Guide11 {...GD3_UNI} />
       <div className="g10-two">{u.map((x, i) => <div key={i} className={`start-block g11-uni ${i === 0 ? "dream" : "possible"}`}><h3>{i === 0 ? "🌟 My DREAM option" : "🧭 My POSSIBLE option"}</h3>{UNI_F.map(([k, l, ph]) => <div key={k} className="p3-sentence edit"><span>{l}</span><input className="start-input" type={k === "tuition" || k === "sem" ? "number" : "text"} value={x[k] || ""} placeholder={i === 1 && k === "uni" ? "Universidad Nacional / SENA / …" : ph} onChange={(e) => setU(u.map((y, j) => (j === i ? { ...y, [k]: e.target.value } : y)))} /></div>)}{num(x.tuition) > 0 && num(x.sem) > 0 && <p className="g91-note">Tuition for the whole program ≈ <b>{cop(num(x.tuition) * num(x.sem))}</b></p>}</div>)}</div>
       <p className="start-tip">💡 Look for: 'matrícula' or 'valor del semestre', 'becas', 'descuentos', 'ICETEX'. Public universities often charge by family income — write the value you found for a family like yours.</p>
       <div className="start-foot"><button className="s1-btn primary big" disabled={!ok} onClick={() => finish(30, { u })}>Save my research <span className="coin-tag"><Coins size={15} /> +30</span></button></div>
@@ -2899,7 +3043,7 @@ function DreamBudget({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Life plan with numbers! 🎓" subtitle={`Gap dream ${cop(Math.max(0, gapD))} · possible ${cop(Math.max(0, gapP))}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Calculator size={22} strokeWidth={2.1} />} title="Dream vs. Possible · 5 Semesters 🎓" subtitle="The real cost of the first 5 semesters (2.5 years): tuition that rises every year + living costs. Then your funding and your GAP." onExit={onExit}>
-      <Brief91 k="c7_budget" />
+      <Brief91 k="c7_budget" /><Guide11 {...GD3_BUD} />
       {!resp?.c7_uni && <div className="p1-banner bad"><span>Do the University Hunter first — now you see sample tuitions.</span></div>}
       <div className="g10-two">
         <div className="start-block"><h3>📈 Tuition increase per year</h3><Ctl l="Increase" v={inc} set={setInc} mn={0} mx={15} fmt={(x) => `${x}%`} /><h3>🏠 Living costs per month</h3>{live.map((x, i) => <div key={i} className="g11-inline"><input className="start-input" value={x.n} onChange={(e) => setLive(live.map((y, j) => (j === i ? { ...y, n: e.target.value } : y)))} /><MoneyInput value={x.v} onChange={(v) => setLive(live.map((y, j) => (j === i ? { ...y, v } : y)))} /></div>)}<p className="g91-note">Living: {cop(liveM)}/month · 6 months per semester</p></div>
@@ -2929,7 +3073,7 @@ function FirstMillion({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Ready for 18! 🪪" subtitle={`After a year ≈ ${cop(y1)} (illustrative)`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Wallet size={22} strokeWidth={2.1} />} title="My First $1,000,000 at 18 🪪" subtitle="A gift, your first salary or your savings: plan it BEFORE it arrives." onExit={onExit}>
-      <Brief91 k="c7_first" />
+      <Brief91 k="c7_first" /><Guide11 {...GD3_FIRST} />
       <AllocBars items={FIRST_B.map((b) => ({ ...b, d: b.r ? `~${b.r}%/year (illustrative)` : "" , c: "#3c9d5d" }))} vals={al} set={setAl} step={5} />
       <div className="g91-mini"><span className={okE ? "pos" : "neg"}>Emergency ≥ 20% <b>{okE ? "✓" : "✗"}</b></span><span className={okS ? "pos" : "neg"}>Speculation ≤ 10% <b>{okS ? "✓" : "✗"}</b></span><span>After 1 year ≈ <b>{cop(y1)}</b></span></div>
       <div className="start-block"><h3>✅ My checklist for the day I turn 18 (4+)</h3><div className="g10-qpick">{STEPS18.map((s) => <button key={s} type="button" className={steps.includes(s) ? "on" : ""} onClick={() => setSteps(steps.includes(s) ? steps.filter((x) => x !== s) : [...steps, s])}>{steps.includes(s) ? "✅" : "⬜"} {s}</button>)}</div></div>
@@ -3054,7 +3198,43 @@ const CAN_P3 = [
    GUÍA DE CADA ACTIVIDAD · 11° PERIODO 3
    ===================================================================== */
 const ZONE_WIN = (c) => [["All goals done, each with evidence", "required"], ["Mission complete", `+${c} 🪙`]];
-const B_ROUNDS = (goal) => ({ goal, steps: ["Solve each problem (calculator allowed).", "Use the hint if you need it.", "Read the explanation after each answer."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] });
+const GD3_R_BEAT = { intro: "Inflation makes prices rise, so a % you earn is not all real growth. These problems use REAL Colombian data (DANE inflation, CDT rates, the dollar).", items: [
+  { e: "🔥", t: "Real return", f: "Real return = (1 + rate) ÷ (1 + inflation) − 1", ex: ["Rate 10%, inflation 6% → 1.10 ÷ 1.06 = 1.0377", "1.0377 − 1 = 0.0377 → +3.8% real"] },
+  { e: "🛒", t: "Prices after inflation", f: "New price = old price × (1 + inflation)", ex: "$100,000 with 10% inflation → 100,000 × 1.10 = $110,000" },
+  { e: "💵", t: "Change of the dollar", f: "Change % = (new TRM ÷ old TRM − 1) × 100", ex: "From 4,000 to 4,400 → 4,400 ÷ 4,000 − 1 = 0.10 → +10%" },
+] };
+const GD3_R_RATIO = { intro: "Analysts read a company with a few ratios. Learn the 5 formulas; each problem shows the one you need.", items: [
+  { e: "💰", t: "Net margin", f: "Net margin = profit ÷ sales × 100", ex: "Profit 3, sales 30 → 3 ÷ 30 × 100 = 10%" },
+  { e: "📈", t: "Growth", f: "Growth = (new − old) ÷ old × 100", ex: "From 50 to 60 → 10 ÷ 50 × 100 = 20%" },
+  { e: "🧩", t: "EPS", f: "EPS = profit ÷ number of shares", ex: "$30M ÷ 15M shares = $2 per share" },
+  { e: "📐", t: "P/E", f: "P/E = share price ÷ EPS", ex: "Price $50, EPS $2 → 25× (you pay 25 years of today's profit)" },
+  { e: "🏦", t: "Debt", d: "More debt = more interest to pay. When interest rates rise, companies with high debt suffer most." },
+] };
+const GD3_R_CAGR = { intro: "How fast did an investment grow per year? How much did it fall in a crash — and how much does it need to recover?", items: [
+  { e: "📈", t: "CAGR (growth per year)", f: "CAGR = (final ÷ initial)^(1 ÷ years) − 1", ex: ["$10M → $15M in 5 years: 15 ÷ 10 = 1.5", "1.5^(1/5) = 1.5 xʸ 0.2 = 1.0845 → 8.4% per year"] },
+  { e: "🔥", t: "Real growth", f: "(1 + growth) ÷ (1 + inflation) − 1", ex: "8% growth, 4% inflation → 1.08 ÷ 1.04 − 1 = 3.8%" },
+  { e: "📉", t: "Drawdown", f: "Drawdown = (peak − bottom) ÷ peak × 100", ex: "From $20M to $15M → 5 ÷ 20 = 25%" },
+  { e: "🔁", t: "Recovery", f: "Gain needed = loss ÷ (1 − loss)", ex: "A 20% fall needs 0.20 ÷ 0.80 = 25% to recover" },
+] };
+const ZG3 = {
+  c3_zone: (resp) => { const c = resp?.c3_research?.c; return { intro: "Your team is an investment club. Each member brings the REAL company they researched in Class 3 — and the club can buy only ONE.", items: [
+    { e: "📊", t: "1 · The comparison table", d: c ? `Your research: ${c[0]?.name || "—"} and ${c[1]?.name || "—"}. Bring one of them.` : "Use the companies from your Real Company Research (Class 3).", ex: "Ana · Bancolombia · P/E 6 · 1-year +18%" },
+    { e: "🗳️", t: "2 · The vote", ex: "“Apple · 3 votes vs. 1”" },
+    { e: "💡", t: "3 · Why this one? (with 2 numbers)", ex: "“Its P/E is 18, lower than Tesla's 60, and its sales grew 8%.”" },
+    { e: "⚠️", t: "4 · Its biggest risk", ex: "“It depends on one product: the iPhone.”" },
+  ] }; },
+  c6_zone: (resp) => { const r = resp?.c6_portfolio; return { intro: "Compare everybody's Lab result (Class 6) and agree ONE team fund and ONE plan for a crash.", items: [
+    { e: "🧪", t: "1 · Each member's result", d: r ? `Your Lab: $10,000,000 → ${cop(r.final)} (${r.cagr}% a year).` : "Use the result of “My Lab Portfolio 2015–2024”.", ex: "Luis · 18500000 · worst year −9" },
+    { e: "🥧", t: "2 · Our team fund (100%)", ex: "“40% S&P 500 ETF, 30% CDT, 20% dollars, 10% gold”" },
+    { e: "🌪️", t: "3 · Our crash plan", ex: "“If it falls 30%, we will rebalance and not sell, because in 2009 the market recovered.”" },
+  ] }; },
+  c7_zone: (resp) => { const b = resp?.c7_budget; return { intro: "A career fair inside your team: everyone shares their plan and the team helps to find money and a Plan B.", items: [
+    { e: "🎓", t: "1 · Each member's plan", d: b ? `Your study plan: ${(b.unis || []).join(" / ")}.` : "Use your University Hunter (Class 7).", ex: "Sofía · Medicine · U. de Antioquia · 1200000" },
+    { e: "🎖️", t: "2 · One scholarship for each member", d: "Search on the tablet together and write the name (and link if possible).", ex: "Sofía: Generación E · Luis: ICETEX Tú Eliges" },
+    { e: "🧭", t: "3 · Each member's Plan B", ex: "“Ana: technical program at SENA first, then transfer to the university.”" },
+  ] }; },
+};
+const B_ROUNDS = (goal) => ({ goal, steps: ["Read the formulas and the example in “Before you start”.", "In each problem, use the formula box (calculator allowed).", "Check your answer and read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] });
 const GUIDE = {
   c1_read: B_READ("Learn the map of investing: the 7 big asset classes, risk, return and liquidity.", "Next: Asset Map Builder."),
   c1_map: { goal: "Place 10 real assets on the risk–return map and rate their liquidity.", steps: ["Tap an asset, then tap its square.", "Rate its liquidity from 1 to 5.", "Compare with the experts.", "Move what you got wrong and save."], win: [["Base", "+18 🪙"], ["Each asset close to the experts", "+2 🪙"]], tip: "If something is top-left (high return, no risk), it's probably a scam." },
@@ -3182,7 +3362,7 @@ const CFG113 = {
     const P = { onSave: ctx.save, onExit: ctx.exit };
     const L = mkLearn(ctx, Brief91);
     const Z = ZONES_P3[act];
-    if (Z) return <TeamZone {...Z} brief={<Brief91 k={act} />} resp={ctx.resp} existing={ctx.existing} {...P} />;
+    if (Z) return <TeamZone {...Z} brief={<><Brief91 k={act} />{ZG3[act] && <Guide11 {...ZG3[act](ctx.resp)} />}</>} resp={ctx.resp} existing={ctx.existing} {...P} />;
     switch (act) {
       case "c1_read": return L.reading("c1_read", "The Map Nobody Gave You", "Seven asset classes and the three questions behind every investment.", READ_MAP, GLOSS_MAP, Q_MAP, "📰");
       case "c1_map": return <AssetMap existing={ctx.existing} {...P} />;
@@ -3191,11 +3371,11 @@ const CFG113 = {
       case "c2_video": return L.video("c2_video", VID_INFL11, "Inflation", VQ_INFL11);
       case "c2_read": return L.reading("c2_read", "The Silent Tax", "Ten years of Colombian inflation — and your $1,000,000.", READ_INFL, GLOSS_INFL, Q_INFL, "📰");
       case "c2_sim": return <InflationSim existing={ctx.existing} {...P} />;
-      case "c2_beat": return <NumberRounds icon={<Percent size={22} strokeWidth={2.1} />} title="Real Return Rounds 🧮" subtitle="Real years, real rates, real inflation." intro={<Brief91 k="c2_beat" />} rounds={BEAT_R} coinsPer={3} bonus={8} doneTitle="Inflation fighter! 🔥" {...P} />;
+      case "c2_beat": return <NumberRounds icon={<Percent size={22} strokeWidth={2.1} />} title="Real Return Rounds 🧮" subtitle="Real years, real rates, real inflation." intro={<><Brief91 k="c2_beat" /><Guide11 {...GD3_R_BEAT} /></>} rounds={BEAT_R} coinsPer={3} bonus={8} doneTitle="Inflation fighter! 🔥" {...P} />;
       case "c3_read": return L.reading("c3_read", "Read It Like an Analyst", "Five numbers that tell a company's story.", READ_COMPANY, GLOSS_COMPANY, Q_COMPANY, "📰");
       case "c3_picker": return <StockPicker existing={ctx.existing} {...P} />;
       case "c3_research": return <CompanyResearch existing={ctx.existing} {...P} />;
-      case "c3_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Ratio Rounds 🧮" subtitle="The analyst's calculator." intro={<Brief91 k="c3_rounds" />} rounds={RATIO_R} coinsPer={3} bonus={8} doneTitle="Analyst! 🔎" {...P} />;
+      case "c3_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Ratio Rounds 🧮" subtitle="The analyst's calculator." intro={<><Brief91 k="c3_rounds" /><Guide11 {...GD3_R_RATIO} /></>} rounds={RATIO_R} coinsPer={3} bonus={8} doneTitle="Analyst! 🔎" {...P} />;
       case "c4_read": return L.reading("c4_read", "The Day the Money Disappeared", "Enron, Lehman Brothers, Interbolsa and FTX.", READ_COLLAPSE, GLOSS_COLLAPSE, Q_COLLAPSE, "📰");
       case "c4_detective": return <BankruptcyDetective existing={ctx.existing} {...P} />;
       case "c4_impact": return <OneVsMany existing={ctx.existing} {...P} />;
@@ -3207,7 +3387,7 @@ const CFG113 = {
       case "c6_machine": return <TimeMachine existing={ctx.existing} {...P} />;
       case "c6_crash": return <CrashSurvival existing={ctx.existing} {...P} />;
       case "c6_portfolio": return <LabRun resp={ctx.resp} existing={ctx.existing} {...P} />;
-      case "c6_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="CAGR & Crash Rounds 🧮" subtitle="Growth, losses and recoveries." intro={<Brief91 k="c6_rounds" />} rounds={CAGR_R} coinsPer={3} bonus={8} doneTitle="Long-term thinker! ⏳" {...P} />;
+      case "c6_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="CAGR & Crash Rounds 🧮" subtitle="Growth, losses and recoveries." intro={<><Brief91 k="c6_rounds" /><Guide11 {...GD3_R_CAGR} /></>} rounds={CAGR_R} coinsPer={3} bonus={8} doneTitle="Long-term thinker! ⏳" {...P} />;
       case "c7_read": return L.reading("c7_read", "Eighteen", "Your cédula, your first account and your first big decisions.", READ_AT18, GLOSS_AT18, Q_AT18, "📰");
       case "c7_uni": return <UniHunter existing={ctx.existing} {...P} />;
       case "c7_budget": return <DreamBudget resp={ctx.resp} existing={ctx.existing} {...P} />;

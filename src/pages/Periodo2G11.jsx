@@ -2032,7 +2032,7 @@ function TeamZone({ icon, title, subtitle, brief, goals, minutes = 30, coins = 2
         const o = g[x.k]; const ok = o.done && evOk(x);
         return (
           <div key={x.k} className={`g11-goal ${ok ? "ok" : ""}`}>
-            <button type="button" className={`g11-check ${o.done ? "on" : ""}`} onClick={() => up(x.k, { done: !o.done })} aria-label="mark as done">{o.done ? "✓" : i + 1}</button>
+            <button type="button" className={`g11-check ${o.done ? "on" : ""} ${!o.done && evOk(x) ? "ready" : ""}`} onClick={() => up(x.k, { done: !o.done })} aria-label="mark as done">{o.done ? "✓" : i + 1}</button>
             <div className="g11-goal-main">
               <b>{x.e || "🎯"} {x.t}</b>{x.d && <small>{x.d}</small>}
               {x.cols ? (
@@ -2047,12 +2047,13 @@ function TeamZone({ icon, title, subtitle, brief, goals, minutes = 30, coins = 2
                 <input className="start-input" value={o.ev} placeholder={x.ph || "Evidence: what exactly did you do?"} onChange={(e) => { up(x.k, { ev: e.target.value }); if (onData) onData(x.k, e.target.value); }} />
               )}
               {o.done && !evOk(x) && <i className="g11-need">✋ Add the evidence to complete this goal.</i>}
+              {!o.done && evOk(x) && <i className="g11-need tap">👆 Evidence ready! Tap the number {i + 1} to mark this goal as DONE.</i>}
             </div>
           </div>
         );
       })}</div>
       {extra}
-      <div className="start-foot"><button className="s1-btn primary big" disabled={!okAll} onClick={() => finish(coins, { goals: g, minutesUsed: Math.round((minutes * 60 - left) / 60) })}>{okAll ? "Our mission is complete" : `Complete all goals with evidence (${doneN}/${goals.length})`} <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
+      <div className="start-foot"><button className="s1-btn primary big" disabled={!okAll} onClick={() => finish(coins, { goals: g, minutesUsed: Math.round((minutes * 60 - left) / 60) })}>{okAll ? "Our mission is complete" : `Tap each goal number to mark it done (${doneN}/${goals.length})`} <span className="coin-tag"><Coins size={15} /> +{coins}</span></button></div>
     </ActShell>
   );
 }
@@ -2188,6 +2189,44 @@ const fmtM = (v) => cop(v);
 /* =====================================================================
    11° · PERIODO 2 · SHARK TANK — LECTURAS (THE CREAR TIMES, B2+) Y VIDEO
    ===================================================================== */
+
+/* =====================================================================
+   AYUDAS DE CONTEXTO (P2): guía "antes de empezar", fórmula por pregunta
+   y ejemplo resuelto para las lecturas.
+   ===================================================================== */
+function Guide11({ title = "📘 Before you start: what you need to know", intro, items = [], open: startOpen = true }) {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <div className={`g11-guide ${open ? "open" : ""}`}>
+      <button type="button" className="g11-guide-head" onClick={() => setOpen(!open)}><b>{title}</b><span>{open ? "Hide ▲" : "Show ▼"}</span></button>
+      {open && <div className="g11-guide-body">
+        {intro && <p className="g11-guide-intro">{intro}</p>}
+        <div className="g11-guide-grid">{items.map((x, i) => (
+          <div key={i} className="g11-guide-item">
+            <b>{x.e} {x.t}</b>
+            {x.d && <p>{x.d}</p>}
+            {x.f && <div className="g10-formula">{x.f}</div>}
+            {x.ex && <div className="g11-ex"><small>EXAMPLE</small>{Array.isArray(x.ex) ? <ol>{x.ex.map((s, j) => <li key={j}>{s}</li>)}</ol> : <p>{x.ex}</p>}</div>}
+          </div>
+        ))}</div>
+      </div>}
+    </div>
+  );
+}
+/* Fórmula + pasos dentro de cada problema (RoundsRunner muestra r.visual) */
+const F11 = (f, steps) => <div className="g11-rhelp"><div className="g10-formula">{f}</div>{steps && <ol>{steps.map((s, i) => <li key={i}>{s}</li>)}</ol>}</div>;
+/* Ejemplo resuelto dentro de una lectura */
+function Calc11({ title, formula, steps = [], result }) {
+  return (
+    <div className="g11-calc">
+      <small>🧮 WORKED EXAMPLE</small>
+      <b>{title}</b>
+      {formula && <div className="g10-formula">{formula}</div>}
+      <ol>{steps.map((s, i) => <li key={i}>{s}</li>)}</ol>
+      {result && <p className="g11-calc-res">✅ {result}</p>}
+    </div>
+  );
+}
 const VID_SHARK11 = "https://res.cloudinary.com/y9r84vgz/video/upload/v1794068523/videoplayback_43.mp4";
 const VQ_SHARK11 = [
   { q: "How did the entrepreneur fund his launch before Shark Tank?", options: ["With a Kickstarter campaign.", "With venture capital from Silicon Valley.", "With a big loan from a bank in San Francisco.", "By selling his house."], correct: 0, feedback: "He asked for about $10,000 on Kickstarter and raised around $350,000." },
@@ -2218,6 +2257,7 @@ const READ_WEWORK = [
   { h: "Margins tell the truth" },
   { p: "Professional investors look beyond sales. Gross margin shows how much of each sale remains after paying the direct cost of the product. Net margin shows what remains after ALL costs: marketing, salaries, rent, transport. If a business needs more and more revenue just to cover its costs, growing faster only means losing money faster." },
   { list: ["Revenue − cost of goods sold = GROSS PROFIT.", "Gross profit − operating expenses = NET INCOME (profit or loss).", "Gross margin = gross profit ÷ revenue × 100.", "Net margin = net income ÷ revenue × 100."] },
+  { node: <Calc11 key="c" title="One month of a gelatin company" formula="Revenue − cost of goods = GROSS profit · Gross − expenses = NET income" steps={["Revenue: 120 gelatins × $3,000 = $360,000.", "Cost of goods (fruit, gelatin, cups): 120 × $1,500 = $180,000.", "Gross profit: $360,000 − $180,000 = $180,000 → gross margin 180,000 ÷ 360,000 = 50%.", "Operating expenses: marketing $40,000 + transport $20,000 + stand $15,000 + founders' pay $60,000 = $135,000.", "Net income: $180,000 − $135,000 = $45,000 → net margin 45,000 ÷ 360,000 = 12.5%."]} result="They SELL $360,000 but KEEP only $45,000. That is what investors look at first." /> },
   { h: "What this means for your company" },
   { p: "This period your team will present to the sharks. The first thing a serious investor asks is not 'How much do you sell?' but 'How much do you keep?'. Build your P&L honestly: include your time, the packaging, the transport and the marketing. A small company with a positive margin is worth more than a big one that loses money on every sale." },
 ];
@@ -2248,6 +2288,9 @@ const READ_CASH = [
   { p: "Smart founders ask for pre-payments or deposits, negotiate longer payment terms with suppliers, buy ingredients in the right quantities, avoid buying expensive equipment too early and keep a cash reserve for emergencies. Some accept a smaller order with faster payment instead of a huge order that pays in two months." },
   { h: "What Camila did" },
   { p: "Camila negotiated: the supermarket agreed to pay in 30 days if she gave a 3% discount. She asked her clients at the bakery for 50% advance payments on big orders and used a short loan only for the oven. Her profit per brownie went down a little, but her business survived. In business, being alive next month is the first goal." },
+  { h: "Cash vs. profit with real numbers" },
+  { node: <Calc11 key="c" title="Camila's first month with the supermarket" formula="Ending cash = starting cash + cash IN − cash OUT" steps={["She starts the month with $2,000,000 in the bank.", "She buys ingredients for 2,000 brownies: 2,000 × $1,500 = $3,000,000 (cash OUT today).", "She delivers, but the supermarket pays in 60 days: cash IN this month = $0.", "Ending cash = 2,000,000 + 0 − 3,000,000 = −$1,000,000 ❌", "Her P&L shows a PROFIT: 2,000 × ($2,500 − $1,500) = $2,000,000 — but the money is not in the bank yet."]} result="Profitable on paper, NEGATIVE cash in real life." /> },
+  { node: <Calc11 key="r" title="Runway: how many months can you survive?" formula="Runway (months) = cash you have ÷ cash you lose (burn) per month" steps={["You have $360,000.", "Each month you spend $90,000 more than you collect.", "360,000 ÷ 90,000 = 4."]} result="4 months of runway. Before month 4 you need sales, a deposit or funding." /> },
   { h: "What this means for your company" },
   { p: "Your team will receive pre-orders, buy ingredients and maybe ask for a loan or an investor. Before the sharks ask, build your cash plan month by month. A shark will not invest in a company that will run out of cash before the money arrives." },
 ];
@@ -2276,6 +2319,11 @@ const READ_PEBBLE = [
   { p: "Pebble had to produce tens of thousands of watches it had never made before. Deliveries were delayed for months, and the team learned that manufacturing at scale was much harder than building a prototype. The company raised more money in later campaigns — in 2015 its new watch raised about 20 million dollars — but competition from big companies like Apple grew. In 2016, Pebble sold its assets to Fitbit and stopped making watches." },
   { h: "Debt or equity?" },
   { list: ["Debt (loan): you keep control; you must pay even if sales fall; interest is the cost.", "Equity (investor): no monthly payment; you share profits and decisions forever.", "Crowdfunding: proof of demand + cash in advance; fees, delivery pressure and public promises.", "Bootstrapping: total control and no cost of capital; growth is slower."] },
+  { h: "How much does each kind of money cost? (with numbers)" },
+  { node: <Calc11 key="l" title="A loan with a fixed monthly payment" formula="Payment = P × r ÷ (1 − (1 + r)^−n)   ·   P = amount · r = monthly rate · n = months" steps={["Loan $300,000 at 2% a month for 6 months: P = 300,000 · r = 0.02 · n = 6.", "(1 + r)^n = 1.02^6 = 1.1262 → (1 + r)^−n = 1 ÷ 1.1262 = 0.8880.", "Payment = 300,000 × 0.02 ÷ (1 − 0.8880) = 6,000 ÷ 0.1120 ≈ $53,558 a month.", "Total paid = 6 × 53,558 = $321,348 → total interest = 321,348 − 300,000 = $21,348."]} result="The money costs you about $21,348 — and you must pay $53,558 even in bad months." /> },
+  { node: <Calc11 key="e" title="Monthly rate → yearly rate (E.A.)" formula="E.A. = (1 + monthly rate)^12 − 1" steps={["2% monthly → 1.02^12 = 1.268.", "1.268 − 1 = 0.268 → 26.8% E.A."]} result="'Only 2% a month' is almost 27% a year." /> },
+  { node: <Calc11 key="q" title="Equity: money for a piece of the company" formula="Implied valuation = money ÷ %   ·   % to give = money ÷ valuation" steps={["An investor gives $500,000 for 25%.", "500,000 ÷ 0.25 = $2,000,000 → that's what your company is 'worth' in this deal.", "No monthly payment, but the investor owns 25% of every future profit."]} result="Equity has no interest — its price is a part of your company forever." /> },
+  { node: <Calc11 key="c" title="Crowdfunding: what really arrives" formula="Money received = money raised × (1 − platform fee)" steps={["You raise $400,000 with an 8% fee.", "400,000 × 0.92 = $368,000.", "And you still must produce and deliver the rewards to every backer."]} result="You receive $368,000, not $400,000." /> },
   { h: "What this means for your company" },
   { p: "Your team will need money for equipment, ingredients or a bigger batch. Before you choose, calculate the real cost of each option: the total interest of a loan, the percentage of the company an investor would own, the fees of crowdfunding. The best funding is the one your cash flow can survive — and the one you won't regret when the company is successful." },
 ];
@@ -2306,6 +2354,9 @@ const READ_VALUE = [
   { p: "In 2012, Aaron Krause presented Scrub Daddy, a smiling sponge that changes texture with water temperature. Lori Greiner offered 200,000 dollars for 20% — an implied valuation of one million dollars. With her help, the sponge reached big TV shopping channels and stores, and it became one of the most successful products in the show's history. The investor brought more than money: she brought distribution." },
   { h: "Smart money" },
   { p: "That's why founders talk about 'smart money': an investor who brings contacts, experience or sales channels can be worth more than one who only brings cash. Sometimes accepting a lower valuation from the right partner is the better deal." },
+  { h: "The three methods, step by step" },
+  { node: <Calc11 key="m" title="A gelatin company: revenue $3,600,000 a year, profit $540,000 a year" formula="① Revenue × multiple   ② Profit × multiple   ③ DCF = Σ profit of each year ÷ (1 + risk rate)^year" steps={["① Revenue multiple 1.5×: 3,600,000 × 1.5 = $5,400,000.", "② Earnings multiple 5×: 540,000 × 5 = $2,700,000.", "③ DCF, year 1: profit grows 30% → 540,000 × 1.3 = 702,000; brought to today with 35% risk: 702,000 ÷ 1.35 = $520,000. Do the same for 5 years and add them.", "The three answers make a RANGE (here about $2.7M – $5.4M). You negotiate inside it."]} /> },
+  { node: <Calc11 key="a" title="From valuation to your ask" formula="% to offer = money you need ÷ valuation" steps={["You need $300,000.", "Your numbers defend a valuation of about $2,000,000.", "300,000 ÷ 2,000,000 = 0.15 → offer 15%.", "Walk-away point: the MAX % you would give (for example 25%). Above it, you say no."]} result="“We ask $300,000 for 15%” = a $2,000,000 valuation you can explain." /> },
   { h: "What this means for your pitch" },
   { p: "Your team will calculate a valuation range with three methods, choose an ask that your numbers can defend and decide your walk-away point: the worst deal you would accept. On Shark Tank Day, every number you say must have a calculation behind it." },
 ];
@@ -2335,6 +2386,7 @@ const READ_GIANTS = [
   { list: ["What happens to our profit if sales fall 30%?", "What happens if the price of our main ingredient rises 20%?", "How many months can we survive with the cash we have?", "Which changes (price, recipe, channel) would save the business?"] },
   { h: "Small companies, big lessons" },
   { p: "Your company is small, but the same forces affect you: a competitor that sells at half price, a supplier that doubles a price, a new trend that changes what customers want. Founders who check their numbers under pressure — and listen to customers' changing needs — survive longer than founders who only plan for sunny days." },
+  { node: <Calc11 key="s" title="A stress test for a gelatin company" formula="Net income = units × (price − unit cost) − monthly expenses" steps={["Normal month: 120 × ($3,000 − $1,500) − $135,000 = 180,000 − 135,000 = +$45,000.", "Crisis: sales fall 30% → 84 units: 84 × 1,500 − 135,000 = 126,000 − 135,000 = −$9,000 ❌", "Plan B: a cheaper supplier lowers the unit cost to $1,300 → margin $1,700: 84 × 1,700 − 135,000 = +$7,800 ✅"]} result="A good Plan B turns a loss into a (small) profit." /> },
   { h: "What this means for your company" },
   { p: "This week you will put your own company under stress: higher costs, lower sales, new competitors. Then you will design a Plan B. Sharks love founders who can say: 'If this happens, this is exactly what we will do.'" },
 ];
@@ -2359,6 +2411,76 @@ const nums2 = (resp) => { const r = P1of(resp); const co = co11(r); return { ...
 /* P&L mensual de la empresa (lo que se guardó en Class 1) o uno calculado con P1 */
 const plOf = (resp) => { const pl = resp?.c1_pl; const n = nums2(resp); if (pl) return pl; const rev = n.monthly * n.price; const cogs = n.monthly * n.unit; const opex = 60000; return { units: n.monthly, price: n.price, unit: n.unit, rev, cogs, gross: rev - cogs, opex, net: rev - cogs - opex, sample: true }; };
 
+
+/* =====================================================================
+   GUÍAS "ANTES DE EMPEZAR" (contexto + fórmula + ejemplo) · Periodo 2
+   ===================================================================== */
+const GD_PL = { intro: "The P&L (Profit & Loss, or income statement) shows ONE month of your company: what you sold, what it cost and what is left. You will fill it with YOUR Period 1 numbers.", items: [
+  { e: "💰", t: "Revenue (sales)", d: "All the money from what you sold this month.", f: "Revenue = units sold × price", ex: "120 gelatins × $3,000 = $360,000" },
+  { e: "🧂", t: "Cost of goods sold (COGS)", d: "The direct cost of EACH unit: ingredients + packaging. Use your unit cost from Period 1.", f: "COGS = units sold × unit cost", ex: "120 × $1,500 = $180,000" },
+  { e: "🧾", t: "Operating expenses", d: "Costs to RUN the company, not inside each unit: marketing, transport, stand, your own pay. Write 4 or more with a real value.", ex: "Posters $40,000 · transport $20,000 · stand $15,000 · founders' pay $60,000 = $135,000" },
+  { e: "📒", t: "Gross and net profit", f: "Gross = revenue − COGS  ·  Net = gross − expenses  ·  margin % = profit ÷ revenue × 100", ex: ["Gross = 360,000 − 180,000 = $180,000 (50%)", "Net = 180,000 − 135,000 = $45,000 (12.5%)"] },
+] };
+const GD_CASH = { intro: "Profit says if your business WORKS. Cash says if you SURVIVE. In this game you live 12 months: in normal months cash comes in; in 6 months something happens and you must decide.", items: [
+  { e: "💧", t: "Cash now", d: "The money really in the bank. If it goes below $0, a real company can't pay suppliers.", f: "Cash at the end of the month = cash at the start + money IN − money OUT" },
+  { e: "⏳", t: "Money that arrives LATER", d: "A sale paid in 60 days is profit today but cash in 2 months. The game moves that money to the month it really arrives.", ex: "A $600,000 order paid in 60 days: you spend on ingredients in month 1 and receive the money in month 3." },
+  { e: "✅", t: "Smart decisions", d: "The best choice protects cash: deposits, renting instead of buying, buying in small quantities, keeping a safety net." },
+] };
+const GD_PLAN = { intro: "Now you write YOUR company's next 3 months. Each row is a movement of money. Mark it ⬆️ IN (money that enters) or ⬇️ OUT (money that leaves) and write the amount for each month. The table adds everything for you.", items: [
+  { e: "⬆️", t: "Money IN", d: "Sales collected, pre-order deposits, a loan or an investor's money (the day it arrives)." },
+  { e: "⬇️", t: "Money OUT", d: "Ingredients and packaging, marketing, equipment, transport, loan payments." },
+  { e: "🧮", t: "How the table calculates", f: "Net flow = IN − OUT  ·  Cash at the end = previous cash + net flow", ex: ["Start $200,000 · month 1: IN $216,000 − OUT $240,000 = −$24,000", "Cash at the end of month 1 = 200,000 − 24,000 = $176,000 ✅"] },
+  { e: "🚦", t: "The rule", d: "No month can end below $0. If one does: ask for deposits, move the equipment to a later month or lower a cost." },
+] };
+const GD_FUND = { intro: "Your company needs $600,000 (equipment + a big first batch). Move the 5 sources until you reach it. Each source has a different PRICE — read it under each slider.", items: [
+  { e: "🐷", t: "Savings & family", d: "Cheapest money, but limited (max $200,000 and $150,000). Family money can damage relationships if you can't pay." },
+  { e: "🏦", t: "Loan", d: "You keep 100% of the company but pay every month, even in bad months.", f: "Payment = P × r ÷ (1 − (1 + r)^−n)  ·  r = 2.2% monthly · n = 12", ex: "Rule: the payment must be ≤ 60% of your monthly net income (from your P&L)." },
+  { e: "🦈", t: "Investor (equity)", d: "No monthly payment, but the investor owns a % of every future profit.", f: "Implied valuation = money ÷ %", ex: "$300,000 for 20% → 300,000 ÷ 0.20 = $1,500,000" },
+  { e: "👥", t: "Crowdfunding", d: "Customers pay in advance; the platform keeps a fee and you must produce the rewards.", f: "Real cost ≈ amount × (8% fee + 15% rewards)" },
+  { e: "👑", t: "Control", d: "The % of the company the founders keep. Below 51% you lose the majority of the decisions." },
+] };
+const GD_VAL = { intro: "How much is YOUR company worth? There is no single right number: you calculate 3 methods, see the range and choose an ask your numbers can defend. The yearly numbers come from your P&L (month × 12).", items: [
+  { e: "①", t: "Revenue multiple", f: "Value = revenue per year × multiple", ex: "Small food businesses: about 1–3×. $3,600,000 × 1.5 = $5,400,000" },
+  { e: "②", t: "Earnings multiple", f: "Value = profit per year × multiple", ex: "Small, risky businesses: about 3–8×. $540,000 × 5 = $2,700,000" },
+  { e: "③", t: "Discounted cash flow (DCF)", d: "Future profits are worth LESS today because they are uncertain. Growth = how fast profit grows each year. Discount rate = how risky you are (young companies: 30–50%).", f: "DCF = profit₁ ÷ (1 + r) + profit₂ ÷ (1 + r)² + … (5 years)" },
+  { e: "🦈", t: "Ask, % and walk-away", f: "Implied valuation = money ÷ %  ·  % to offer = money ÷ valuation", ex: ["Need $300,000 · our range ≈ $2,000,000 → offer 300,000 ÷ 2,000,000 = 15%", "Walk-away = the MAXIMUM % we would give (e.g. 25%). It must be bigger than the first offer."] },
+] };
+const GD_CAP = { intro: "A cap table is the list of WHO owns WHAT % of the company. When an investor buys new shares, everybody's % gets smaller (dilution) — but the company gets money and can be worth more.", items: [
+  { e: "1️⃣", t: "Founders' split", d: "Divide 100% among your team (from your Period 1 team). Use + and − until the total is exactly 100%." },
+  { e: "🌱", t: "Seed investor", d: "The first investor. Buys a % with NEW shares." },
+  { e: "🧑‍🍳", t: "Employee pool", d: "A % reserved to reward future employees with shares." },
+  { e: "🚀", t: "Series A", d: "A bigger investor later, when the company grows." },
+  { e: "🧮", t: "Dilution", f: "New % = old % × (1 − % sold)", ex: ["Founder with 40%. Seed buys 15% → 40 × 0.85 = 34%", "Then pool 5% → 34 × 0.95 = 32.3%", "Then Series A 20% → 32.3 × 0.80 = 25.8%"] },
+  { e: "💎", t: "Is that bad?", f: "Value of your slice = your % × company valuation", ex: "100% of $400,000 = $400,000 · 25.8% of $3,000,000 = $774,000 → smaller %, MORE value." },
+] };
+const GD_NEGO = { intro: "You are the founder in front of a shark. The shark makes an offer; you can ACCEPT it, send a COUNTER-OFFER or WALK AWAY. Your ask and walk-away come from your Valuation Machine.", items: [
+  { e: "🦈", t: "The shark's offer", d: "“$300,000 for 30%” means the shark values your company at 300,000 ÷ 0.30 = $1,000,000. Each shark has a personality: some want more %, some want royalties (money per unit sold)." },
+  { e: "🔁", t: "My counter", d: "YOUR proposal: the money you want (first slider) and the % you would give (second slider). The app shows the valuation your counter implies.", f: "My valuation = my money ÷ my %", ex: ["Shark: $300,000 for 30% → $1,000,000", "My counter: $300,000 for 20% → 300,000 ÷ 0.20 = $1,500,000", "If the shark thinks $1,500,000 is fair, he accepts; if not, he makes a new offer."] },
+  { e: "⚖️", t: "How to get a 'yes'", d: "MORE % or LESS money = a LOWER valuation = easier for the shark to accept (but worse for you). Find the middle." },
+  { e: "🚪", t: "Walk-away point", d: "The MAX % you will give. If the deal is above it, the smart move is to walk away. Max 3 rounds per shark." },
+] };
+const GD_STRESS = { intro: "Imagine a bad month for YOUR company. Move the crisis sliders and see your profit fall. Then choose up to 3 Plan B actions and see if you recover.", items: [
+  { e: "🌪️", t: "The crisis", d: "Sales change: −30% means you sell 30% fewer units. Ingredient cost: +20% means each unit costs 20% more. A competitor takes 15% more of your sales." },
+  { e: "🧮", t: "How the table calculates", f: "Net income = units × (price − unit cost) − monthly expenses", ex: ["Normal: 120 × (3,000 − 1,500) − 135,000 = +$45,000", "Crisis −30% sales: 84 × 1,500 − 135,000 = −$9,000"] },
+  { e: "🛟", t: "Plan B", d: "Each action changes units, price, cost or expenses. Combine max 3 and compare the 3 rows of the table." },
+] };
+const GD_IMPACT = { intro: "Sharks ask about money; communities ask about IMPACT. A KPI is a number you can measure. Choose 2 or more and write the value TODAY and a GOAL in 6 months.", items: [
+  { e: "📏", t: "Today vs. goal", d: "Today = what really happens now (0 is OK). Goal = a realistic number for 6 months.", ex: ["♻️ Units wasted per week: today 8 → goal 2", "🌽 % local ingredients: today 30 → goal 60"] },
+  { e: "🌍", t: "SDG 8 & 12", d: "SDG 8 = decent work and growth. SDG 12 = responsible production and consumption (less waste, better packaging)." },
+] };
+const GD_DECK = { intro: "Your 10 slides already have YOUR data. Your job: write a HEADLINE for each one — a short sentence (2–12 words) that SAYS the main message, not just the topic.", items: [
+  { e: "❌", t: "Topic headline (weak)", ex: "“Our numbers” · “The problem” · “Our customer”" },
+  { e: "✅", t: "Message headline (strong)", ex: "“Every gelatin leaves us $1,500” · “Students skip breakfast at 10 a.m.” · “We ask $300,000 for 15%”" },
+  { e: "🎤", t: "Present", d: "Use 'Present' to show the deck full screen and practice with your team." },
+] };
+const GD_QA = { intro: "On Shark Tank Day the sharks will interrupt you with hard questions. Train here: 60 seconds per question. A STRONG answer has 15+ words, 2 topic words and a number.", items: [
+  { e: "🦈", t: "Example question", ex: "“What is your margin per unit?”" },
+  { e: "✅", t: "Example strong answer", ex: "“Our price is $3,000 and our unit cost is $1,500, so our margin is $1,500 per gelatin — 50% of the price. That's why we can pay marketing and still keep a profit.”" },
+] };
+const GD_NUM = { intro: "Sharks test founders with THEIR OWN numbers. These 6 problems use your P&L and your valuation. Each problem shows the formula with your numbers — you just calculate.", items: [
+  { e: "🧮", t: "The 6 formulas", ex: ["Margin per unit = price − unit cost", "Margin % = margin ÷ price × 100", "Break-even units = fixed costs ÷ margin per unit", "Implied valuation = money ÷ %", "Profit per year = profit per month × 12", "Shark's share = profit per year × shark's %"] },
+] };
+
 /* ---------- C1 · P&L Builder ---------- */
 function PLBuilder({ resp, existing, onSave, onExit }) {
   const n = nums2(resp);
@@ -2375,7 +2497,7 @@ function PLBuilder({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="P&L built! 📒" subtitle={`Net ${cop(net)} · net margin ${nm}%`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<FileText size={22} strokeWidth={2.1} />} title="P&L Builder 📒 · One month of OUR company" subtitle="Revenue − cost of goods = gross profit. Gross profit − expenses = net income. No hiding costs!" onExit={onExit}>
-      <Brief91 k="c1_pl" />
+      <Brief91 k="c1_pl" /><Guide11 {...GD_PL} />
       {!P1of(resp).c5_price && <div className="p1-banner"><span>💡 We couldn't find your Period 1 numbers, so you start with sample numbers. Change them to yours.</span></div>}
       <div className="g10-two">
         <div className="start-block"><h3>📈 Sales</h3><Ctl l="Units sold per month" v={units} set={setUnits} mn={0} mx={1000} stp={5} /><Ctl l="Price" v={price} set={setPrice} mn={500} mx={20000} stp={100} fmt={cop} /><Ctl l="Cost of goods per unit" v={unit} set={setUnit} mn={100} mx={15000} stp={50} fmt={cop} />
@@ -2440,7 +2562,7 @@ function CashSurvival({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title={broke ? "You survived… barely 💧" : "Cash master! 💧"} subtitle={`Lowest cash ${cop(minCash)} · ${goods} smart decisions`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Wallet size={22} strokeWidth={2.1} />} title="Cash Flow Survival 💧 · 12 months" subtitle={`You start with ${cop(START)}. Normal months bring about ${cop(base)}. Six events will test your cash — not only your profit.`} onExit={onExit}>
-      <Brief91 k="c2_cash" />
+      <Brief91 k="c2_cash" /><Guide11 {...GD_CASH} />
       <div className="g10-kpis"><div><small>📅 Month</small><b>{Math.min(m + 1, 12)}/12</b></div><div><small>💧 Cash now</small><b className={(m ? cashAt(m - 1) : START) >= 0 ? "pos" : "neg"}>{cop(m ? cashAt(m - 1) : START)}</b></div><div><small>📉 Lowest cash</small><b className={minCash >= 0 ? "" : "neg"}>{cop(minCash)}</b></div><div><small>✅ Smart decisions</small><b>{goods}</b></div></div>
       {!done ? (
         <div className="start-block g10-event">
@@ -2457,12 +2579,12 @@ function CashSurvival({ resp, existing, onSave, onExit }) {
   );
 }
 const CASH_R = [
-  { tag: "Cash vs. profit", q: "You sell 100 units at $3,000 (cost $1,500) but the store pays in 60 days. Cash from this sale THIS month?", answer: 0, money: true, hint: "When does the money arrive?", explain: "$0 now. Profit exists, cash doesn't — yet." },
-  { tag: "Deposit", q: "A $600,000 order with a 30% deposit. Cash you receive today?", answer: 180000, money: true, hint: "600,000 × 0.30", explain: "$180,000 today." },
-  { tag: "Ending cash", q: "Start $250,000 · in $400,000 · out $520,000. Cash at the end?", answer: 130000, money: true, hint: "250,000 + 400,000 − 520,000", explain: "$130,000." },
+  { tag: "Cash vs. profit", q: "You sell 100 units at $3,000 (cost $1,500) but the store pays in 60 days. Cash from this sale THIS month?", answer: 0, money: true, hint: "When does the money arrive?", visual: F11("Cash this month = money that ARRIVES this month (not money promised)", ["The sale is real and has a profit…", "…but the store pays in 60 days.", "So how much enters the bank THIS month?"]), explain: "$0 now. Profit exists, cash doesn't — yet." },
+  { tag: "Deposit", q: "A $600,000 order with a 30% deposit. Cash you receive today?", answer: 180000, money: true, hint: "600,000 × 0.30", visual: F11("Deposit = order value × deposit %", ["Order value = $600,000", "Deposit % = 30% = 0.30", "Deposit = 600,000 × 0.30"]), explain: "$180,000 today." },
+  { tag: "Ending cash", q: "Start $250,000 · in $400,000 · out $520,000. Cash at the end?", answer: 130000, money: true, hint: "250,000 + 400,000 − 520,000", visual: F11("Ending cash = starting cash + cash IN − cash OUT", ["Starting = 250,000", "IN = 400,000 · OUT = 520,000", "Ending = 250,000 + 400,000 − 520,000"]), explain: "$130,000." },
   { tag: "Not an expense", q: "Which one takes cash OUT but is NOT an expense in the P&L?", options: ["Paying back the loan's principal.", "Paying the ingredients you used.", "Paying an Instagram ad.", "Paying the stand rent."], correct: 0, explain: "Principal is not a cost; only the interest is." },
-  { tag: "Inventory", q: "You buy $300,000 of ingredients today and use them over 3 months. In the P&L this month you see about…", answer: 100000, money: true, hint: "300,000 ÷ 3", explain: "$100,000 — but your cash fell $300,000 today." },
-  { tag: "Runway", q: "You have $360,000 and you burn $90,000 a month. How many months can you survive?", answer: 4, unit: "months", hint: "360,000 ÷ 90,000", explain: "4 months of runway." },
+  { tag: "Inventory", q: "You buy $300,000 of ingredients today and use them over 3 months. In the P&L this month you see about…", answer: 100000, money: true, hint: "300,000 ÷ 3", visual: F11("Cost in the P&L this month = part of the ingredients USED this month", ["You paid $300,000 today (cash OUT).", "You use them during 3 months.", "P&L this month = 300,000 ÷ 3"]), explain: "$100,000 — but your cash fell $300,000 today." },
+  { tag: "Runway", q: "You have $360,000 and you burn $90,000 a month. How many months can you survive?", answer: 4, unit: "months", hint: "360,000 ÷ 90,000", visual: F11("Runway (months) = cash ÷ monthly burn", ["Cash = 360,000", "Burn (you lose each month) = 90,000", "Runway = 360,000 ÷ 90,000"]), explain: "4 months of runway." },
 ];
 function CashPlan({ resp, existing, onSave, onExit }) {
   const pl = plOf(resp);
@@ -2484,7 +2606,7 @@ function CashPlan({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Cash plan ready! 📅" subtitle={`Month 3 ends with ${cop(end[2])}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Calendar size={22} strokeWidth={2.1} />} title="Our Cash Plan 📅 · 3 months" subtitle="Write every peso that comes IN and goes OUT. No month can end below zero." onExit={onExit}>
-      <Brief91 k="c2_plan" />
+      <Brief91 k="c2_plan" /><Guide11 {...GD_PLAN} />
       <div className="p3-sentence edit"><span>💧 Starting cash</span><MoneyInput value={start} onChange={setStart} /></div>
       <div className="g11-rows cash"><div className="g11-row head"><span>Item</span><span>In / out</span><span>Month 1</span><span>Month 2</span><span>Month 3</span></div>
         {rows.map((r, i) => <div key={i} className="g11-row"><input className="start-input" value={r.n} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, n: e.target.value } : x)))} /><button type="button" className={`g11-io ${r.t}`} onClick={() => setRows(rows.map((x, j) => (j === i ? { ...x, t: x.t === "in" ? "out" : "in" } : x)))}>{r.t === "in" ? "⬆️ IN" : "⬇️ OUT"}</button>{[0, 1, 2].map((m) => <input key={m} className="start-input" type="number" value={r.v[m]} onChange={(e) => up(i, m, e.target.value)} />)}</div>)}
@@ -2519,7 +2641,7 @@ function FundingLab({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Funding plan closed! 🏦" subtitle={`${cop(total)} · you keep ${control}%`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Landmark size={22} strokeWidth={2.1} />} title="Funding Lab 🏦" subtitle={`Your company needs ${cop(NEED)} for a bigger oven/freezer and the first big batch. Build the mix — and pay its real cost.`} onExit={onExit}>
-      <Brief91 k="c3_lab" />
+      <Brief91 k="c3_lab" /><Guide11 {...GD_FUND} />
       <div className="g10-kpis"><div><small>🎯 Needed</small><b>{cop(NEED)}</b></div><div><small>💼 Raised</small><b className={total >= NEED ? "pos" : "neg"}>{cop(total)}</b></div><div><small>📒 Monthly net income (P&L)</small><b>{cop(monthlyNet)}</b></div></div>
       {K.map(([k, e, l, d, mx]) => <div key={k} className="start-block g11-fund"><div className="g10-event-head"><em>{e}</em><div><b>{l}</b><p>{d}</p></div></div><Ctl l="Amount" v={a[k]} set={(v) => setA({ ...a, [k]: v })} mn={0} mx={mx} stp={10000} fmt={cop} />
         {k === "loan" && a.loan > 0 && <p className={`g91-note ${okPay ? "pos" : "neg"}`}>Payment {cop(pay)}/month for 12 months · total interest {cop(interest)} · E.A. {pm(eaFromM(rM), 1)}. {okPay ? "OK for your cash flow." : "⚠️ More than 60% of your monthly profit!"}</p>}
@@ -2534,12 +2656,12 @@ function FundingLab({ resp, existing, onSave, onExit }) {
   );
 }
 const LOAN_R = [
-  { tag: "Payment", q: "Loan $300,000 at 2% monthly for 6 months. Monthly payment (fixed)?", answer: Math.round(pmt(300000, 0.02, 6)), money: true, tol: 300, hint: "P × r ÷ (1 − (1 + r)^−n)", explain: `About ${cop(pmt(300000, 0.02, 6))}.` },
-  { tag: "Total interest", q: `Same loan: 6 payments of ${cop(pmt(300000, 0.02, 6))}. Total interest?`, answer: Math.round(pmt(300000, 0.02, 6) * 6 - 300000), money: true, tol: 600, hint: "6 × payment − 300,000", explain: `About ${cop(pmt(300000, 0.02, 6) * 6 - 300000)}.` },
-  { tag: "E.A.", q: "2% monthly is about how much E.A.? (%, 1 decimal)", answer: 26.8, unit: "%", tol: 0.2, hint: "1.02^12 − 1", explain: "26.8% E.A." },
-  { tag: "Equity", q: "An investor gives $500,000 for 25%. Implied valuation?", answer: 2000000, money: true, hint: "500,000 ÷ 0.25", explain: "$2,000,000." },
-  { tag: "Crowdfunding", q: "You raise $400,000 with an 8% platform fee. What do you receive?", answer: 368000, money: true, hint: "400,000 × 0.92", explain: "$368,000 (and you still have to produce the rewards)." },
-  { tag: "Decide", q: "Monthly profit $90,000. Which loan payment is safest?", options: ["$40,000 a month.", "$85,000 a month.", "$110,000 a month.", "$95,000 a month."], correct: 0, explain: "Keep payments well below your monthly profit." },
+  { tag: "Payment", q: "Loan $300,000 at 2% monthly for 6 months. Monthly payment (fixed)?", answer: Math.round(pmt(300000, 0.02, 6)), money: true, tol: 300, hint: "P × r ÷ (1 − (1 + r)^−n)", visual: F11("Payment = P × r ÷ (1 − (1 + r)^−n)", ["P = 300,000 · r = 2% = 0.02 · n = 6", "(1.02)^6 = 1.1262 → 1 ÷ 1.1262 = 0.8880", "Payment = 300,000 × 0.02 ÷ (1 − 0.8880)", "Calculator: 6,000 ÷ 0.1120 = ?"]), explain: `About ${cop(pmt(300000, 0.02, 6))}.` },
+  { tag: "Total interest", q: `Same loan: 6 payments of ${cop(pmt(300000, 0.02, 6))}. Total interest?`, answer: Math.round(pmt(300000, 0.02, 6) * 6 - 300000), money: true, tol: 600, hint: "6 × payment − 300,000", visual: F11("Total interest = (payment × number of payments) − amount borrowed", ["Payment ≈ $53,558 · payments = 6", "Total paid = 6 × 53,558", "Interest = total paid − 300,000"]), explain: `About ${cop(pmt(300000, 0.02, 6) * 6 - 300000)}.` },
+  { tag: "E.A.", q: "2% monthly is about how much E.A.? (%, 1 decimal)", answer: 26.8, unit: "%", tol: 0.2, hint: "1.02^12 − 1", visual: F11("E.A. = (1 + monthly rate)^12 − 1", ["Monthly rate = 2% = 0.02", "1.02^12 = ? (use the calculator: 1.02 xʸ 12)", "Subtract 1 and multiply by 100"]), explain: "26.8% E.A." },
+  { tag: "Equity", q: "An investor gives $500,000 for 25%. Implied valuation?", answer: 2000000, money: true, hint: "500,000 ÷ 0.25", visual: F11("Implied valuation = money ÷ % (as a decimal)", ["Money = 500,000", "% = 25% = 0.25", "Valuation = 500,000 ÷ 0.25"]), explain: "$2,000,000." },
+  { tag: "Crowdfunding", q: "You raise $400,000 with an 8% platform fee. What do you receive?", answer: 368000, money: true, hint: "400,000 × 0.92", visual: F11("Money received = money raised × (1 − fee)", ["Raised = 400,000", "Fee = 8% = 0.08 → 1 − 0.08 = 0.92", "Received = 400,000 × 0.92"]), explain: "$368,000 (and you still have to produce the rewards)." },
+  { tag: "Decide", visual: F11("Safe payment ≤ 60% of monthly profit", ["Monthly profit = 90,000", "60% of 90,000 = 54,000", "Which option is below that line — with room to spare?"]), q: "Monthly profit $90,000. Which loan payment is safest?", options: ["$40,000 a month.", "$85,000 a month.", "$110,000 a month.", "$95,000 a month."], correct: 0, explain: "Keep payments well below your monthly profit." },
 ];
 
 /* ---------- C4 · Valuation Machine ---------- */
@@ -2566,7 +2688,7 @@ function ValuationMachine({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title={`Worth about ${cop(implied)} 💎`} subtitle={`Ask: ${cop(ask)} for ${pctA}%`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Gem size={22} strokeWidth={2.1} />} title="Valuation Machine 💎" subtitle="Three methods → a range → an ask your numbers can defend → a walk-away point." onExit={onExit}>
-      <Brief91 k="c4_val" />
+      <Brief91 k="c4_val" /><Guide11 {...GD_VAL} />
       <div className="g10-kpis"><div><small>📈 Revenue / year</small><b>{cop(revY)}</b></div><div><small>💰 Profit / year</small><b className={profY > 0 ? "pos" : "neg"}>{cop(profY)}</b></div>{pl.sample && <div><small>⚠️</small><b>sample P&L</b></div>}</div>
       <div className="g10-two">
         <div className="start-block"><h3>① Revenue multiple</h3><Ctl l="Multiple" v={revM} set={setRevM} mn={0.5} mx={4} stp={0.25} fmt={(x) => `${x}×`} /><p>{cop(revY)} × {revM} = <b>{cop(v1)}</b></p>
@@ -2584,12 +2706,12 @@ function ValuationMachine({ resp, existing, onSave, onExit }) {
   );
 }
 const OVER_R = [
-  { tag: "🍪 CookieLab", q: "Ask: $200,000 for 10%. Implied valuation?", answer: 2000000, money: true, hint: "200,000 ÷ 0.10", explain: "$2,000,000." },
-  { tag: "🍪 CookieLab", q: "CookieLab sells $400,000 a year and earns $60,000. Is $2,000,000 reasonable?", options: ["No: 5× revenue and 33× profit is far too high.", "Yes: every startup is worth millions.", "Yes: profit doesn't matter at all, only how fast sales grow.", "We can't know without the logo."], correct: 0, explain: "Compare valuation with revenue and profit multiples." },
-  { tag: "🥤 Fresko", q: "Ask: $150,000 for 30%. Implied valuation?", answer: 500000, money: true, hint: "150,000 ÷ 0.30", explain: "$500,000." },
-  { tag: "🥤 Fresko", q: "Fresko earns $120,000 a year and grows 50%. A shark offers $150,000 for 40%. You…", options: ["Counter: $150,000 for 30% — the numbers support $500,000.", "Accept immediately: any money is good money for a new startup.", "Ask for $1,000,000 for 5%.", "Walk away without saying anything."], correct: 0, explain: "Negotiate inside your range." },
-  { tag: "🧼 Spuma", q: "Ask: $90,000 for 15%. Implied valuation?", answer: 600000, money: true, hint: "90,000 ÷ 0.15", explain: "$600,000." },
-  { tag: "🧼 Spuma", q: "A shark offers $90,000 for 15% + a royalty of $500 per soap until she recovers $90,000. Spuma sells 2,000 soaps a year. How many years until the royalty ends?", answer: 0.09 * 1000000 / (500 * 2000) * 1, unit: "years", tol: 0.05, hint: "90,000 ÷ (500 × 2,000)", explain: "90,000 ÷ 1,000,000 = 0.09 years — about 1 month!" },
+  { tag: "🍪 CookieLab", q: "Ask: $200,000 for 10%. Implied valuation?", answer: 2000000, money: true, hint: "200,000 ÷ 0.10", visual: F11("Implied valuation = money asked ÷ % offered", ["Money = 200,000", "% = 10% = 0.10", "Valuation = 200,000 ÷ 0.10"]), explain: "$2,000,000." },
+  { tag: "🍪 CookieLab", q: "CookieLab sells $400,000 a year and earns $60,000. Is $2,000,000 reasonable?", visual: F11("Revenue multiple = valuation ÷ revenue  ·  Earnings multiple = valuation ÷ profit", ["2,000,000 ÷ 400,000 = 5× revenue (small food businesses: about 1–3×)", "2,000,000 ÷ 60,000 = 33× profit (small risky businesses: about 3–8×)"]), options: ["No: 5× revenue and 33× profit is far too high.", "Yes: every startup is worth millions.", "Yes: profit doesn't matter at all, only how fast sales grow.", "We can't know without the logo."], correct: 0, explain: "Compare valuation with revenue and profit multiples." },
+  { tag: "🥤 Fresko", q: "Ask: $150,000 for 30%. Implied valuation?", answer: 500000, money: true, hint: "150,000 ÷ 0.30", visual: F11("Implied valuation = money ÷ %", ["150,000 ÷ 0.30 = ?"]), explain: "$500,000." },
+  { tag: "🥤 Fresko", q: "Fresko earns $120,000 a year and grows 50%. A shark offers $150,000 for 40%. You…", visual: F11("Compare the two valuations", ["Fresko asked 150,000 for 30% → $500,000", "The shark offers 150,000 for 40% → 150,000 ÷ 0.40 = $375,000 (he values you LOWER)", "Profit 120,000 × 4 (a fair multiple) = ? → can you defend $500,000?"]), options: ["Counter: $150,000 for 30% — the numbers support $500,000.", "Accept immediately: any money is good money for a new startup.", "Ask for $1,000,000 for 5%.", "Walk away without saying anything."], correct: 0, explain: "Negotiate inside your range." },
+  { tag: "🧼 Spuma", q: "Ask: $90,000 for 15%. Implied valuation?", answer: 600000, money: true, hint: "90,000 ÷ 0.15", visual: F11("Implied valuation = money ÷ %", ["90,000 ÷ 0.15 = ?"]), explain: "$600,000." },
+  { tag: "🧼 Spuma", q: "A shark offers $90,000 for 15% + a royalty of $500 per soap until she recovers $90,000. Spuma sells 2,000 soaps a year. How many years until the royalty ends?", answer: 0.09 * 1000000 / (500 * 2000) * 1, unit: "years", tol: 0.05, hint: "90,000 ÷ (500 × 2,000)", visual: F11("Years of royalty = money to recover ÷ (royalty per unit × units per year)", ["Money to recover = 90,000", "Royalty per year = 500 × 2,000 = 1,000,000", "Years = 90,000 ÷ 1,000,000"]), explain: "90,000 ÷ 1,000,000 = 0.09 years — about 1 month!" },
   { tag: "🕯️ Lumi", q: "Lumi asks $300,000 for 20% but loses $40,000 a year. The best shark answer is…", options: ["“Show me how you reach profit first.”", "“Here is $600,000 for 10%.”", "“Losses don't matter for a candle company like yours.”", "“I'll buy 100% of the company right now, with no questions.”"], correct: 0, explain: "No profit = very high risk." },
   { tag: "Smart money", q: "Two offers: A) $300,000 for 20% from someone with no contacts; B) $300,000 for 25% from a supermarket owner. B can be better because…", options: ["it brings distribution: more sales channels.", "a bigger percentage is always better for founders.", "supermarket owners never ask for profits.", "it has a higher implied valuation."], correct: 0, explain: "Smart money brings more than cash." },
 ];
@@ -2611,17 +2733,17 @@ function CapTable({ resp, existing, onSave, onExit }) {
   const COL = ["#3c9d5d", "#e0a03a", "#c8563a", "#6b4e8f", "#2e6b4a", "#d98fb0", "#7a4a2b"];
   const pie = (o) => Object.entries(o).map(([k, v], i) => ({ label: k, value: r2(v), color: COL[i % COL.length] }));
   const CAP_R = [
-    { tag: "Dilution", q: `A founder has 40%. The seed investor buys ${seed}% (new shares). The founder now has… (%, 1 decimal)`, answer: r2(40 * (1 - seed / 100)), unit: "%", tol: 0.1, hint: `40 × (1 − ${seed / 100})`, explain: `${r2(40 * (1 - seed / 100))}%: smaller %, but of a bigger, funded company.` },
-    { tag: "Value", q: "You own 30% of a company valued at $2,000,000. Your part is worth…", answer: 600000, money: true, hint: "2,000,000 × 0.30", explain: "$600,000." },
+    { tag: "Dilution", q: `A founder has 40%. The seed investor buys ${seed}% (new shares). The founder now has… (%, 1 decimal)`, answer: r2(40 * (1 - seed / 100)), unit: "%", tol: 0.1, hint: `40 × (1 − ${seed / 100})`, visual: F11("New % = old % × (1 − % sold to the new investor)", [`Old % = 40 · sold = ${seed}% = ${seed / 100}`, `New % = 40 × ${r2(1 - seed / 100)}`]), explain: `${r2(40 * (1 - seed / 100))}%: smaller %, but of a bigger, funded company.` },
+    { tag: "Value", q: "You own 30% of a company valued at $2,000,000. Your part is worth…", answer: 600000, money: true, hint: "2,000,000 × 0.30", visual: F11("Value of your slice = % × valuation", ["2,000,000 × 0.30 = ?"]), explain: "$600,000." },
     { tag: "Pie", q: "Is dilution always bad?", options: ["No — 20% of a big pie can be worth more than 100% of a tiny one.", "Yes — founders should never sell any percentage of the company.", "Yes — investors always take control of every decision.", "No — percentages never change after the company starts."], correct: 0, explain: "Value of your slice = % × valuation." },
   ];
   if (st.done) return <Reward title="Cap table mastered! 🥧" subtitle="You know who owns what — after every round." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<PieChart size={22} strokeWidth={2.1} />} title="Cap Table Simulator 🥧" subtitle="Who owns your company today — and after a seed round, an employee pool and a Series A?" onExit={onExit}>
-      <Brief91 k="c5_cap" />
+      <Brief91 k="c5_cap" /><Guide11 {...GD_CAP} />
       <div className="start-block"><h3>1 · Founders' split (must be 100%)</h3>{members.map((m) => <Ctl key={m} l={m} v={split[m] || 0} set={(v) => setSplit({ ...split, [m]: v })} mn={0} mx={100} fmt={(x) => `${x}%`} />)}<p className={`g91-note ${sum === 100 ? "pos" : "neg"}`}>Total: {sum}%</p></div>
       <div className="start-block"><h3>2 · The rounds</h3><Ctl l="Seed investor buys" v={seed} set={setSeed} mn={0} mx={40} fmt={(x) => `${x}%`} /><Ctl l="Employee pool" v={pool} set={setPool} mn={0} mx={15} fmt={(x) => `${x}%`} /><Ctl l="Series A investor buys" v={seriesA} set={setSeriesA} mn={0} mx={40} fmt={(x) => `${x}%`} /></div>
-      <div className="g11-caps">{[["Today", r1], ["After seed", s1], ["After pool", s2], ["After Series A", s3]].map(([t, o]) => <div key={t} className="start-block"><h3>{t}</h3><PctBar parts={pie(o)} /><MiniTable head={["Owner", "%"]} rows={Object.entries(o).map(([k, v]) => [k, `${r2(v)}%`])} /></div>)}</div>
+      <div className="g11-caps">{[["Today", r1, "The founders' split"], ["After seed", s1, `Each owner × (1 − ${seed}%) · Seed gets ${seed}%`], ["After pool", s2, `Each owner × (1 − ${pool}%) · Pool gets ${pool}%`], ["After Series A", s3, `Each owner × (1 − ${seriesA}%) · Series A gets ${seriesA}%`]].map(([t, o, f]) => <div key={t} className="start-block"><h3>{t}</h3><p className="g91-note">🧮 {f}</p><PctBar parts={pie(o)} /><MiniTable head={["Owner", "%"]} rows={Object.entries(o).map(([k, v]) => [k, `${r2(v)}%`])} /></div>)}</div>
       <div className="start-block"><h3>🧮 Check yourself</h3>{!r ? <RoundsRunner rounds={CAP_R} doneLabel="Done" onDone={setR} /> : <p className="g91-note pos">✅ {r.firstTry}/3 on the first try.</p>}</div>
       <div className="start-foot"><button className="s1-btn primary big" disabled={sum !== 100 || !r} onClick={() => finish(22 + r.firstTry * 3, { split, seed, pool, seriesA, final: s3 })}>Save our cap table <span className="coin-tag"><Coins size={15} /> +{22 + (r?.firstTry || 0) * 3}</span></button></div>
     </ActShell>
@@ -2641,19 +2763,21 @@ function DealNegotiator({ resp, existing, onSave, onExit }) {
   const [offer, setOffer] = useState(null);
   const [mine, setMine] = useState({ money: ask, pct });
   const [deal, setDeal] = useState(null);
+  const [msg, setMsg] = useState("");
   const [text, setText] = useState(existing?.text || "");
   const [st, finish] = useFinish(onSave);
   const S = SHARKS.find((x) => x.k === sk);
+  const minVal = ask / (walk / 100);
   const sharkOffer = (s, r) => { const val = fair * s.f * (1 + r * 0.06); const p = Math.min(60, Math.round(((ask / val) * 100))); return { money: ask, pct: p, extra: s.likes === "royalty" ? `+ $300 per unit until she recovers ${cop(ask)}` : s.likes === "distribution" ? "+ intro to 3 supermarket chains" : "" }; };
-  const start = (k) => { setSk(k); setRound(0); setOffer(sharkOffer(SHARKS.find((x) => x.k === k), 0)); setDeal(null); };
-  const counter = () => { const val = mine.money / (mine.pct / 100); const sharkMax = fair * S.f * 1.25; if (val <= sharkMax) { setDeal({ ...mine, shark: S.n, extra: offer.extra, accepted: "shark" }); return; } if (round >= 2) { setDeal({ none: true, shark: S.n }); return; } setRound(round + 1); setOffer(sharkOffer(S, round + 1)); };
+  const start = (k) => { setSk(k); setRound(0); setOffer(sharkOffer(SHARKS.find((x) => x.k === k), 0)); setDeal(null); setMsg(""); setMine({ money: ask, pct }); };
+  const counter = () => { const val = mine.money / (mine.pct / 100); const sharkMax = fair * S.f * 1.25; if (val <= sharkMax) { setDeal({ ...mine, shark: S.n, extra: offer.extra, accepted: "shark" }); return; } if (round >= 2) { setDeal({ none: true, shark: S.n }); return; } setMsg(`❌ ${S.n} says no: your counter values the company at ${cop(val)} — too expensive for this shark. Look at the new offer below. Tip: give a bit more % or ask for a bit less money (but never above your walk-away of ${walk}%).`); setRound(round + 1); setOffer(sharkOffer(S, round + 1)); };
   const G = [W_PAST, W_NUMBERS(2), W_TOPIC("Use 2 deal words", ["valuation", "offer", "counter", "equity", "royalty", "walk-away", "%"], 2, "offer · counter · valuation")];
   const ok = deal && goalsOk(text, 30, 80, G);
   const score = deal && !deal.none ? (deal.pct <= walk ? 1 : 0) : 0;
   if (st.done) return <Reward title={deal?.none ? "No deal — and that's OK 🤝" : `Deal with ${deal.shark}! 🤝`} subtitle={deal?.none ? "Walking away is also a decision." : `${cop(deal.money)} for ${deal.pct}%`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Handshake size={22} strokeWidth={2.1} />} title="Deal Negotiator 🤝" subtitle={`Your ask: ${cop(ask)} for ${pct}%. Your walk-away: ${walk}%. Three sharks, three personalities, max 3 rounds.`} onExit={onExit}>
-      <Brief91 k="c5_nego" />
+      <Brief91 k="c5_nego" /><Guide11 {...GD_NEGO} />
       {!v && <div className="p1-banner"><span>💡 Save your Valuation Machine first to negotiate with YOUR ask. Now you use a sample ask.</span></div>}
       {!sk ? <div className="g10-ab four">{SHARKS.map((s) => <button key={s.k} type="button" onClick={() => start(s.k)}><em>{s.e}</em><b>{s.n}</b><span>{s.d}</span></button>)}</div> : (
         <div className="start-block g10-event">
@@ -2661,7 +2785,9 @@ function DealNegotiator({ resp, existing, onSave, onExit }) {
           {!deal ? (
             <>
               <div className="g10-two"><Ctl l="My counter: money" v={mine.money} set={(x) => setMine({ ...mine, money: x })} mn={50000} mx={2000000} stp={10000} fmt={cop} /><Ctl l="My counter: %" v={mine.pct} set={(x) => setMine({ ...mine, pct: x })} mn={5} mx={60} fmt={(x) => `${x}%`} /></div>
-              <p className="start-tip">Your counter implies {cop(mine.money / (mine.pct / 100))}. {mine.pct > walk ? "⚠️ Above your walk-away %!" : ""}</p>
+              {msg && <div className="p1-banner bad"><span>{msg}</span></div>}
+              <MiniTable head={["", "Money", "%", "Valuation (money ÷ %)"]} rows={[[`${S.e} Shark's offer`, cop(offer.money), `${offer.pct}%`, cop(offer.money / (offer.pct / 100))], ["🔁 My counter", cop(mine.money), `${mine.pct}%`, cop(mine.money / (mine.pct / 100))], ["🚪 My limit (walk-away)", cop(ask), `${walk}%`, cop(minVal)]]} />
+              <p className="start-tip">💡 <b>My counter</b> = the deal YOU propose. Move the money and the % you would give. The shark says yes if your valuation is close to what HE thinks the company is worth. {mine.pct > walk ? "⚠️ Your counter gives more than your walk-away %!" : ""}</p>
               <div className="p3-card-actions"><button className="s1-btn primary" onClick={() => setDeal({ ...offer, shark: S.n, accepted: "me" })}>Accept the shark's offer</button><button className="s1-btn ghost" onClick={counter}>Send my counter</button><button className="s1-btn ghost" onClick={() => setDeal({ none: true, shark: S.n })}>Walk away</button></div>
             </>
           ) : <div className={`p1-banner ${deal.none ? "" : deal.pct <= walk ? "good" : "bad"}`}><span>{deal.none ? `No deal with ${deal.shark}.` : `DEAL: ${cop(deal.money)} for ${deal.pct}% ${deal.extra || ""}. ${deal.pct <= walk ? "✅ Inside your walk-away point." : "⚠️ You gave more than your walk-away %!"}`}</span></div>}
@@ -2697,7 +2823,7 @@ function StressTest({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Stress-tested! ⚠️" subtitle={`Crisis ${cop(crisis.net)} → with Plan B ${cop(saved.net)}`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<AlertTriangle size={22} strokeWidth={2.1} />} title="Stress Test ⚠️ · Our company under pressure" subtitle="Break your own numbers before reality does — then design a Plan B (max 3 actions)." onExit={onExit}>
-      <Brief91 k="c6_stress" />
+      <Brief91 k="c6_stress" /><Guide11 {...GD_STRESS} />
       <div className="g10-two">
         <div className="start-block"><h3>🌪️ The crisis</h3><Ctl l="Sales change" v={s.sales} set={(x) => setS({ ...s, sales: x })} mn={-60} mx={0} stp={5} fmt={(x) => `${x}%`} /><Ctl l="Ingredient cost change" v={s.cost} set={(x) => setS({ ...s, cost: x })} mn={0} mx={60} stp={5} fmt={(x) => `+${x}%`} /><label className="g11-toggle"><input type="checkbox" checked={s.comp} onChange={(e) => setS({ ...s, comp: e.target.checked })} /> 🥊 A competitor opens next to us (−15% sales)</label></div>
         <div className="start-block"><h3>🛟 Plan B (max 3)</h3><div className="g10-qpick">{PLANB.map((p) => { const on = plan.includes(p.k); return <button key={p.k} type="button" className={on ? "on" : ""} onClick={() => setPlan(on ? plan.filter((x) => x !== p.k) : plan.length < 3 ? [...plan, p.k] : plan)}>{p.e} {p.l}</button>; })}</div></div>
@@ -2731,7 +2857,7 @@ function ImpactCanvas({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Impact measured! 🌱" subtitle={`${chosen.length} impact KPIs`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Sprout size={22} strokeWidth={2.1} />} title="Impact Canvas 🌱 · SDG 8 & 12" subtitle="Sharks ask about money. Communities ask about impact. Measure both." onExit={onExit}>
-      <Brief91 k="c6_impact" />
+      <Brief91 k="c6_impact" /><Guide11 {...GD_IMPACT} />
       <div className="g11-kpis-pick">{IMPACT_KPIS.map(([k, e, l, u]) => { const on = !!sel[k]; return <div key={k} className={on ? "on" : ""}><button type="button" onClick={() => { const n = { ...sel }; if (on) delete n[k]; else n[k] = { now: "", goal: "" }; setSel(n); }}><em>{e}</em><b>{l}</b></button>{on && <div className="g11-inline"><label>Today<input className="start-input" type="number" value={sel[k].now} onChange={(ev) => setSel({ ...sel, [k]: { ...sel[k], now: ev.target.value } })} /></label><label>Goal in 6 months<input className="start-input" type="number" value={sel[k].goal} onChange={(ev) => setSel({ ...sel, [k]: { ...sel[k], goal: ev.target.value } })} /></label><small>{u}</small></div>}</div>; })}</div>
       <div className="start-block"><h3>✍️ Our impact promise</h3><WordField value={text} onChange={setText} min={30} max={80} goals={[W_FUTURE, W_NUMBERS(2), W_TOPIC("Use 2 impact words", ["impact", "community", "waste", "local", "jobs", "sustainable", "sdg"], 2)]} placeholder="In 6 months we will reduce waste from 8 to 2 units a week and buy 60% local fruit, so our community…" /></div>
       <div className="start-foot"><button className="s1-btn primary big" disabled={!ok} onClick={() => finish(26, { sel, text })}>Save our impact <span className="coin-tag"><Coins size={15} /> +26</span></button></div>
@@ -2764,7 +2890,7 @@ function DeckBuilder({ resp, existing, onSave, onExit }) {
   if (st.done) return <Reward title="Deck ready! 🗂️" subtitle="10 slides, one story." coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<Layers size={22} strokeWidth={2.1} />} title="Pitch Deck Builder 🗂️" subtitle="10 slides built from your data. Write a headline (2–12 words) that SAYS the message of each slide." onExit={onExit}>
-      <Brief91 k="c7_deck" />
+      <Brief91 k="c7_deck" /><Guide11 {...GD_DECK} />
       <div className="g11-deck"><div className="g11-deck-list">{auto.map((x, k) => <button key={x.k} type="button" className={`${k === i ? "on" : ""} ${okHead(h[x.k]) ? "ok" : ""}`} onClick={() => setI(k)}>{x.e} {k + 1}</button>)}</div>
         <div><Slide x={auto[i]} /><input className="start-input" value={h[auto[i].k]} onChange={(e) => setH({ ...h, [auto[i].k]: e.target.value })} placeholder="Headline with the message" /><p className="start-tip">💡 Not “Our numbers” — say “Every gelatin leaves us $1,500”.</p>
           <div className="p3-card-actions"><button className="s1-btn ghost" disabled={i === 0} onClick={() => setI(i - 1)}><ChevronLeft size={16} /> Back</button><button className="s1-btn ghost" disabled={i === auto.length - 1} onClick={() => setI(i + 1)}>Next <ChevronRight size={16} /></button><button className="s1-btn primary" onClick={() => setShow(true)}><Mic size={16} /> Present</button></div></div></div>
@@ -2796,7 +2922,7 @@ function SharkQA({ existing, onSave, onExit }) {
   if (st.done) return <Reward title="Shark-proof! 🦈" subtitle={`${good}/5 strong answers`} coins={st.coins} saving={st.saving} onExit={onExit} />;
   return (
     <ActShell icon={<MessageIcon />} title="Shark Q&A Trainer 🦈" subtitle="5 hard questions, 60 seconds each. Strong = 15+ words, 2 topic words and a number." onExit={onExit}>
-      <Brief91 k="c7_qa" />
+      <Brief91 k="c7_qa" /><Guide11 {...GD_QA} />
       {!done ? (
         <div className="start-block g10-boss">
           <div className="p1-match-stats"><span>Question <b>{i + 1}/5</b></span><span className={`g10-timer ${left <= 10 ? "low" : ""}`}>⏱️ {left}s</span></div>
@@ -2822,14 +2948,14 @@ function KnowNumbers({ resp, onSave, onExit }) {
   const pl = plOf(resp); const v = resp?.c4_val; const r1 = P1of(resp);
   const ask = v?.ask || 300000; const pct = v?.pct || 15; const fixed = num(r1.c6_break?.fixed) || 180000; const cm = pl.price - pl.unit;
   const rounds = [
-    { tag: "Margin", q: `Price ${cop(pl.price)}, unit cost ${cop(pl.unit)}. Margin per unit ($)?`, answer: cm, money: true, hint: "price − unit cost", explain: `${cop(cm)} per unit.` },
-    { tag: "Margin %", q: "That margin as a % of the price? (no decimals)", answer: Math.round((cm / pl.price) * 100), unit: "%", tol: 1, hint: "margin ÷ price × 100", explain: `${Math.round((cm / pl.price) * 100)}%.` },
-    { tag: "Break-even", q: `Fixed costs ${cop(fixed)}. Break-even units?`, answer: Math.ceil(fixed / Math.max(1, cm)), unit: "units", tol: 1, hint: "fixed ÷ margin per unit", explain: `${Math.ceil(fixed / Math.max(1, cm))} units.` },
-    { tag: "Valuation", q: `Your ask: ${cop(ask)} for ${pct}%. Implied valuation?`, answer: Math.round(ask / (pct / 100)), money: true, tol: 1000, hint: "money ÷ %", explain: `${cop(ask / (pct / 100))}.` },
-    { tag: "Year", q: `Monthly net income ${cop(pl.net)}. Net income in a year?`, answer: pl.net * 12, money: true, tol: 12, hint: "× 12", explain: `${cop(pl.net * 12)}.` },
-    { tag: "Shark", q: `If a shark owns ${pct}%, how much of a year's profit is hers?`, answer: Math.round(pl.net * 12 * (pct / 100)), money: true, tol: 500, hint: `year profit × ${pct / 100}`, explain: `${cop(pl.net * 12 * (pct / 100))}.` },
+    { tag: "Margin", q: `Price ${cop(pl.price)}, unit cost ${cop(pl.unit)}. Margin per unit ($)?`, answer: cm, money: true, hint: "price − unit cost", visual: F11("Margin per unit = price − unit cost", [`${cop(pl.price)} − ${cop(pl.unit)} = ?`]), explain: `${cop(cm)} per unit.` },
+    { tag: "Margin %", q: "That margin as a % of the price? (no decimals)", answer: Math.round((cm / pl.price) * 100), unit: "%", tol: 1, hint: "margin ÷ price × 100", visual: F11("Margin % = margin per unit ÷ price × 100", [`${cop(cm)} ÷ ${cop(pl.price)} × 100 = ?`]), explain: `${Math.round((cm / pl.price) * 100)}%.` },
+    { tag: "Break-even", q: `Fixed costs ${cop(fixed)}. Break-even units?`, answer: Math.ceil(fixed / Math.max(1, cm)), unit: "units", tol: 1, hint: "fixed ÷ margin per unit", visual: F11("Break-even units = fixed costs ÷ margin per unit (round UP)", [`${cop(fixed)} ÷ ${cop(cm)} = ?`]), explain: `${Math.ceil(fixed / Math.max(1, cm))} units.` },
+    { tag: "Valuation", q: `Your ask: ${cop(ask)} for ${pct}%. Implied valuation?`, answer: Math.round(ask / (pct / 100)), money: true, tol: 1000, hint: "money ÷ %", visual: F11("Implied valuation = money ÷ % (decimal)", [`${cop(ask)} ÷ ${pct / 100} = ?`]), explain: `${cop(ask / (pct / 100))}.` },
+    { tag: "Year", q: `Monthly net income ${cop(pl.net)}. Net income in a year?`, answer: pl.net * 12, money: true, tol: 12, hint: "× 12", visual: F11("Year = month × 12", [`${cop(pl.net)} × 12 = ?`]), explain: `${cop(pl.net * 12)}.` },
+    { tag: "Shark", q: `If a shark owns ${pct}%, how much of a year's profit is hers?`, answer: Math.round(pl.net * 12 * (pct / 100)), money: true, tol: 500, hint: `year profit × ${pct / 100}`, visual: F11("Investor's share = yearly profit × investor %", [`${cop(pl.net * 12)} × ${pct / 100} = ?`]), explain: `${cop(pl.net * 12 * (pct / 100))}.` },
   ];
-  return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Know Your Numbers 🧮" subtitle="Sharks test founders with THEIR own numbers. No calculator panic!" intro={<Brief91 k="c7_numbers" />} rounds={rounds} coinsPer={4} bonus={8} doneTitle="Numbers ninja! 🧮" onSave={onSave} onExit={onExit} />;
+  return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Know Your Numbers 🧮" subtitle="Sharks test founders with THEIR own numbers. No calculator panic!" intro={<><Brief91 k="c7_numbers" /><Guide11 {...GD_NUM} open={false} /></>} rounds={rounds} coinsPer={4} bonus={8} doneTitle="Numbers ninja! 🧮" onSave={onSave} onExit={onExit} />;
 }
 
 /* ---------- C8 · Shark Tank Pitch ---------- */
@@ -2919,6 +3045,53 @@ const CAN_P2 = [
 /* =====================================================================
    GUÍA DE CADA ACTIVIDAD · 11° PERIODO 2
    ===================================================================== */
+const GD_R_CASH = { intro: "Six short problems about the difference between PROFIT and CASH. Each problem shows its formula — read it, put the numbers in and calculate.", items: [
+  { e: "💧", t: "Cash this month", d: "Only the money that really ARRIVES or LEAVES this month. A sale paid in 60 days is profit now, cash later." },
+  { e: "🧮", t: "Key formulas", ex: ["Deposit = order × deposit %", "Ending cash = start + IN − OUT", "Runway (months) = cash ÷ monthly burn"] },
+] };
+const GD_R_LOAN = { intro: "Every kind of money has a price. Use these formulas (they also appear under each problem). You can use the calculator.", items: [
+  { e: "🏦", t: "Fixed loan payment", f: "Payment = P × r ÷ (1 − (1 + r)^−n)", ex: ["P = amount borrowed · r = monthly rate (2% = 0.02) · n = number of months", "Loan 100,000 at 2% for 3 months: 1.02^3 = 1.0612 → 1 ÷ 1.0612 = 0.9423", "Payment = 100,000 × 0.02 ÷ (1 − 0.9423) = 2,000 ÷ 0.0577 ≈ $34,675"] },
+  { e: "💸", t: "Total interest", f: "Interest = payment × months − amount borrowed", ex: "3 × 34,675 − 100,000 = $4,025" },
+  { e: "📅", t: "Monthly → yearly (E.A.)", f: "E.A. = (1 + monthly rate)^12 − 1", ex: "1% monthly → 1.01^12 − 1 = 12.7% E.A." },
+  { e: "🦈", t: "Equity and crowdfunding", f: "Valuation = money ÷ %  ·  Received = raised × (1 − fee)", ex: ["$100,000 for 10% → 100,000 ÷ 0.10 = $1,000,000", "Raise $200,000 with a 5% fee → 200,000 × 0.95 = $190,000"] },
+] };
+const GD_R_OVER = { intro: "You are the shark. For each company: calculate the implied valuation, compare it with its real sales and profit, then decide.", items: [
+  { e: "💎", t: "Implied valuation", f: "Valuation = money asked ÷ % offered", ex: "$80,000 for 20% → 80,000 ÷ 0.20 = $400,000" },
+  { e: "📏", t: "Is it reasonable?", f: "Revenue multiple = valuation ÷ yearly revenue  ·  Earnings multiple = valuation ÷ yearly profit", ex: "Small food businesses: about 1–3× revenue or 3–8× profit. Much higher = overvalued." },
+  { e: "👑", t: "Royalty", d: "Money per unit sold until the shark recovers her investment.", f: "Time = investment ÷ (royalty per unit × units per period)" },
+] };
+const GD_R_EQ = { intro: "Equity math: who owns how much, and how much that is worth. Each problem shows the formula.", items: [
+  { e: "🥧", t: "Value of a slice", f: "Value = valuation × your %", ex: "20% of $1,000,000 = 1,000,000 × 0.20 = $200,000" },
+  { e: "✂️", t: "Dilution", f: "New % = old % × (1 − % sold to the new investor)", ex: "You have 50%; an investor buys 20% → 50 × 0.80 = 40%" },
+  { e: "👑", t: "Royalty time", f: "Months = money to recover ÷ (royalty per unit × units per month)", ex: "$100,000 ÷ (200 × 250) = 100,000 ÷ 50,000 = 2 months" },
+  { e: "💰", t: "Profit share", f: "Investor's share = profit × investor's %", ex: "$500,000 × 0.10 = $50,000" },
+] };
+/* Guías de las Team Zones con los números del propio equipo */
+const ZG = {
+  c1_zone: (resp) => { const co = co11(resp?.__p1 || {}); return { intro: "Today you produce a REAL batch. Before buying, write the plan; after producing, compare what you planned with what you really spent and sold.", items: [
+    { e: "📝", t: "1 · The plan", d: `Your Period 1 numbers: unit cost ${co.unit ? cop(co.unit) : "—"} · price ${co.price ? cop(co.price) : "—"}.`, f: "Budget = units planned × unit cost", ex: "40 gelatins × $1,500 = $60,000" },
+    { e: "🧾", t: "2 · Planned vs. real", d: "One row per item you buy (4 or more): what you planned to pay and what you REALLY paid (keep the receipts!)." },
+    { e: "🏭", t: "3 & 4 · Produced and sold", d: "Count the units that really came out (some break or fail) and the money you really collected." },
+    { e: "🔍", t: "5 · Why real ≠ planned?", ex: "“Mango was $1,000 more expensive and 3 cups broke, so our real unit cost was $1,650, not $1,500.”" },
+  ] }; },
+  c3_zone: (resp) => { const m = resp?.c3_lab?.mix; return { intro: "Real founders write their money agreement BEFORE there are problems. Use your Funding Lab plan.", items: [
+    { e: "🏦", t: "1 · Our plan in one sentence", d: m ? `Your Funding Lab: savings ${cop(m.save)} · family ${cop(m.family)} · loan ${cop(m.loan)} · investor ${cop(m.inv)} · crowdfunding ${cop(m.crowd)}.` : "Do the Funding Lab first to have your numbers.", ex: "“$200,000 savings + $250,000 loan + $150,000 crowdfunding = $600,000.”" },
+    { e: "🤝", t: "2 · Each founder's contribution", d: "Money AND work count. Write what each person puts in.", ex: "Ana: $50,000 + recipes · Luis: $30,000 + Instagram · Sofía: $0 + sales and numbers" },
+    { e: "🚪", t: "3 · If someone leaves…", d: "Decide now what happens with their % and their money (this is called vesting).", ex: "“If someone leaves before 3 months, they get their money back but keep only half of their %.”" },
+    { e: "✍️", t: "4 · Sign", d: "Write the names of everyone who agrees." },
+  ] }; },
+  c5_zone: (resp) => { const v = resp?.c4_val; return { intro: "Agree as a team the numbers you will say on Shark Tank Day. They come from your Valuation Machine — copy them and make sure EVERYONE can explain them.", items: [
+    { e: "💎", t: "1 · Final ask", d: v ? `Your Valuation Machine: ${cop(v.ask)} for ${v.pct}% → implied valuation ${cop(v.implied)}.` : "Do the Valuation Machine first to have your numbers.", f: "Implied valuation = money ÷ %", ex: "“$300,000 for 15% → 300,000 ÷ 0.15 = $2,000,000”" },
+    { e: "🚪", t: "2 · Walk-away point", d: v ? `Your walk-away: ${v.walk}%. Write it as a number.` : "The MAX % you would give. Write only the number (e.g. 25).", ex: "If a shark asks for more than this %, you say no." },
+    { e: "🎭", t: "3 · Who presents each part", d: "One row per founder: problem, product, numbers, ask, questions…" },
+    { e: "😬", t: "4 · Questions we fear", ex: "“1) Why is it so expensive? → Because our unit cost is $1,500 and… 2) …”" },
+  ] }; },
+  c7_zone: () => ({ intro: "Pitch twice with a timer (goal: 4 minutes). After each run, another team gives you ONE thing to keep and ONE thing to fix.", items: [
+    { e: "⏱️", t: "Rehearsals", d: "One row per run: number, time in minutes (e.g. 4.5) and the feedback you received.", ex: "Run 1 · 5.2 min · “Too fast in the numbers, say the valuation slower.”" },
+    { e: "🛠️", t: "Three fixes", ex: "1) Cut the intro to 20 seconds. 2) Say the margin with an example. 3) Show the product in the first minute." },
+    { e: "🍮", t: "Samples", d: "Real product ready for the sharks to taste, with labels." },
+  ] }),
+};
 const ZONE_WIN = (c) => [["All goals done, each with evidence", "required"], ["Mission complete", `+${c} 🪙`]];
 const GUIDE = {
   c1_read: B_READ("Learn from WeWork why revenue is not profit — and what investors look at first.", "Next: P&L Builder."),
@@ -2927,19 +3100,19 @@ const GUIDE = {
   c1_zone: { goal: "TEAM ZONE: run a REAL production batch and compare planned vs. real costs.", steps: ["Plan the batch (units and budget).", "Buy and produce for real.", "Log planned vs. real cost of each item.", "Sell and record the money collected."], win: ZONE_WIN(30) },
   c2_read: B_READ("Understand why profitable companies can still die: cash flow.", "Next: Cash Flow Survival."),
   c2_cash: { goal: "Survive 12 months: six events test your CASH, not only your profit.", steps: ["Close each month.", "In event months, choose a decision.", "Watch the cash line — never below zero!", "Save your survival report."], win: [["Base", "+16 🪙"], ["Each smart decision", "+3 🪙"], ["Never below zero", "+4 🪙"]] },
-  c2_rounds: { goal: "Six quick problems: cash vs. profit, deposits, runway.", steps: ["Solve each problem.", "Use the hint if you need it."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
+  c2_rounds: { goal: "Six quick problems: cash vs. profit, deposits, runway.", steps: ["Read the box “Before you start”.", "In each problem, read the formula and the steps.", "Calculate and check.", "Read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c2_plan: { goal: "Build your company's 3-month cash plan. No month can end below zero.", steps: ["Write the starting cash.", "Add every inflow and outflow per month.", "Fix any negative month.", "Explain how you protect your cash."], win: [["Saving your cash plan", "+28 🪙"]] },
   c3_read: B_READ("Discover how Pebble raised US$10 million from customers — and the real cost of every type of money.", "Next: Funding Lab."),
   c3_lab: { goal: "Raise $600,000 with a mix of savings, family, loan, investor and crowdfunding — and know its real cost.", steps: ["Move each source.", "Check the loan payment vs. your monthly profit.", "Check how much control you keep.", "Explain your mix."], win: [["Saving your funding plan", "+32 🪙"]] },
-  c3_loan: { goal: "Six problems: loan payments, interest, E.A., equity and crowdfunding fees.", steps: ["Solve each problem.", "Read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
+  c3_loan: { goal: "Six problems: loan payments, interest, E.A., equity and crowdfunding fees.", steps: ["Read the formulas and the example in “Before you start”.", "In each problem, use the formula box (calculator allowed).", "Check your answer.", "Read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c3_zone: { goal: "TEAM ZONE: hold your funding meeting and agree the rules.", steps: ["Agree the funding plan.", "Write each founder's contribution.", "Agree what happens if someone leaves.", "Sign the agreement."], win: ZONE_WIN(24) },
   c4_video: B_VIDEO("Watch a real Shark Tank pitch: valuation, numbers and authenticity.", "Next: How Sharks Value a Company."),
   c4_read: B_READ("Learn the hidden number in every ask: the implied valuation — and three ways to estimate value.", "Next: Valuation Machine."),
   c4_val: { goal: "Value your company with 3 methods, choose an ask your numbers can defend and decide your walk-away point.", steps: ["Revenue multiple.", "Earnings multiple.", "Discounted cash flow.", "Choose money, % and walk-away; explain."], win: [["Saving your valuation", "+34 🪙"]] },
-  c4_over: { goal: "Judge 4 pitches like a shark: calculate valuations and decide.", steps: ["Calculate each implied valuation.", "Compare it with the numbers.", "Choose deal, counter or no deal."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
+  c4_over: { goal: "Judge 4 pitches like a shark: calculate valuations and decide.", steps: ["Read “Before you start”: valuation and multiples.", "Calculate each implied valuation.", "Compare it with sales and profit.", "Choose deal, counter or no deal."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c5_cap: { goal: "See who owns your company after a seed round, an employee pool and a Series A.", steps: ["Split the company among founders (100%).", "Move the three rounds.", "Read each cap table.", "Solve 3 checks."], win: [["Base", "+22 🪙"], ["Each check right on the first try", "+3 🪙"]] },
-  c5_nego: { goal: "Negotiate with three sharks with different personalities. Respect your walk-away point.", steps: ["Choose a shark.", "Read the offer and its implied valuation.", "Accept, counter (max 3 rounds) or walk away.", "Write your negotiation report."], win: [["Base", "+26 🪙"], ["Deal inside your walk-away", "+6 🪙"]] },
-  c5_rounds: { goal: "Equity math: dilution, value of your slice, royalties.", steps: ["Solve each problem."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
+  c5_nego: { goal: "Negotiate with three sharks with different personalities. Respect your walk-away point.", steps: ["Read “Before you start”: offer, counter and walk-away.", "Choose a shark and read the offer table.", "Move your counter (money and %) and compare the valuations.", "Accept, counter (max 3 rounds) or walk away — then write your report."], win: [["Base", "+26 🪙"], ["Deal inside your walk-away", "+6 🪙"]] },
+  c5_rounds: { goal: "Equity math: dilution, value of your slice, royalties.", steps: ["Read the 4 formulas in “Before you start”.", "In each problem, use the formula box.", "Check your answer and read the explanation."], win: [["Each answer right on the first try", "+3 🪙"], ["Finishing", "+8 🪙"]] },
   c5_zone: { goal: "TEAM ZONE: agree your final ask, your walk-away and who presents what.", steps: ["Agree the ask and walk-away.", "Assign pitch parts.", "Practice the 60-second version.", "Write 3 sharks' questions you fear."], win: ZONE_WIN(24) },
   c6_read: B_READ("Learn from Blockbuster and Kodak why giants fall — and what a stress test is.", "Next: Stress Test."),
   c6_stress: { goal: "Put your company under pressure and design a Plan B (max 3 actions).", steps: ["Move the crisis sliders.", "Choose up to 3 Plan B actions.", "Compare normal, crisis and Plan B.", "Write your plan with 'If…, we will…'."], win: [["Base", "+30 🪙"], ["Plan B back to profit", "+4 🪙"]] },
@@ -3047,25 +3220,25 @@ const CFG112 = {
     const P = { onSave: ctx.save, onExit: ctx.exit };
     const L = mkLearn(ctx, Brief91);
     const Z = ZONES_P2[act];
-    if (Z) return <TeamZone {...Z} brief={<Brief91 k={act} />} resp={ctx.resp} existing={ctx.existing} {...P} />;
+    if (Z) return <TeamZone {...Z} brief={<><Brief91 k={act} />{ZG[act] && <Guide11 {...ZG[act](ctx.resp)} />}</>} resp={ctx.resp} existing={ctx.existing} {...P} />;
     switch (act) {
       case "c1_read": return L.reading("c1_read", "The US$47 Billion Lesson", "WeWork, 2019: revenue is not profit.", READ_WEWORK, GLOSS_WEWORK, Q_WEWORK, "📰");
       case "c1_pl": return <PLBuilder resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c1_rush": return L.rush("c1_rush", "P&L Rush ⚡", "Revenue, cost of goods, expense — or not in the P&L?", RUSH_PL, "P&L master! 📒", 75);
       case "c2_read": return L.reading("c2_read", "Profitable on Paper, Broke in Real Life", "Why cash flow decides who survives.", READ_CASH, GLOSS_CASH, Q_CASH, "📰");
       case "c2_cash": return <CashSurvival resp={ctx.resp} existing={ctx.existing} {...P} />;
-      case "c2_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Cash vs. Profit Rounds 🧮" subtitle="Profit is an opinion; cash is a fact." intro={<Brief91 k="c2_rounds" />} rounds={CASH_R} coinsPer={3} bonus={8} doneTitle="Cash clear! 💧" {...P} />;
+      case "c2_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Cash vs. Profit Rounds 🧮" subtitle="Profit is an opinion; cash is a fact." intro={<><Brief91 k="c2_rounds" /><Guide11 {...GD_R_CASH} /></>} rounds={CASH_R} coinsPer={3} bonus={8} doneTitle="Cash clear! 💧" {...P} />;
       case "c2_plan": return <CashPlan resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c3_read": return L.reading("c3_read", "The Watch That Asked the Crowd for Money", "Pebble, 2012: five ways to fund a company.", READ_PEBBLE, GLOSS_PEBBLE, Q_PEBBLE, "📰");
       case "c3_lab": return <FundingLab resp={ctx.resp} existing={ctx.existing} {...P} />;
-      case "c3_loan": return <NumberRounds icon={<Percent size={22} strokeWidth={2.1} />} title="Loan & Equity Rounds 🧮" subtitle="The real price of borrowed and invested money." intro={<Brief91 k="c3_loan" />} rounds={LOAN_R} coinsPer={3} bonus={8} doneTitle="Funding pro! 🏦" {...P} />;
+      case "c3_loan": return <NumberRounds icon={<Percent size={22} strokeWidth={2.1} />} title="Loan & Equity Rounds 🧮" subtitle="The real price of borrowed and invested money." intro={<><Brief91 k="c3_loan" /><Guide11 {...GD_R_LOAN} /></>} rounds={LOAN_R} coinsPer={3} bonus={8} doneTitle="Funding pro! 🏦" {...P} />;
       case "c4_video": return L.video("c4_video", VID_SHARK11, "A Shark Tank Pitch", VQ_SHARK11);
       case "c4_read": return L.reading("c4_read", "$100,000 for 10%: What Does It Really Mean?", "The hidden number in every ask.", READ_VALUE, GLOSS_VALUE, Q_VALUE, "📰");
       case "c4_val": return <ValuationMachine resp={ctx.resp} existing={ctx.existing} {...P} />;
-      case "c4_over": return <NumberRounds icon={<Scale size={22} strokeWidth={2.1} />} title="Overvalued? 🦈" subtitle="Four pitches. Calculate, compare, decide." intro={<Brief91 k="c4_over" />} rounds={OVER_R} coinsPer={3} bonus={8} doneTitle="Shark instinct! 🦈" {...P} />;
+      case "c4_over": return <NumberRounds icon={<Scale size={22} strokeWidth={2.1} />} title="Overvalued? 🦈" subtitle="Four pitches. Calculate, compare, decide." intro={<><Brief91 k="c4_over" /><Guide11 {...GD_R_OVER} /></>} rounds={OVER_R} coinsPer={3} bonus={8} doneTitle="Shark instinct! 🦈" {...P} />;
       case "c5_cap": return <CapTable resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c5_nego": return <DealNegotiator resp={ctx.resp} existing={ctx.existing} {...P} />;
-      case "c5_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Equity Math 🧮" subtitle="Percentages, slices and royalties." intro={<Brief91 k="c5_rounds" />} rounds={EQUITY_R} coinsPer={3} bonus={8} doneTitle="Equity expert! 🥧" {...P} />;
+      case "c5_rounds": return <NumberRounds icon={<Calculator size={22} strokeWidth={2.1} />} title="Equity Math 🧮" subtitle="Percentages, slices and royalties." intro={<><Brief91 k="c5_rounds" /><Guide11 {...GD_R_EQ} /></>} rounds={EQUITY_R} coinsPer={3} bonus={8} doneTitle="Equity expert! 🥧" {...P} />;
       case "c6_read": return L.reading("c6_read", "When Giants Fall", "Blockbuster and Kodak: protecting today, losing tomorrow.", READ_GIANTS, GLOSS_GIANTS, Q_GIANTS, "📰");
       case "c6_stress": return <StressTest resp={ctx.resp} existing={ctx.existing} {...P} />;
       case "c6_ceo": return <CeoFire {...P} />;
@@ -3082,12 +3255,12 @@ const CFG112 = {
   },
 };
 const EQUITY_R = [
-  { tag: "Slice", q: "You own 35% of a company worth $3,000,000. Your slice is worth…", answer: 1050000, money: true, hint: "3,000,000 × 0.35", explain: "$1,050,000." },
-  { tag: "Dilution", q: "You own 60%. A new investor buys 25% (new shares). Your new %?", answer: 45, unit: "%", tol: 0.1, hint: "60 × 0.75", explain: "45%." },
-  { tag: "Bigger pie", q: "Before: 100% of $400,000. After the deal: 70% of $1,200,000. Your value now?", answer: 840000, money: true, hint: "1,200,000 × 0.70", explain: "$840,000 — less %, more value." },
-  { tag: "Royalty", q: "A shark gets $400 per unit until she recovers $200,000. You sell 250 units a month. Months?", answer: 2, unit: "months", hint: "200,000 ÷ (400 × 250)", explain: "2 months." },
-  { tag: "Control", q: "Three founders: 40%, 35%, 25%. An investor buys 30%. Who has the most %?", options: ["The investor (30%) — more than any single founder.", "The first founder still has 40% of the company.", "All the founders keep exactly the same % as before.", "The investor now has 70% of the company."], correct: 0, explain: "40% × 0.7 = 28% < 30%." },
-  { tag: "Profit share", q: "Net profit $900,000 a year. The investor owns 20%. Her share?", answer: 180000, money: true, hint: "900,000 × 0.20", explain: "$180,000 a year." },
+  { tag: "Slice", q: "You own 35% of a company worth $3,000,000. Your slice is worth…", answer: 1050000, money: true, hint: "3,000,000 × 0.35", visual: F11("Value of your slice = valuation × your %", ["3,000,000 × 0.35 = ?"]), explain: "$1,050,000." },
+  { tag: "Dilution", q: "You own 60%. A new investor buys 25% (new shares). Your new %?", answer: 45, unit: "%", tol: 0.1, hint: "60 × 0.75", visual: F11("New % = old % × (1 − % sold)", ["Old = 60% · sold = 25% → 1 − 0.25 = 0.75", "60 × 0.75 = ?"]), explain: "45%." },
+  { tag: "Bigger pie", q: "Before: 100% of $400,000. After the deal: 70% of $1,200,000. Your value now?", answer: 840000, money: true, hint: "1,200,000 × 0.70", visual: F11("Value = % × valuation", ["Before: 1.00 × 400,000 = 400,000", "After: 0.70 × 1,200,000 = ?"]), explain: "$840,000 — less %, more value." },
+  { tag: "Royalty", q: "A shark gets $400 per unit until she recovers $200,000. You sell 250 units a month. Months?", answer: 2, unit: "months", hint: "200,000 ÷ (400 × 250)", visual: F11("Months = money to recover ÷ (royalty per unit × units per month)", ["Royalty per month = 400 × 250 = 100,000", "Months = 200,000 ÷ 100,000"]), explain: "2 months." },
+  { tag: "Control", q: "Three founders: 40%, 35%, 25%. An investor buys 30%. Who has the most %?", visual: F11("Each founder's new % = old % × (1 − 0.30)", ["Biggest founder: 40 × 0.7 = ?", "Compare it with the investor's 30%"]), options: ["The investor (30%) — more than any single founder.", "The first founder still has 40% of the company.", "All the founders keep exactly the same % as before.", "The investor now has 70% of the company."], correct: 0, explain: "40% × 0.7 = 28% < 30%." },
+  { tag: "Profit share", q: "Net profit $900,000 a year. The investor owns 20%. Her share?", answer: 180000, money: true, hint: "900,000 × 0.20", visual: F11("Investor's share = profit × investor %", ["900,000 × 0.20 = ?"]), explain: "$180,000 a year." },
 ];
 function CeoFire({ onSave, onExit }) {
   const [res, setRes] = useState(null);
